@@ -1,0 +1,81 @@
+package com.spacecode.smartserver.command;
+
+import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.smartserver.command.commands.*;
+import io.netty.channel.ChannelHandlerContext;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * CommandRegister class allows SmartServertHandler to execute any appropriate Command object for a given request string.
+ * Request string (sent by the Client) is passed as a String array to execute() method with the ChannelHandlerContext. If any corresponding command is found,
+ * CommandRegister instance executes execute() method from this command. Other parameters (if any) of the string array are passed with the ChannelHandlerContext.
+ */
+public final class CommandRegister implements ClientCommand
+{
+    // Key:     Command code (RequestCode value).
+    // Value:   ClientCommand instance.
+    // Visibility package-local in order to be accessible for JUnit tests.
+    Map<String, ClientCommand> _commands = new HashMap<>();
+
+    /**
+     * Initialize command register.
+     * Add an entry to "_commands" HashMap with request code & command instance for each known request.
+     */
+    public CommandRegister()
+    {
+        _commands.put(RequestCode.DISCONNECT,       new CommandDisconnect());
+        _commands.put(RequestCode.INITIALIZATION,   new CommandInitialization());
+        _commands.put(RequestCode.LAST_INVENTORY,   new CommandLastInventory());
+        _commands.put(RequestCode.REWRITE_UID,      new CommandRewriteUid());
+        _commands.put(RequestCode.SCAN,             new CommandScan());
+        _commands.put(RequestCode.SERIAL_BRIDGE,    new CommandSerialBridge());
+        _commands.put(RequestCode.START_LIGHTING,   new CommandStartLighting());
+        _commands.put(RequestCode.STOP_LIGHTING,    new CommandStoptLighting());
+    }
+
+    /**
+     * Allow dynamic (new) command registering.
+     * @param commandName       Command name. Should correspond to a RequestCode.
+     * @param commandInstance   Command instance (implementing ClientCommand) which should be executed.
+     */
+    public void addCommand(String commandName, ClientCommand commandInstance)
+    {
+        if(commandName == null || commandInstance == null)
+        {
+            return;
+        }
+
+        String cmd = commandName.trim();
+
+        if(cmd.isEmpty() || _commands.containsKey(cmd))
+        {
+            return;
+        }
+
+        _commands.put(cmd, commandInstance);
+    }
+
+    /**
+     * Looks for a ClientCommand corresponding to the given request and execute it with given parameters.
+     * Index 0 of the given string array contains the request. Other values (if any) contains the parameters sent by the client.
+     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param parameters                String array containing parameters (if any) provided by the client.
+     * @throws ClientCommandException   Occurs if no command has been found for the given request code.
+     */
+    @Override
+    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    {
+        ClientCommand cmd = _commands.get(parameters[0]);
+
+        if(cmd == null)
+        {
+            throw new ClientCommandException("Unknown Command: " + parameters[0]);
+        }
+
+        // execute the corresponding command, with the parameters (if any) sent by Client.
+        cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+    }
+}
