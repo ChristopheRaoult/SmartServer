@@ -43,13 +43,15 @@ public final class SmartServer
         ConsoleLogger.initialize();
         initializeShutdownHook();
 
-        if(!DeviceHandler.connectDevice())
+        if(DeviceHandler.connectDevice())
         {
-            ConsoleLogger.warning("Unable to connect to a SpaceCode RFID device... Server will not start.");
-            return;
+            ConsoleLogger.info("Successfully connected to "+ DeviceHandler.getDevice().getDeviceType() +" ("+DeviceHandler.getDevice().getSerialNumber()+")");
         }
 
-        ConsoleLogger.info("Successfully connected to "+ DeviceHandler.getDevice().getDeviceType() +" ("+DeviceHandler.getDevice().getSerialNumber()+")");
+        else
+        {
+            ConsoleLogger.warning("Unable to connect to a SpaceCode RFID device....");
+        }
 
         start(8080);
     }
