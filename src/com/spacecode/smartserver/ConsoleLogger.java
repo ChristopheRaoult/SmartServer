@@ -4,6 +4,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Wrapper to default Logger
+ */
 public final class ConsoleLogger
 {
     private static final Logger LOGGER = Logger.getLogger(ConsoleLogger.class.getName());

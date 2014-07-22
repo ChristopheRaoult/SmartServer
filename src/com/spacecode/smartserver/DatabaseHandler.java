@@ -1,22 +1,18 @@
 package com.spacecode.smartserver;
 
-import org.h2.jdbcx.JdbcConnectionPool;
-
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Created by Vincent on 02/01/14.
- */
-
-/**
- * Provide access to the H2 JDBC Connection Pool in order for SmartServer to process SQL queries without connecting/disconnecting for each operation.
+ * MySQL DB Wrapper
  */
 public class DatabaseHandler
 {
-    private static JdbcConnectionPool _connectionPool = JdbcConnectionPool.create("jdbc:h2:./smartserver", "SmartServer", "_Sp4c3c0d3_sm4rts3rv3r_");
+    private final static String DB_HOST         = "localhost:3306";
+    private final static String DB_NAME         = "test";
+    private final static String DB_USER         = "root";
+    private final static String DB_PASSWORD     = "";
 
     /** Must not be instantiated. */
     private DatabaseHandler()
@@ -30,10 +26,11 @@ public class DatabaseHandler
     {
         try
         {
-            return _connectionPool.getConnection();
-        } catch (SQLException sqle)
+            return DriverManager
+                    .getConnection("jdbc:MySql://"+DB_HOST+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD);
+        } catch (SQLException e)
         {
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.SEVERE, "Unable to get a connection from H2 JDBC connection pool.", sqle);
+            ConsoleLogger.warning("Unable to connect to the database.", e);
             return null;
         }
     }
@@ -43,6 +40,6 @@ public class DatabaseHandler
      */
     public static void close()
     {
-        _connectionPool.dispose();
+        //_connectionPool.dispose();
     }
 }

@@ -8,7 +8,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="h2-1.3.175" level="project" />
     <orderEntry type="library" name="spacecode_sdk" level="project" />
     <orderEntry type="library" name="powermock-mockito-1.5.4" level="project" />
     <orderEntry type="module-library" scope="TEST">
@@ -20,6 +19,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="mysql-connector-java" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
