@@ -4,12 +4,14 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Created by Vincent on 30/12/13.
- */
 public final class ConsoleLogger
 {
     private static final Logger LOGGER = Logger.getLogger(ConsoleLogger.class.getName());
+
+    /** Must not be instantiated. */
+    private ConsoleLogger()
+    {
+    }
 
     /**
      * Add a ConsoleHandler to the Logger handlers list.
@@ -54,10 +56,5 @@ public final class ConsoleLogger
         {
             LOGGER.log(Level.WARNING, message, e);
         }
-    }
-
-    /** Must not be instantiated. */
-    private ConsoleLogger()
-    {
     }
 }

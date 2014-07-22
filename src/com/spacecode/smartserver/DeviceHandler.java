@@ -6,11 +6,9 @@ import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
-import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.sdk.user.UserGrant;
 
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -21,6 +19,11 @@ import java.util.logging.Logger;
 public final class DeviceHandler
 {
     private static RfidDevice _device;
+
+    /** Must not be instantiated. */
+    private DeviceHandler()
+    {
+    }
 
     /**
      * Looks for available SpaceCode devices. Only 1 can be used and only 1 must be present.
@@ -56,46 +59,7 @@ public final class DeviceHandler
 
                     case RfidDevice.DeviceType.SMARTDRAWER:
                         _device = new SmartDrawer(null, deviceInfo.getSerialPort());
-
-                        boolean fpReadersAdded, br1Added, br2Added;
-
-                        int nbReaders;
-
-                        try
-                        {
-                            nbReaders = FingerprintReader.connectFingerprintReaders(2);
-
-                            if(nbReaders == 2)
-                            {
-                                fpReadersAdded =_device.addFingerprintReader("{2FD3A356-F2FF-F243-9B0D-9243C137E641}", true)
-                                        &&
-                                        _device.addFingerprintReader("{BFCB44E6-EB02-3142-A596-9ED337EACE19}", false);
-
-                                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info(!fpReadersAdded ?
-                                        "Unable to add Fingerprint Readers."
-                                        : "Fingerprint Readers successfully connected.");
-                            }
-
-                            else
-                            {
-                                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Could not find the desired number of readers. Found: "+nbReaders);
-                            }
-
-                        } catch (FingerprintReader.FingerprintReaderException fre)
-                        {
-                            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Fingerprint Readers connection failed because they couldn't be initialized.");
-                        }
-
-                        br1Added = _device.addBadgeReader("/dev/ttyUSB1", true);
-                        br2Added = _device.addBadgeReader("/dev/ttyUSB2", false);
-
-                        if(!br1Added || !br2Added)
-                        {
-                            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Unable to add Badge Reader(s).");
-                        }
-
-                        DemoUser myUser = new DemoUser(5, "BACB82E1B0", UserGrant.ALL);
-                        _device.getAuthenticationService().addGrantedUser(myUser);
+                        initializeSmartDrawer();
                         break;
 
                     default:
@@ -109,6 +73,9 @@ public final class DeviceHandler
                 ConsoleLogger.warning("Unable to instantiate a device.", dce);
                 // if any DeviceCreationException is thrown => failure => return false.
                 return false;
+            } catch (FingerprintReader.FingerprintReaderException fre)
+            {
+                ConsoleLogger.warning("Fingerprint Readers connection failed because they couldn't be initialized.", fre);
             }
 
             break;
@@ -163,9 +130,38 @@ public final class DeviceHandler
         return _device;
     }
 
-    /** Must not be instantiated. */
-    private DeviceHandler()
+    private static void initializeSmartDrawer() throws FingerprintReader.FingerprintReaderException
     {
+        boolean fpReadersAdded, br1Added, br2Added;
+
+        int nbReaders = FingerprintReader.connectFingerprintReaders(2);
+
+        if(nbReaders == 2)
+        {
+            fpReadersAdded =_device.addFingerprintReader("{2FD3A356-F2FF-F243-9B0D-9243C137E641}", true)
+                    &&
+                    _device.addFingerprintReader("{BFCB44E6-EB02-3142-A596-9ED337EACE19}", false);
+
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info(!fpReadersAdded ?
+                    "Unable to add Fingerprint Readers."
+                    : "Fingerprint Readers successfully connected.");
+        }
+
+        else
+        {
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Could not find the desired number of readers. Found: "+nbReaders);
+        }
+
+        br1Added = _device.addBadgeReader("/dev/ttyUSB1", true);
+        br2Added = _device.addBadgeReader("/dev/ttyUSB2", false);
+
+        if(!br1Added || !br2Added)
+        {
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Unable to add Badge Reader(s).");
+        }
+
+        GrantedUser myUser = new GrantedUser("Vincent", "BACB82E1B0", UserGrant.ALL);
+        _device.getUsersService().addGrantedUser(myUser);
     }
 
     /**
@@ -258,95 +254,6 @@ public final class DeviceHandler
         public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
             super.authenticationFailure(grantedUser, accessType, isMaster);
-        }
-    }
-
-    /**
-     * Created by Vincent on 17/12/13.
-     */
-    public static final class DemoUser implements GrantedUser
-    {
-        private int _id;
-        private final EnumMap<FingerIndex, String> _fingerprintTemplates;
-        private String _badgeId;
-        private UserGrant _userGrant;
-
-        /**
-         * Minimal constructor. Create a user with empty fingerprint templates and empty badge ID.
-         * @param id        Unique identifier allowing user authentication.
-         * @param userGrant User's grants. See UserGrant enumeration.
-         */
-        public DemoUser(int id, UserGrant userGrant)
-        {
-            this(id, new EnumMap<FingerIndex, String>(FingerIndex.class), "", userGrant);
-        }
-
-        /**
-         * Create a user with empty fingerprint templates.
-         * @param id        Unique identifier allowing user authentication.
-         * @param badgeId   SpaceCode Badge ID.
-         * @param userGrant User's grants. See UserGrant enumeration.
-         */
-        public DemoUser(int id, String badgeId, UserGrant userGrant)
-        {
-            this(id, new EnumMap<FingerIndex, String>(FingerIndex.class), badgeId, userGrant);
-        }
-
-        /**
-         * Construct a user with all information.
-         * Given values could come from a database.
-         * @param id        Unique identifier allowing user authentication.
-         * @param badgeId   SpaceCode Badge ID.
-         * @param userGrant User's grants. See UserGrant enumeration.
-         */
-        public DemoUser(int id, EnumMap<FingerIndex, String> fingerprintTemplates, String badgeId, UserGrant userGrant)
-        {
-            _id = id;
-            _badgeId = badgeId;
-            _fingerprintTemplates = fingerprintTemplates;
-            _userGrant = userGrant;
-        }
-
-        @Override
-        public int getId()
-        {
-            return _id;
-        }
-
-        @Override
-        public String getFingerprintTemplate(FingerIndex fingerIndex)
-        {
-            return _fingerprintTemplates.get(fingerIndex);
-        }
-
-        @Override
-        public void setFingerprintTemplate(FingerIndex fingerIndex, String template)
-        {
-            _fingerprintTemplates.put(fingerIndex, template);
-        }
-
-        @Override
-        public String getBadgeId()
-        {
-            return _badgeId;
-        }
-
-        @Override
-        public void setBadgeId(String badgeId)
-        {
-            _badgeId = badgeId;
-        }
-
-        @Override
-        public UserGrant getUserGrant()
-        {
-            return _userGrant;
-        }
-
-        @Override
-        public void setUserGrant(UserGrant userGrant)
-        {
-            _userGrant = userGrant;
         }
     }
 }

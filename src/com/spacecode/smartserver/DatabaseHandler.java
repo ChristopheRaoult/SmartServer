@@ -18,6 +18,11 @@ public class DatabaseHandler
 {
     private static JdbcConnectionPool _connectionPool = JdbcConnectionPool.create("jdbc:h2:./smartserver", "SmartServer", "_Sp4c3c0d3_sm4rts3rv3r_");
 
+    /** Must not be instantiated. */
+    private DatabaseHandler()
+    {
+    }
+
     /**
      * @return A java.sql.Connection instance, provided by the local H2 JDBC connection pool.
      */
@@ -39,10 +44,5 @@ public class DatabaseHandler
     public static void close()
     {
         _connectionPool.dispose();
-    }
-
-    /** Must not be instantiated. */
-    private DatabaseHandler()
-    {
     }
 }

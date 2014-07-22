@@ -32,6 +32,11 @@ public final class SmartServer
     private static final ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private static Channel _channel;
 
+    /** Must not be instantiated. */
+    private SmartServer()
+    {
+    }
+
     /**
      * Entry point:
      * Initialize a shutdown hook.
@@ -173,10 +178,5 @@ public final class SmartServer
         ChannelGroupFuture result = CHANNEL_GROUP.write(message);
         CHANNEL_GROUP.flush();
         return result;
-    }
-
-    /** Must not be instantiated. */
-    private SmartServer()
-    {
     }
 }

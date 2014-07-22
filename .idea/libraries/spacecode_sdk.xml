@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="spacecode-sdk-1.2.0">
+  <library name="spacecode_sdk">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/spacecode-sdk-1.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spacecode_sdk.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
