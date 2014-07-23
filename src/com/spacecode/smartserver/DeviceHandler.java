@@ -7,7 +7,6 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
-import com.spacecode.sdk.user.UserGrant;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -160,8 +159,8 @@ public final class DeviceHandler
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Unable to add Badge Reader(s).");
         }
 
-        GrantedUser myUser = new GrantedUser("Vincent", "BACB82E1B0", UserGrant.ALL);
-        _device.getUsersService().addGrantedUser(myUser);
+        //GrantedUser myUser = new GrantedUser("Vincent", "BACB82E1B0", UserGrant.ALL);
+        //_device.getUsersService().addGrantedUser(myUser);
     }
 
     /**

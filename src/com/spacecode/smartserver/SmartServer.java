@@ -1,6 +1,8 @@
 package com.spacecode.smartserver;
 
+import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.spacecode.sdk.network.communication.MessageHandler;
+import com.spacecode.smartserver.database.DatabaseHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -47,6 +49,14 @@ public final class SmartServer
     {
         ConsoleLogger.initialize();
         initializeShutdownHook();
+
+        JdbcPooledConnectionSource connectionSource = DatabaseHandler.initializeDatabase();
+
+        if(connectionSource == null)
+        {
+            // db failed
+            return;
+        }
 
         if(DeviceHandler.connectDevice())
         {
