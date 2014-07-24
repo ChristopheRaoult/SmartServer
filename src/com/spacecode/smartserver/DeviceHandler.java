@@ -7,9 +7,9 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.database.entity.DeviceConfiguration;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Handle RFIDDevice connection, instantiation, disconnection.
@@ -58,11 +58,11 @@ public final class DeviceHandler
 
                     case RfidDevice.DeviceType.SMARTDRAWER:
                         _device = new SmartDrawer(null, deviceInfo.getSerialPort());
-                        initializeSmartDrawer();
                         break;
 
                     default:
                         // device type unknown or not handled => return false.
+                        ConsoleLogger.warning("Unknown Device Type. Unable to connect to a device.");
                         return false;
                 }
 
@@ -70,11 +70,7 @@ public final class DeviceHandler
             } catch (DeviceCreationException dce)
             {
                 ConsoleLogger.warning("Unable to instantiate a device.", dce);
-                // if any DeviceCreationException is thrown => failure => return false.
                 return false;
-            } catch (FingerprintReader.FingerprintReaderException fre)
-            {
-                ConsoleLogger.warning("Fingerprint Readers connection failed because they couldn't be initialized.", fre);
             }
 
             break;
@@ -129,42 +125,86 @@ public final class DeviceHandler
         return _device;
     }
 
-    private static void initializeSmartDrawer() throws FingerprintReader.FingerprintReaderException
+    /**
+     * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceConfiguration information.
+     * @param deviceConfig  DeviceConfiguration instance to be read to get information about modules.
+     */
+    public static void connectModules(DeviceConfiguration deviceConfig)
     {
-        boolean fpReadersAdded, br1Added, br2Added;
-
-        int nbReaders = FingerprintReader.connectFingerprintReaders(2);
-
-        if(nbReaders == 2)
+        if(_device == null || deviceConfig == null)
         {
-            fpReadersAdded =_device.addFingerprintReader("{2FD3A356-F2FF-F243-9B0D-9243C137E641}", true)
-                    &&
-                    _device.addFingerprintReader("{BFCB44E6-EB02-3142-A596-9ED337EACE19}", false);
-
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info(!fpReadersAdded ?
-                    "Unable to add Fingerprint Readers."
-                    : "Fingerprint Readers successfully connected.");
+            return;
         }
 
-        else
+        String masterFpReaderSerial = deviceConfig.getFpReaderMasterSerial();
+        String slaveFpReaderSerial = deviceConfig.getFpReaderSlaveSerial();
+
+        try
         {
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Could not find the desired number of readers. Found: "+nbReaders);
+            if(masterFpReaderSerial != null && !"".equals(masterFpReaderSerial.trim()))
+            {
+                // 2 readers
+                if(slaveFpReaderSerial != null && !"".equals(slaveFpReaderSerial.trim()))
+                {
+                    if(FingerprintReader.connectFingerprintReaders(2) != 2)
+                    {
+                        ConsoleLogger.warning("Couldn't initialize the two fingerprint readers.");
+                    }
+
+                    else if(!
+                            (_device.addFingerprintReader(masterFpReaderSerial, true)
+                            && _device.addFingerprintReader(slaveFpReaderSerial, false))
+                            )
+                    {
+                        ConsoleLogger.warning("Couldn't connect the two fingerprint readers.");
+                    }
+                }
+
+                // 1 reader
+                else
+                {
+                    if(FingerprintReader.connectFingerprintReaders() != 1)
+                    {
+                        ConsoleLogger.warning("Couldn't initialize the fingerprint reader.");
+                    }
+
+                    else if(!_device.addFingerprintReader(masterFpReaderSerial, true))
+                    {
+                        ConsoleLogger.warning("Couldn't connect the fingerprint reader.");
+                    }
+                }
+            }
+        } catch (FingerprintReader.FingerprintReaderException e)
+        {
+            ConsoleLogger.warning("An unexpected error occurred during fingerprint readers initialization.");
         }
 
-        br1Added = _device.addBadgeReader("/dev/ttyUSB1", true);
-        br2Added = _device.addBadgeReader("/dev/ttyUSB2", false);
+        int nbOfBadgeReader = deviceConfig.getNbOfBadgeReader();
 
-        if(!br1Added || !br2Added)
+        if(nbOfBadgeReader == 0)
         {
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).info("Unable to add Badge Reader(s).");
+            return;
         }
 
-        //GrantedUser myUser = new GrantedUser("Vincent", "BACB82E1B0", UserGrant.ALL);
-        //_device.getUsersService().addGrantedUser(myUser);
+        if(nbOfBadgeReader >= 1)
+        {
+            if(!_device.addBadgeReader("/dev/ttyUSB1", true))
+            {
+                ConsoleLogger.warning("Unable to add Master Badge Reader.");
+            }
+
+            if(nbOfBadgeReader == 2)
+            {
+                if(!_device.addBadgeReader("/dev/ttyUSB2", false))
+                {
+                    ConsoleLogger.warning("Unable to add Slave Badge Reader.");
+                }
+            }
+        }
     }
 
     /**
-     * Created by Vincent on 30/12/13.
+     * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class DeviceEventHandler extends RfidDeviceEventHandler
     {

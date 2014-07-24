@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * GrantType Entity
  */
-@DatabaseTable(tableName = "sc_granttype")
+@DatabaseTable(tableName = "sc_grant_type")
 public class GrantType
 {
     public static final String ID = "id";

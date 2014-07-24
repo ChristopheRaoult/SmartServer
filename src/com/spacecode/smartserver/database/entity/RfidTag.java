@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * RfidTag Entity
  */
-@DatabaseTable(tableName = "sc_rfidtag")
+@DatabaseTable(tableName = "sc_rfid_tag")
 public class RfidTag
 {
     public static final String ID = "id";

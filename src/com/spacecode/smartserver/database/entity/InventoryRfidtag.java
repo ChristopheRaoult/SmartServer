@@ -4,7 +4,10 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "sc_inventoryrfidtag")
+/**
+ * InventoryRfidtag Entity
+ */
+@DatabaseTable(tableName = "sc_inventory_rfid_tag")
 public class InventoryRfidtag
 {
     public static final String ID = "id";

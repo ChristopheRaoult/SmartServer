@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * GrantedUser Entity
  */
-@DatabaseTable(tableName = "sc_granteduser")
+@DatabaseTable(tableName = "sc_granted_user")
 public class GrantedUser
 {
     public static final String ID = "id";

@@ -3,6 +3,9 @@
     <output-path>$PROJECT_DIR$/out/artifacts/SmartServer_jar</output-path>
     <root id="archive" name="SmartServer.jar">
       <element id="module-output" name="SpacecodeSmartServer" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/mysql-connector-java.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/ormlite-core.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/ormlite-jdbc.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/spacecode_sdk.jar" path-in-jar="/" />
     </root>
   </artifact>

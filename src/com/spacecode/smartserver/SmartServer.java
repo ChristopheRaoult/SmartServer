@@ -3,6 +3,7 @@ package com.spacecode.smartserver;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.entity.DeviceConfiguration;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -41,9 +42,13 @@ public final class SmartServer
 
     /**
      * Entry point:
-     * Initialize a shutdown hook.
-     * Try to find & instantiate inner device. Stop running if this step fails.
-     * Then start SmartServer.
+     * 1 - Initialize a shutdown hook to free Device and Database.
+     * 2 - Following critical operations: (application stop if one operation of the list fails)
+     * <ul>
+     *     <li>Try to initialize/connect to Database</li>
+     *     <li>Try to initialize/connect to Device/li>
+     * </ul>
+     * 3 - Start the asynchronous Server.
      */
     public static void main(String[] args) throws IOException, SQLException
     {
@@ -60,7 +65,20 @@ public final class SmartServer
 
         if(DeviceHandler.connectDevice())
         {
-            ConsoleLogger.info("Successfully connected to "+ DeviceHandler.getDevice().getDeviceType() +" ("+DeviceHandler.getDevice().getSerialNumber()+")");
+            ConsoleLogger.info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
+
+            // Try to get device configuration from database (see DeviceConfiguration class)
+            DeviceConfiguration deviceConfig = DatabaseHandler.getDaoDeviceConfiguration().queryBuilder().queryForFirst();
+
+            // No configuration: stop SmartServer.
+            if(deviceConfig == null)
+            {
+                ConsoleLogger.warning("Device not configured. SmartServer couldn't start. Please create a Device Configuration.");
+                return;
+            }
+
+            // Use the configuration to connect/load modules.
+            DeviceHandler.connectModules(deviceConfig);
         }
 
         else

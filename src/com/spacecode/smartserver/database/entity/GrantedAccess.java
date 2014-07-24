@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * GrantedAccess Entity
  */
-@DatabaseTable(tableName = "sc_grantedaccess")
+@DatabaseTable(tableName = "sc_granted_access")
 public class GrantedAccess
 {
     public static final String ID = "id";

@@ -21,18 +21,18 @@ public class DatabaseHandler
     private static final String DB_PASSWORD         = "";
     private static final String CONNECTION_STRING   = "jdbc:mysql://"+DB_HOST+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD;
 
-    private static JdbcPooledConnectionSource       _connectionSource;
-    private static Dao<AccessType, Integer>         _daoAccessType;
-    private static Dao<Authentication, Integer>     _daoAuthentication;
-    private static Dao<Fingerprint, Integer>        _daoFingerprint;
-    private static Dao<GrantedAccess, Integer>      _daoGrantedAccess;
-    private static Dao<GrantedUser, Integer>        _daoGrantedUser;
-    private static Dao<GrantType, Integer>          _daoGrantType;
-    private static Dao<Inventory, Integer>          _daoInventory;
-    private static Dao<InventoryRfidtag, Integer>   _daoInventoryRfidTag;
-    private static Dao<RfidTag, Integer>            _daoRfidTag;
-    private static Dao<Temperature, Integer>        _daoTemperature;
-
+    private static JdbcPooledConnectionSource           _connectionSource;
+    private static Dao<AccessType, Integer>             _daoAccessType;
+    private static Dao<DeviceConfiguration, Integer>    _daoDeviceConfiguration;
+    private static Dao<Authentication, Integer>         _daoAuthentication;
+    private static Dao<Fingerprint, Integer>            _daoFingerprint;
+    private static Dao<GrantedAccess, Integer>          _daoGrantedAccess;
+    private static Dao<GrantedUser, Integer>            _daoGrantedUser;
+    private static Dao<GrantType, Integer>              _daoGrantType;
+    private static Dao<Inventory, Integer>              _daoInventory;
+    private static Dao<InventoryRfidtag, Integer>       _daoInventoryRfidTag;
+    private static Dao<RfidTag, Integer>                _daoRfidTag;
+    private static Dao<Temperature, Integer>            _daoTemperature;
 
     /** Must not be instantiated. */
     private DatabaseHandler()
@@ -52,16 +52,17 @@ public class DatabaseHandler
 
             _connectionSource.setMaxConnectionAgeMillis(5 * 60 * 1000);
 
-            _daoAccessType      = DaoManager.createDao(_connectionSource, AccessType.class);
-            _daoAuthentication  = DaoManager.createDao(_connectionSource, Authentication.class);
-            _daoFingerprint     = DaoManager.createDao(_connectionSource, Fingerprint.class);
-            _daoGrantedAccess   = DaoManager.createDao(_connectionSource, GrantedAccess.class);
-            _daoGrantedUser     = DaoManager.createDao(_connectionSource, GrantedUser.class);
-            _daoGrantType       = DaoManager.createDao(_connectionSource, GrantType.class);
-            _daoInventory       = DaoManager.createDao(_connectionSource, Inventory.class);
-            _daoInventoryRfidTag = DaoManager.createDao(_connectionSource, InventoryRfidtag.class);
-            _daoRfidTag         = DaoManager.createDao(_connectionSource, RfidTag.class);
-            _daoTemperature     = DaoManager.createDao(_connectionSource, Temperature.class);
+            _daoAccessType          = DaoManager.createDao(_connectionSource, AccessType.class);
+            _daoAuthentication      = DaoManager.createDao(_connectionSource, Authentication.class);
+            _daoDeviceConfiguration = DaoManager.createDao(_connectionSource, DeviceConfiguration.class);
+            _daoFingerprint         = DaoManager.createDao(_connectionSource, Fingerprint.class);
+            _daoGrantedAccess       = DaoManager.createDao(_connectionSource, GrantedAccess.class);
+            _daoGrantedUser         = DaoManager.createDao(_connectionSource, GrantedUser.class);
+            _daoGrantType           = DaoManager.createDao(_connectionSource, GrantType.class);
+            _daoInventory           = DaoManager.createDao(_connectionSource, Inventory.class);
+            _daoInventoryRfidTag    = DaoManager.createDao(_connectionSource, InventoryRfidtag.class);
+            _daoRfidTag             = DaoManager.createDao(_connectionSource, RfidTag.class);
+            _daoTemperature         = DaoManager.createDao(_connectionSource, Temperature.class);
 
             if(!_daoAccessType.isTableExists())
             {
@@ -72,6 +73,7 @@ public class DatabaseHandler
             }
 
             TableUtils.createTableIfNotExists(_connectionSource, Authentication.class);
+            TableUtils.createTableIfNotExists(_connectionSource, DeviceConfiguration.class);
             TableUtils.createTableIfNotExists(_connectionSource, Fingerprint.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedAccess.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedUser.class);
@@ -120,5 +122,10 @@ public class DatabaseHandler
                 ConsoleLogger.warning("Unable to close connection pool.", sqle);
             }
         }
+    }
+
+    public static Dao<DeviceConfiguration, Integer> getDaoDeviceConfiguration()
+    {
+        return _daoDeviceConfiguration;
     }
 }
