@@ -67,8 +67,8 @@ public final class SmartServer
         {
             ConsoleLogger.info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
 
-            // Try to get device configuration from database (see DeviceConfiguration class)
-            DeviceConfiguration deviceConfig = DatabaseHandler.getDaoDeviceConfiguration().queryBuilder().queryForFirst();
+            // Get device configuration from database (see DeviceConfiguration class)
+            DeviceConfiguration deviceConfig = DatabaseHandler.getDeviceConfiguration();
 
             // No configuration: stop SmartServer.
             if(deviceConfig == null)

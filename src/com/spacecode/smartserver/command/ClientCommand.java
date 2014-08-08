@@ -1,9 +1,5 @@
 package com.spacecode.smartserver.command;
 
-/**
- * Created by Vincent on 30/12/13.
- */
-
 import io.netty.channel.ChannelHandlerContext;
 
 /**

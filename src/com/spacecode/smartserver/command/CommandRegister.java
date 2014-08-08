@@ -26,14 +26,17 @@ public final class CommandRegister implements ClientCommand
      */
     public CommandRegister()
     {
+        _commands.put(RequestCode.ADD_USER,         new CommandAddUser());
         _commands.put(RequestCode.DISCONNECT,       new CommandDisconnect());
         _commands.put(RequestCode.INITIALIZATION,   new CommandInitialization());
         _commands.put(RequestCode.LAST_INVENTORY,   new CommandLastInventory());
+        _commands.put(RequestCode.REMOVE_USER,      new CommandRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,      new CommandRewriteUid());
         _commands.put(RequestCode.SCAN,             new CommandScan());
         _commands.put(RequestCode.SERIAL_BRIDGE,    new CommandSerialBridge());
         _commands.put(RequestCode.START_LIGHTING,   new CommandStartLighting());
         _commands.put(RequestCode.STOP_LIGHTING,    new CommandStoptLighting());
+        _commands.put(RequestCode.USERS_LIST,       new CommandUsersList());
     }
 
     /**

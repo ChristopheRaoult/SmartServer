@@ -26,7 +26,7 @@ public final class DeviceHandler
 
     /**
      * Looks for available SpaceCode devices. Only 1 can be used and only 1 must be present.
-     * Instantiates RFIDDevice.
+     * Instantiates RfidDevice.
      * @return True if instantiation succeeded, False if it failed (or if number of devices != 1).
      */
     public static boolean connectDevice()
@@ -243,7 +243,7 @@ public final class DeviceHandler
         {
             SmartServer.sendAllClients(EventCode.EVENT_DEVICE_DISCONNECTED);
 
-            // TODO: device is manually disconnected if serial bridge enabled. DO NOT try to reconnectDevice is that case.
+            // TODO: device is manually disconnected if serial bridge gets enabled. DO NOT try to reconnectDevice is that case.
             // => reconnectDevice()
         }
 

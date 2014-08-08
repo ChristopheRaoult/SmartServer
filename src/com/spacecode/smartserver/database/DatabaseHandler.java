@@ -4,7 +4,6 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
-import com.spacecode.sdk.user.UserGrant;
 import com.spacecode.smartserver.ConsoleLogger;
 import com.spacecode.smartserver.database.entity.*;
 
@@ -81,9 +80,9 @@ public class DatabaseHandler
             if(!_daoGrantType.isTableExists())
             {
                 TableUtils.createTable(_connectionSource, GrantType.class);
-                _daoGrantType.create(new GrantType(UserGrant.SLAVE.name()));
-                _daoGrantType.create(new GrantType(UserGrant.MASTER.name()));
-                _daoGrantType.create(new GrantType(UserGrant.ALL.name()));
+                _daoGrantType.create(new GrantType(com.spacecode.sdk.user.GrantType.SLAVE.name()));
+                _daoGrantType.create(new GrantType(com.spacecode.sdk.user.GrantType.MASTER.name()));
+                _daoGrantType.create(new GrantType(com.spacecode.sdk.user.GrantType.ALL.name()));
             }
 
             TableUtils.createTableIfNotExists(_connectionSource, Inventory.class);
@@ -124,8 +123,19 @@ public class DatabaseHandler
         }
     }
 
-    public static Dao<DeviceConfiguration, Integer> getDaoDeviceConfiguration()
+    /**
+     * Get the first item of DeviceConfiguration table (should be the only one).
+     * @return  Instance of DeviceConfiguration class.
+     */
+    public static DeviceConfiguration getDeviceConfiguration()
     {
-        return _daoDeviceConfiguration;
+        try
+        {
+            return _daoDeviceConfiguration.queryBuilder().queryForFirst();
+        } catch (SQLException e)
+        {
+            ConsoleLogger.warning("Unable to get DeviceConfiguration item.");
+        }
+        return null;
     }
 }
