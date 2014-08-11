@@ -28,6 +28,7 @@ public final class CommandRegister implements ClientCommand
     {
         _commands.put(RequestCode.ADD_USER,         new CommandAddUser());
         _commands.put(RequestCode.DISCONNECT,       new CommandDisconnect());
+        _commands.put(RequestCode.ENROLL_FINGER,    new CommandEnrollFinger());
         _commands.put(RequestCode.INITIALIZATION,   new CommandInitialization());
         _commands.put(RequestCode.LAST_INVENTORY,   new CommandLastInventory());
         _commands.put(RequestCode.REMOVE_USER,      new CommandRemoveUser());

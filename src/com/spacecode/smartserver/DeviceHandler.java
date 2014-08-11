@@ -209,36 +209,6 @@ public final class DeviceHandler
     private static class DeviceEventHandler extends RfidDeviceEventHandler
     {
         @Override
-        public void scanStarted()
-        {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_STARTED);
-        }
-
-        @Override
-        public void scanCompleted()
-        {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_COMPLETED);
-        }
-
-        @Override
-        public void tagAdded(String tagUID)
-        {
-            SmartServer.sendAllClients(EventCode.EVENT_TAG_ADDED, tagUID);
-        }
-
-        @Override
-        public void scanFailed()
-        {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_FAILED);
-        }
-
-        @Override
-        public void scanCancelledByHost()
-        {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_CANCELLED_BY_HOST);
-        }
-
-        @Override
         public void deviceDisconnected()
         {
             SmartServer.sendAllClients(EventCode.EVENT_DEVICE_DISCONNECTED);
@@ -248,39 +218,45 @@ public final class DeviceHandler
         }
 
         @Override
-        public void fingerTouched(boolean isMaster)
+        public void doorOpened()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_FINGER_TOUCHED, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_DOOR_OPENED);
         }
 
         @Override
-        public void fingerGone(boolean isMaster)
+        public void doorClosed()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_FINGER_GONE, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_DOOR_CLOSED);
         }
 
         @Override
-        public void fingerprintReaderConnected(boolean isMaster)
+        public void scanStarted()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_FP_READER_CONNECTED, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_SCAN_STARTED);
         }
 
         @Override
-        public void fingerprintReaderDisconnected(boolean isMaster)
+        public void scanCancelledByHost()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_FP_READER_DISCONNECTED, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_SCAN_CANCELLED_BY_HOST);
         }
 
         @Override
-        public void badgeReaderDisconnected(boolean isMaster)
+        public void scanCompleted()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_BR_DISCONNECTED, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_SCAN_COMPLETED);
         }
 
         @Override
-        public void fingerprintEnrollmentSample(byte sampleNumber)
+        public void scanFailed()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_ENROLLMENT_SAMPLE, Byte.valueOf(sampleNumber).toString());
+            SmartServer.sendAllClients(EventCode.EVENT_SCAN_FAILED);
+        }
+
+        @Override
+        public void tagAdded(String tagUID)
+        {
+            SmartServer.sendAllClients(EventCode.EVENT_TAG_ADDED, tagUID);
         }
 
         @Override
@@ -293,6 +269,18 @@ public final class DeviceHandler
         public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
             super.authenticationFailure(grantedUser, accessType, isMaster);
+        }
+
+        @Override
+        public void fingerTouched(boolean isMaster)
+        {
+            SmartServer.sendAllClients(EventCode.EVENT_FINGER_TOUCHED, Boolean.valueOf(isMaster).toString());
+        }
+
+        @Override
+        public void fingerprintEnrollmentSample(byte sampleNumber)
+        {
+            SmartServer.sendAllClients(EventCode.EVENT_ENROLLMENT_SAMPLE, String.valueOf(sampleNumber));
         }
     }
 }

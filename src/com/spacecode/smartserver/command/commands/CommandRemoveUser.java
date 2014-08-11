@@ -21,6 +21,7 @@ public class CommandRemoveUser implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        // waiting for 1 parameter: username of the user to be removed
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");

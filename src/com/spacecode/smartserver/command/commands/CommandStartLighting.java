@@ -26,6 +26,7 @@ public class CommandStartLighting implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        // if there is no parameter, then there is no tags to light
         if(parameters.length == 0)
         {
             return;

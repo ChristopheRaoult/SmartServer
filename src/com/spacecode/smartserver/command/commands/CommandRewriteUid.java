@@ -22,6 +22,7 @@ public class CommandRewriteUid implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        // waiting for two parameters: old UID and new UID of the tag to be rewritten
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUIDResult.ERROR));
