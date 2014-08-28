@@ -9,7 +9,7 @@ import java.util.Date;
  * GrantedUser Entity
  */
 @DatabaseTable(tableName = "sc_granted_user")
-public class GrantedUser
+public class GrantedUserEntity
 {
     public static final String ID = "id";
     public static final String USERNAME = "username";
@@ -19,7 +19,7 @@ public class GrantedUser
     @DatabaseField(generatedId = true, columnName = ID)
     private int _id;
 
-    @DatabaseField(columnName = USERNAME, canBeNull = false)
+    @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true)
     private String _username;
 
     @DatabaseField(columnName = BADGE_NUMBER)
@@ -31,7 +31,7 @@ public class GrantedUser
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    GrantedUser()
+    GrantedUserEntity()
     {
     }
 
@@ -40,7 +40,7 @@ public class GrantedUser
      * @param username
      * @param badgeNumber
      */
-    public GrantedUser(String username, String badgeNumber)
+    public GrantedUserEntity(String username, String badgeNumber)
     {
         _username = username;
         _badgeNumber = badgeNumber;

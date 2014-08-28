@@ -9,7 +9,7 @@ import java.util.Date;
  * Authentication Entity
  */
 @DatabaseTable(tableName = "sc_authentication")
-public class Authentication
+public class AuthenticationEntity
 {
     public static final String ID = "id";
     public static final String GRANTED_USER_ID = "granted_user_id";
@@ -20,10 +20,10 @@ public class Authentication
     private int _id;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
-    private GrantedUser _grantedUser;
+    private GrantedUserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false)
-    private AccessType _accessType;
+    private AccessTypeEntity _accessType;
 
     @DatabaseField(columnName = CREATED_AT)
     private Date _createdAt;
@@ -31,7 +31,7 @@ public class Authentication
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    Authentication()
+    AuthenticationEntity()
     {
     }
 }

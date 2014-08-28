@@ -20,10 +20,10 @@ public class InventoryRfidtag
     private int _id;
 
     @DatabaseField(foreign = true, columnName = INVENTORY_ID, canBeNull = false)
-    private Inventory _inventory;
+    private InventoryEntity _inventory;
 
     @DatabaseField(foreign = true, columnName = RFID_TAG_ID, canBeNull = false)
-    private RfidTag _rfidTag;
+    private RfidTagEntity _rfidTag;
 
     @DatabaseField(columnName = MOVEMENT, canBeNull = false)
     private int _movement;
@@ -43,7 +43,7 @@ public class InventoryRfidtag
      * @param inventory Inventory Entity instance to be attached to RfidTag Entity.
      * @param rfidtag   RfidTag Entity Instance to be attached to Inventory Entity.
      */
-    public InventoryRfidtag(Inventory inventory, RfidTag rfidtag)
+    public InventoryRfidtag(InventoryEntity inventory, RfidTagEntity rfidtag)
     {
         _inventory = inventory;
         _rfidTag = rfidtag;

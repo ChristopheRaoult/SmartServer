@@ -26,6 +26,7 @@ public class CommandRewriteUid implements ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUIDResult.ERROR));
+            return;
         }
 
         byte result = DeviceHandler.getDevice().rewriteUID(parameters[0], parameters[1]);

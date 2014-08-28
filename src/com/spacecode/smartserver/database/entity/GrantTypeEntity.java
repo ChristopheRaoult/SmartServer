@@ -4,10 +4,10 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * AccessType Entity
+ * GrantType Entity
  */
-@DatabaseTable(tableName = "sc_access_type")
-public class AccessType
+@DatabaseTable(tableName = "sc_grant_type")
+public class GrantTypeEntity
 {
     public static final String ID = "id";
     public static final String TYPE = "type";
@@ -21,22 +21,22 @@ public class AccessType
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    AccessType()
+    GrantTypeEntity()
     {
     }
 
     /**
      * Default constructor. Should only be used during database initialization to create constant values.
-     * @param accessType    Value from SDK enumeration.
+     * @param userGrant     Value from SDK enumeration.
      */
-    public AccessType(String accessType)
+    public GrantTypeEntity(String userGrant)
     {
-        _type = accessType;
+        _type = userGrant;
     }
 
     /**
-     * Get value of the access type.
-     * @return String value of the access type.
+     * Get value of the grant type.
+     * @return String value of the grant type.
      */
     public String getType()
     {

@@ -9,7 +9,7 @@ import java.util.Date;
  * Inventory Entity
  */
 @DatabaseTable(tableName = "sc_inventory")
-public class Inventory
+public class InventoryEntity
 {
     public static final String ID = "id";
     public static final String GRANTED_USER_ID = "granteduser_id";
@@ -23,10 +23,10 @@ public class Inventory
     private int _id;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID)
-    private GrantedUser _grantedUser;
+    private GrantedUserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false)
-    private AccessType _accessType;
+    private AccessTypeEntity _accessType;
 
     @DatabaseField(columnName = TOTAL_ADDED, canBeNull = false)
     private int _totalAdded;
@@ -43,7 +43,7 @@ public class Inventory
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    Inventory()
+    InventoryEntity()
     {
     }
 }

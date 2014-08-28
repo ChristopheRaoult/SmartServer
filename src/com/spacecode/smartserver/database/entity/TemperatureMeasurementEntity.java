@@ -6,10 +6,10 @@ import com.j256.ormlite.table.DatabaseTable;
 import java.util.Date;
 
 /**
- * Temperature Entity
+ * TemperatureMeasurement Entity
  */
 @DatabaseTable(tableName = "sc_temperature")
-public class Temperature
+public class TemperatureMeasurementEntity
 {
     public static final String ID = "id";
     public static final String VALUE = "value";
@@ -27,7 +27,7 @@ public class Temperature
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    Temperature()
+    TemperatureMeasurementEntity()
     {
     }
 }

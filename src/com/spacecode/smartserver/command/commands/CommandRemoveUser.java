@@ -25,6 +25,7 @@ public class CommandRemoveUser implements ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            return;
         }
 
         boolean result = DeviceHandler.getDevice().getUsersService().removeUser(parameters[0]);

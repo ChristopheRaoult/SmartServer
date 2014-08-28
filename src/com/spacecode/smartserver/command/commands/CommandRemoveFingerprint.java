@@ -27,6 +27,7 @@ public class CommandRemoveFingerprint implements ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            return;
         }
 
         String username = parameters[0];

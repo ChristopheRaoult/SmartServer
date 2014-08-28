@@ -3,7 +3,7 @@ package com.spacecode.smartserver;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.DeviceConfiguration;
+import com.spacecode.smartserver.database.entity.DeviceConfigurationEntity;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -28,6 +28,8 @@ import java.util.logging.Logger;
  */
 public final class SmartServer
 {
+    private static final int TCP_PORT = 8080;
+
     private static final EventLoopGroup BOSS_GROUP = new NioEventLoopGroup();
     private static final EventLoopGroup WORKER_GROUP = new NioEventLoopGroup();
 
@@ -67,8 +69,8 @@ public final class SmartServer
         {
             ConsoleLogger.info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
 
-            // Get device configuration from database (see DeviceConfiguration class)
-            DeviceConfiguration deviceConfig = DatabaseHandler.getDeviceConfiguration();
+            // Get device configuration from database (see DeviceConfigurationEntity class)
+            DeviceConfigurationEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
 
             // No configuration: stop SmartServer.
             if(deviceConfig == null)
@@ -86,11 +88,16 @@ public final class SmartServer
             ConsoleLogger.warning("Unable to connect to a SpaceCode RFID device....");
         }
 
-        start(8080);
+        start(TCP_PORT);
     }
 
     /**
-     * Add an hook on shutdown operation in order to release RFIDDevice, close the H2 DB connections, and stop SmartServer.
+     * Add an hook on shutdown operation in order to:
+     * <ul>
+     *     <li>Release RfidDevice</li>
+     *     <li>Close the DB connection pool</li>
+     *     <li>Stop the asynchronous TCP server</li>
+     * </ul>
      */
     private static void initializeShutdownHook()
     {

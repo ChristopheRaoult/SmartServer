@@ -7,7 +7,7 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
-import com.spacecode.smartserver.database.entity.DeviceConfiguration;
+import com.spacecode.smartserver.database.entity.DeviceConfigurationEntity;
 
 import java.util.Map;
 
@@ -127,9 +127,9 @@ public final class DeviceHandler
 
     /**
      * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceConfiguration information.
-     * @param deviceConfig  DeviceConfiguration instance to be read to get information about modules.
+     * @param deviceConfig  DeviceConfigurationEntity instance to be read to get information about modules.
      */
-    public static void connectModules(DeviceConfiguration deviceConfig)
+    public static void connectModules(DeviceConfigurationEntity deviceConfig)
     {
         if(_device == null || deviceConfig == null)
         {

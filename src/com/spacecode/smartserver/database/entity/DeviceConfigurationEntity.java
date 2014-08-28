@@ -4,10 +4,10 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * AccessType Entity
+ * DeviceConfiguration Entity
  */
 @DatabaseTable(tableName = "sc_device_configuration")
-public class DeviceConfiguration
+public class DeviceConfigurationEntity
 {
     public static final String ID = "id";
     public static final String NB_BADGE_READER = "nb_badge_reader";
@@ -29,12 +29,12 @@ public class DeviceConfiguration
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    DeviceConfiguration()
+    DeviceConfigurationEntity()
     {
     }
 
     /**
-     * @return ID of the DeviceConfiguration.
+     * @return ID of the DeviceConfigurationEntity.
      */
     public int getId()
     {
