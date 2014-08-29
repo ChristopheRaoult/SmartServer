@@ -6,6 +6,12 @@ import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
+import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.entity.FingerprintEntity;
+import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.repository.FingerprintRepository;
+import com.spacecode.smartserver.database.repository.GrantedUserRepository;
+import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.TimeoutException;
@@ -55,14 +61,58 @@ public class CommandEnrollFinger implements ClientCommand
 
         try
         {
-            boolean result = DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader);
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, result ? "true" : "false");
-
-            // TODO : persist new template in DB
+            if(!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
+            {
+                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                return;
+            }
         } catch (TimeoutException e)
         {
             // enrollment process timeout expired
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+            return;
         }
+
+        String fpTpl = DeviceHandler.getDevice().getUsersService().getUserByName(username).getFingerprintTemplate(fingerIndex);
+
+        if(!persistNewFingerprintInDatabase(username, fingerIndex.getIndex(), fpTpl))
+        {
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+            return;
+        }
+
+        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "true");
+    }
+
+    /**
+     * Get FingerprintRepository and start data persistence process.
+     * @param username      User to be attached to the fingerprint entity.
+     * @param fingerIndex   Finger index (int) to be written in new row.
+     * @param fpTpl         Base64 encoded fingerprint template.
+     * @return              True if success, false otherwise (user unknown in DB, SQLException...).
+     */
+    private boolean persistNewFingerprintInDatabase(String username, int fingerIndex, String fpTpl)
+    {
+        Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
+        Repository fpRepo   = DatabaseHandler.getRepository(FingerprintEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getEntityBy(GrantedUserEntity.USERNAME, username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        if(!(fpRepo instanceof FingerprintRepository))
+        {
+            return false;
+        }
+
+        return fpRepo.insert(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
 }

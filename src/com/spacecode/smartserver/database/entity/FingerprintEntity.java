@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.database.entity;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -23,7 +24,7 @@ public class FingerprintEntity
     @DatabaseField(columnName = FINGER_INDEX, canBeNull = false)
     private int _fingerIndex;
 
-    @DatabaseField(columnName = TEMPLATE, canBeNull = false)
+    @DatabaseField(columnName = TEMPLATE, dataType = DataType.LONG_STRING, canBeNull = false)
     private String _template;
 
     /**

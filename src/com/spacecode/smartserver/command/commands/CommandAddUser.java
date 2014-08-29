@@ -7,9 +7,7 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
-import com.spacecode.smartserver.database.repository.FingerprintRepository;
 import com.spacecode.smartserver.database.repository.GrantedUserRepository;
 import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
@@ -59,21 +57,21 @@ public class CommandAddUser implements ClientCommand
         SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "true");
     }
 
+    /**
+     * Get GrantedUserRepository and start data persistence process.
+     * @param newUser   Instance of GrantedUser (SDK) to be added to database.
+     * @return          True if success, false otherwise (username already used, SQLException, etc).
+     */
     private boolean persistNewUserInDatabase(GrantedUser newUser)
     {
         Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
-        Repository fpRepo   = DatabaseHandler.getRepository(FingerprintEntity.class);
 
         if(!(userRepo instanceof GrantedUserRepository))
         {
+            // not supposed to happen as the repositories map is filled automatically
             return false;
         }
 
-        if(!(fpRepo instanceof FingerprintRepository))
-        {
-            return false;
-        }
-
-        return ((GrantedUserRepository) userRepo).insertNewUser(newUser, (FingerprintRepository) fpRepo);
+        return userRepo.insert(new GrantedUserEntity(newUser));
     }
 }

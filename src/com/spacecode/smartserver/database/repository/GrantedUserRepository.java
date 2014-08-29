@@ -1,8 +1,8 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.spacecode.sdk.user.FingerIndex;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 
 import java.sql.SQLException;
@@ -42,12 +42,12 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
 
     /**
      * Persist new user (from GrantedUser instance) in database.
-     * Also handle Fingerprints inserts (but core code of each template insertion is left to FingerprintRepository).
-     * @param newUser
-     * @param fpRepo
-     * @return
+     * Also handle Fingerprints insert() calls.
+     * @param newUser   GrantedUserEntity to be inserted in the database.
+     * @return          True if success, false otherwise (SQL error, one fingerprint could not be inserted, etc).
      */
-    public boolean insertNewUser(GrantedUser newUser, FingerprintRepository fpRepo)
+    @Override
+    public boolean insert(GrantedUserEntity newUser)
     {
         GrantedUserEntity gu = getByUsername(newUser.getUsername());
 
@@ -58,19 +58,22 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
 
         try
         {
-            GrantedUserEntity gue = new GrantedUserEntity(newUser.getUsername(), newUser.getBadgeId());
+            Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
 
             // create user. Result is supposed to be "1" if row inserted
-            if(_dao.create(gue) != 1)
+            if(_dao.create(newUser) != 1 || !(fpRepo instanceof  FingerprintRepository))
             {
                 return false;
             }
 
-            for(FingerIndex index : newUser.getEnrolledFingersIndexes())
+            if(newUser.getFingerprints() != null)
             {
-                if(!fpRepo.insertNewFingerprint(gue, index, newUser.getFingerprintTemplate(index)))
+                for(FingerprintEntity fpEntity : newUser.getFingerprints())
                 {
-                    return false;
+                    if(!fpRepo.insert(fpEntity))
+                    {
+                        return false;
+                    }
                 }
             }
 

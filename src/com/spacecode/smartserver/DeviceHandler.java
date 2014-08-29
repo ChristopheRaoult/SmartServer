@@ -127,6 +127,7 @@ public final class DeviceHandler
 
     /**
      * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceConfiguration information.
+     * TODO: Retry many times if any module couldn't be initialized/connected
      * @param deviceConfig  DeviceConfigurationEntity instance to be read to get information about modules.
      */
     public static void connectModules(DeviceConfigurationEntity deviceConfig)

@@ -7,6 +7,8 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * CommandRegister class allows SmartServertHandler to execute any appropriate Command object for a given request string.
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 public final class CommandRegister implements ClientCommand
 {
+    private static ExecutorService _executorService = Executors.newFixedThreadPool(4);
+
     // Key:     Command code (RequestCode value).
     // Value:   ClientCommand instance.
     // Visibility package-local in order to be accessible for JUnit tests.
@@ -71,16 +75,32 @@ public final class CommandRegister implements ClientCommand
      * @throws ClientCommandException   Occurs if no command has been found for the given request code.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(final ChannelHandlerContext ctx, final String[] parameters) throws ClientCommandException
     {
-        ClientCommand cmd = _commands.get(parameters[0]);
+        final ClientCommand cmd = _commands.get(parameters[0]);
 
         if(cmd == null)
         {
             throw new ClientCommandException("Unknown Command: " + parameters[0]);
         }
 
-        // execute the corresponding command, with the parameters (if any) sent by Client.
-        cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+        // Ask the threadpool to execute the corresponding command, with client's parameters (if any)
+        _executorService.submit(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    // TODO: make sure a request can't be handled twice in a row (ex: double adduser request)
+                    cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+                } catch (ClientCommandException cce)
+                {
+                    // TODO: handle this by overriding "afterExecute" from ExecutorService
+                    // TODO: see http://stackoverflow.com/questions/2248131/handling-exceptions-from-java-executorservice-tasks
+                    cce.printStackTrace();
+                }
+            }
+        });
     }
 }

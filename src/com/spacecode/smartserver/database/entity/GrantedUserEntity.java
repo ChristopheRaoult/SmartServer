@@ -1,7 +1,11 @@
 package com.spacecode.smartserver.database.entity;
 
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.sdk.user.FingerIndex;
+import com.spacecode.sdk.user.GrantedUser;
 
 import java.util.Date;
 
@@ -28,6 +32,9 @@ public class GrantedUserEntity
     @DatabaseField(columnName = CREATED_AT)
     private Date _createdAt;
 
+    @ForeignCollectionField(eager = false)
+    private ForeignCollection<FingerprintEntity> _fingerprints;
+
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
@@ -36,7 +43,7 @@ public class GrantedUserEntity
     }
 
     /**
-     * Default constructor
+     * Create a GrantedUser entity from username and badge number.
      * @param username
      * @param badgeNumber
      */
@@ -44,5 +51,43 @@ public class GrantedUserEntity
     {
         _username = username;
         _badgeNumber = badgeNumber;
+    }
+
+    /**
+     * Create a GrantedUser entity from a GrantedUser (SDK) instance.
+     * @param newUser   GrantedUser (SDK) instance to get information from.
+     */
+    public GrantedUserEntity(GrantedUser newUser)
+    {
+        this(newUser.getUsername(), newUser.getBadgeId());
+
+        for(FingerIndex index : newUser.getEnrolledFingersIndexes())
+        {
+            _fingerprints.add(new FingerprintEntity(this, index.getIndex(), newUser.getFingerprintTemplate(index)));
+        }
+    }
+
+    /**
+     * @return Username.
+     */
+    public String getUsername()
+    {
+        return _username;
+    }
+
+    /**
+     * @return Badge Number
+     */
+    public String getBadgeNumber()
+    {
+        return _badgeNumber;
+    }
+
+    /**
+     * @return FingerprintEntity collection (ForeignCollection).
+     */
+    public ForeignCollection<FingerprintEntity> getFingerprints()
+    {
+        return _fingerprints;
     }
 }

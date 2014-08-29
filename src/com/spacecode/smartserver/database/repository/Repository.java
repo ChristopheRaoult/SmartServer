@@ -36,6 +36,26 @@ public abstract class Repository<TEntity>
     }
 
     /**
+     * Provide access to a single instance of TEntity (entity type) via its field/value.
+     * @param field Field filter.
+     * @param value Expected value.
+     * @return      TEntity instance or null if something went wrong (no result, sql exception).
+     */
+    public final TEntity getEntityBy(String field, String value)
+    {
+        try
+        {
+            return _dao.queryForFirst(
+                    _dao.queryBuilder().where()
+                            .eq(field, value)
+                            .prepare());
+        } catch (SQLException e)
+        {
+            return null;
+        }
+    }
+
+    /**
      * Provide access to a list of instance of TEntity (entity type) via a field name and value.
      * @param field Name of the field.
      * @param value Value expected.
@@ -53,5 +73,23 @@ public abstract class Repository<TEntity>
         {
             return new ArrayList<>();
         }
+    }
+
+    /**
+     * Default method to insert a new row in the repository table.
+     * @param newEntity New entity to be inserted in the table (as a new row).
+     * @return          True if successful, false otherwse (SQLException).
+     */
+    public boolean insert(TEntity newEntity)
+    {
+        try
+        {
+            _dao.create(newEntity);
+        } catch (SQLException e)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
