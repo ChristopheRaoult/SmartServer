@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * CommandRegister class allows SmartServertHandler to execute any appropriate Command object for a given request string.
+ * CommandRegister class allows SmartServerHandler to execute any appropriate Command object for a given request string.
  * Request string (sent by the Client) is passed as a String array to execute() method with the ChannelHandlerContext. If any corresponding command is found,
  * CommandRegister instance executes execute() method from this command. Other parameters (if any) of the string array are passed with the ChannelHandlerContext.
  */
@@ -85,11 +85,11 @@ public final class CommandRegister implements ClientCommand
         }
 
         // Ask the threadpool to execute the corresponding command, with client's parameters (if any)
-        _executorService.submit(new Runnable()
+       /* _executorService.submit(new Runnable()
         {
             @Override
             public void run()
-            {
+            {*/
                 try
                 {
                     // TODO: make sure a request can't be handled twice in a row (ex: double adduser request)
@@ -100,7 +100,7 @@ public final class CommandRegister implements ClientCommand
                     // TODO: see http://stackoverflow.com/questions/2248131/handling-exceptions-from-java-executorservice-tasks
                     cce.printStackTrace();
                 }
-            }
-        });
+           /* }
+        });*/
     }
 }

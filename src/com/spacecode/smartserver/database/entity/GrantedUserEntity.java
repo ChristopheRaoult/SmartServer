@@ -44,13 +44,15 @@ public class GrantedUserEntity
 
     /**
      * Create a GrantedUser entity from username and badge number.
-     * @param username
-     * @param badgeNumber
+     * @param username      Username.
+     * @param badgeNumber   Badge number.
      */
     public GrantedUserEntity(String username, String badgeNumber)
     {
         _username = username;
         _badgeNumber = badgeNumber;
+
+        _createdAt = new Date();
     }
 
     /**
@@ -65,6 +67,14 @@ public class GrantedUserEntity
         {
             _fingerprints.add(new FingerprintEntity(this, index.getIndex(), newUser.getFingerprintTemplate(index)));
         }
+    }
+
+    /**
+     * @return GrantedUserEntity identifier.
+     */
+    public int getId()
+    {
+        return _id;
     }
 
     /**

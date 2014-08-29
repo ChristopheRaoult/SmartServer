@@ -5,6 +5,10 @@ import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
+import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.repository.GrantedUserRepository;
+import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -28,9 +32,46 @@ public class CommandRemoveUser implements ClientCommand
             return;
         }
 
-        boolean result = DeviceHandler.getDevice().getUsersService().removeUser(parameters[0]);
-        SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, result ? "true" : "false");
+        String username = parameters[0];
 
-        // TODO: Remove user from DB if existing
+        if(!DeviceHandler.getDevice().getUsersService().removeUser(username))
+        {
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            return;
+        }
+
+        if(!persistUserDeletion(username))
+        {
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            return;
+        }
+
+        SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "true");
+    }
+
+    /**
+     * Start the user deletion process (user + fingerprints).
+     * @param username  Name of to-be-deleted user.
+     * @return          True if successful, false otherwise (unknown user, SQLException...).
+     */
+    private boolean persistUserDeletion(String username)
+    {
+        Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            // user unknown
+            return false;
+        }
+
+        return userRepo.delete(gue);
     }
 }

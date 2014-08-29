@@ -2,6 +2,7 @@ package com.spacecode.smartserver.command.commands;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.FingerIndex;
+import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
@@ -73,10 +74,13 @@ public class CommandEnrollFinger implements ClientCommand
             return;
         }
 
-        String fpTpl = DeviceHandler.getDevice().getUsersService().getUserByName(username).getFingerprintTemplate(fingerIndex);
+        // persist the enrolled template in db
+        GrantedUser gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        String fpTpl = gu.getFingerprintTemplate(fingerIndex);
 
-        if(!persistNewFingerprintInDatabase(username, fingerIndex.getIndex(), fpTpl))
+        if(!persistFingerprintTemplate(username, fingerIndex.getIndex(), fpTpl))
         {
+            gu.setFingerprintTemplate(fingerIndex, null);
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
             return;
         }
@@ -91,7 +95,7 @@ public class CommandEnrollFinger implements ClientCommand
      * @param fpTpl         Base64 encoded fingerprint template.
      * @return              True if success, false otherwise (user unknown in DB, SQLException...).
      */
-    private boolean persistNewFingerprintInDatabase(String username, int fingerIndex, String fpTpl)
+    private boolean persistFingerprintTemplate(String username, int fingerIndex, String fpTpl)
     {
         Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
         Repository fpRepo   = DatabaseHandler.getRepository(FingerprintEntity.class);
@@ -101,7 +105,7 @@ public class CommandEnrollFinger implements ClientCommand
             return false;
         }
 
-        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getEntityBy(GrantedUserEntity.USERNAME, username);
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
 
         if(gue == null)
         {
@@ -113,6 +117,6 @@ public class CommandEnrollFinger implements ClientCommand
             return false;
         }
 
-        return fpRepo.insert(new FingerprintEntity(gue, fingerIndex, fpTpl));
+        return fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
 }

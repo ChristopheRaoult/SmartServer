@@ -4,6 +4,7 @@ import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public abstract class Repository<TEntity>
         try
         {
             return _dao.queryForId(value);
-        } catch (SQLException e)
+        } catch (SQLException sqle)
         {
             return null;
         }
@@ -49,7 +50,7 @@ public abstract class Repository<TEntity>
                     _dao.queryBuilder().where()
                             .eq(field, value)
                             .prepare());
-        } catch (SQLException e)
+        } catch (SQLException sqle)
         {
             return null;
         }
@@ -69,7 +70,7 @@ public abstract class Repository<TEntity>
                     _dao.queryBuilder().where()
                             .eq(field, value)
                             .prepare());
-        } catch (SQLException e)
+        } catch (SQLException sqle)
         {
             return new ArrayList<>();
         }
@@ -78,14 +79,71 @@ public abstract class Repository<TEntity>
     /**
      * Default method to insert a new row in the repository table.
      * @param newEntity New entity to be inserted in the table (as a new row).
-     * @return          True if successful, false otherwse (SQLException).
+     * @return          True if successful, false otherwise (SQLException).
      */
     public boolean insert(TEntity newEntity)
     {
         try
         {
             _dao.create(newEntity);
-        } catch (SQLException e)
+        } catch (SQLException sqle)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Default method to update an entity in the repository table.
+     * Update is made according to entity's Id.
+     * @param entity    Entity to be updated in the table.
+     * @return          True if successful, false otherwise (SQLException).
+     */
+    public boolean update(TEntity entity)
+    {
+        try
+        {
+            _dao.update(entity);
+        } catch (SQLException sqle)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Default method to delete an entity in the repository table.
+     * Deletion is made according to entity's Id.
+     * @param entity    Entity to be removed from the table.
+     * @return          True if successful, false otherwise (SQLException).
+     */
+    public boolean delete(TEntity entity)
+    {
+        try
+        {
+            _dao.delete(entity);
+        } catch (SQLException sqle)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Default method to delete a collection of entities in the repository table.
+     * Deletion is made according to entity's Id.
+     * @param entities  Collection to be removed from the table.
+     * @return          True if successful, false otherwise (SQLException).
+     */
+    public boolean delete(Collection<TEntity> entities)
+    {
+        try
+        {
+            _dao.delete(entities);
+        } catch (SQLException sqle)
         {
             return false;
         }

@@ -7,6 +7,12 @@ import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
+import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.entity.FingerprintEntity;
+import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.repository.FingerprintRepository;
+import com.spacecode.smartserver.database.repository.GrantedUserRepository;
+import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -59,9 +65,55 @@ public class CommandRemoveFingerprint implements ClientCommand
             return;
         }
 
+        // persist deletion in database
+        if(!persistFingerprintDeletion(username, fingerIndex.getIndex()))
+        {
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            return;
+        }
+
         user.setFingerprintTemplate(fingerIndex, null);
         SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "true");
+    }
 
-        // TODO: Persist fingerprint removal in DB if required
+    /**
+     * Delete a given fingerprint (index + username) from database.
+     * @param username  User attached to the fingerprint.
+     * @param index     FingerIndex's index of the fingerprint.
+     * @return          True if successful, false otherwise.
+     */
+    private boolean persistFingerprintDeletion(String username, int index)
+    {
+        Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
+
+        if(!(fpRepo instanceof FingerprintRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        FingerprintEntity fpe = ((FingerprintRepository)fpRepo).getFingerprint(gue, index);
+
+        if(fpe == null)
+        {
+            return false;
+        }
+
+        return fpRepo.delete(fpe);
     }
 }

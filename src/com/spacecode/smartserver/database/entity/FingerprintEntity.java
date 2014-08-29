@@ -46,4 +46,38 @@ public class FingerprintEntity
         _fingerIndex = index;
         _template = template;
     }
+
+    /**
+     * @return GrantedUserEntity attached to this fingerprint.
+     */
+    public GrantedUserEntity getGrantedUser()
+    {
+        return _grantedUser;
+    }
+
+    /**
+     * @return FingerIndex's index value (0 to 9, see FingerIndex enum).
+     */
+    public int getFingerIndex()
+    {
+        return _fingerIndex;
+    }
+
+    /**
+     * @return Base64 encoded fingerprint template.
+     */
+    public String getTemplate()
+    {
+        return _template;
+    }
+
+    /**
+     * Update base64 encoded template value.
+     * Used when updating an already existing fingerprint.
+     * @param template Base64 encoded fingerprint template.
+     */
+    public void setTemplate(String template)
+    {
+        _template = template;
+    }
 }

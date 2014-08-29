@@ -6,6 +6,7 @@ import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 /**
  * GrantedUserEntity Repository
@@ -82,5 +83,55 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
         {
             return false;
         }
+    }
+
+    /**
+     * Remove an user from the database (including all his fingerprints).
+     * @param entity    User to be removed from the table.
+     * @return          True if successful, false otherwise (SQLException).
+     */
+    @Override
+    public boolean delete(GrantedUserEntity entity)
+    {
+        try
+        {
+            Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
+
+            // create user. Result is supposed to be "1" if row inserted
+            if(!(fpRepo instanceof  FingerprintRepository))
+            {
+                return false;
+            }
+
+            // first, remove the fingerprints (foreign dependency)
+            fpRepo.delete(entity.getFingerprints());
+
+            // then remove the user
+            _dao.delete(entity);
+        } catch (SQLException sqle)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove a collection of users from the database (including all their fingerprints).
+     * @param entities  Collection of users to be removed from the table.
+     * @return          True if successfully removed all users, false otherwise (SQLException).
+     */
+    @Override
+    public boolean delete(Collection<GrantedUserEntity> entities)
+    {
+        for(GrantedUserEntity user : entities)
+        {
+            if(!delete(user))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

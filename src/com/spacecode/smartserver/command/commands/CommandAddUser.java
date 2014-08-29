@@ -47,7 +47,7 @@ public class CommandAddUser implements ClientCommand
             return;
         }
 
-        if(!persistNewUserInDatabase(newUser))
+        if(!persistNewUser(newUser))
         {
             DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
@@ -62,7 +62,7 @@ public class CommandAddUser implements ClientCommand
      * @param newUser   Instance of GrantedUser (SDK) to be added to database.
      * @return          True if success, false otherwise (username already used, SQLException, etc).
      */
-    private boolean persistNewUserInDatabase(GrantedUser newUser)
+    private boolean persistNewUser(GrantedUser newUser)
     {
         Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
 
