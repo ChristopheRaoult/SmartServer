@@ -25,7 +25,6 @@ public class CommandUsersList implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // create a new editable ArrayList from given tags (in parameters). Tags successfully lighted will be removed from the list.
         List<String> serializedUsers = new ArrayList<>();
 
         for(GrantedUser user : DeviceHandler.getDevice().getUsersService().getUsersList())
@@ -34,9 +33,11 @@ public class CommandUsersList implements ClientCommand
         }
 
         List<String> responsePackets = new ArrayList<>();
+
         // add the request code first
         responsePackets.add(RequestCode.USERS_LIST);
-        // then all the tags UID left in the list (=> the ones which have not been lighted).
+
+        // then all the serialized users
         responsePackets.addAll(serializedUsers);
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));

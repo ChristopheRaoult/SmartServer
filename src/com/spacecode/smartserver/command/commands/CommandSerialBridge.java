@@ -1,12 +1,13 @@
 package com.spacecode.smartserver.command.commands;
 
-import com.spacecode.smartserver.ConsoleLogger;
 import com.spacecode.smartserver.DeviceHandler;
+import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * SerialBridge command.
@@ -59,7 +60,7 @@ public class CommandSerialBridge implements ClientCommand
                 _portForwardingProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwStartCmd ).start();
             } catch (IOException ioe)
             {
-                ConsoleLogger.warning("Unable to run Port Forwarding command.", ioe);
+                SmartLogger.getLogger().log(Level.SEVERE, "Unable to run Port Forwarding command.", ioe);
 
                 // reconnect to local Device
                 DeviceHandler.connectDevice();
@@ -87,7 +88,7 @@ public class CommandSerialBridge implements ClientCommand
                 DeviceHandler.connectDevice();
             } catch (IOException | InterruptedException e)
             {
-                ConsoleLogger.warning("Unable to stop Port Forwarding command.", e);
+                SmartLogger.getLogger().log(Level.SEVERE, "Unable to stop Port Forwarding command.", e);
             }
         }
     }

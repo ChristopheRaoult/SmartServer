@@ -4,7 +4,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
-import com.spacecode.smartserver.ConsoleLogger;
+import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.database.repository.RepositoryFactory;
@@ -12,6 +12,7 @@ import com.spacecode.smartserver.database.repository.RepositoryFactory;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * ORMLite DB Wrapper
@@ -53,7 +54,7 @@ public class DatabaseHandler
 
             // create model (if necessary)
             TableUtils.createTableIfNotExists(_connectionSource, AuthenticationEntity.class);
-            TableUtils.createTableIfNotExists(_connectionSource, DeviceConfigurationEntity.class);
+            TableUtils.createTableIfNotExists(_connectionSource, DeviceEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, FingerprintEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedAccessEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedUserEntity.class);
@@ -81,7 +82,7 @@ public class DatabaseHandler
             }
         } catch (SQLException sqle)
         {
-            ConsoleLogger.warning("Unable to connect to the database, or initialize ORM.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to connect to the database, or initialize ORM.", sqle);
             return null;
         }
 
@@ -108,27 +109,31 @@ public class DatabaseHandler
                 _connectionSource.close();
             } catch (SQLException sqle)
             {
-                ConsoleLogger.warning("Unable to close connection pool.", sqle);
+                SmartLogger.getLogger().log(Level.WARNING, "Unable to close connection pool.", sqle);
             }
         }
     }
 
     /**
-     * Get the first item of DeviceConfiguration table (should be the only one).
-     * @return  Instance of DeviceConfigurationEntity class.
+     * Look for a configuration for the current device.
+     * @param serialNumber  Serial Number of Device configuration to be found.
+     * @return              Instance of DeviceEntity class.
      */
-    public static DeviceConfigurationEntity getDeviceConfiguration()
+    public static DeviceEntity getDeviceConfiguration(String serialNumber)
     {
-        Dao<DeviceConfigurationEntity, Integer> deviceConfigDao = getDao(DeviceConfigurationEntity.class);
+        Dao<DeviceEntity, Integer> deviceConfigDao = getDao(DeviceEntity.class);
 
         if(deviceConfigDao != null)
         {
             try
             {
-                return deviceConfigDao.queryBuilder().queryForFirst();
-            } catch (SQLException e)
+                return deviceConfigDao.queryBuilder()
+                        .where()
+                        .eq(DeviceEntity.SERIAL_NUMBER, serialNumber)
+                        .queryForFirst();
+            } catch (SQLException sqle)
             {
-                ConsoleLogger.warning("Unable to get DeviceConfiguration item.");
+                SmartLogger.getLogger().log(Level.WARNING, "Unable to get DeviceConfiguration item.", sqle);
             }
         }
 
@@ -149,9 +154,9 @@ public class DatabaseHandler
             try
             {
                 _classNameToDao.put(entityClass.getName(), DaoManager.createDao(_connectionSource, entityClass));
-            } catch (SQLException e)
+            } catch (SQLException sqle)
             {
-                return null;
+                SmartLogger.getLogger().log(Level.WARNING, "Unable to get requested DAO instance.", sqle);
             }
         }
 

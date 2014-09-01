@@ -61,7 +61,7 @@ public class GrantedUserEntity
      */
     public GrantedUserEntity(GrantedUser newUser)
     {
-        this(newUser.getUsername(), newUser.getBadgeId());
+        this(newUser.getUsername(), newUser.getBadgeNumber());
 
         for(FingerIndex index : newUser.getEnrolledFingersIndexes())
         {
@@ -99,5 +99,14 @@ public class GrantedUserEntity
     public ForeignCollection<FingerprintEntity> getFingerprints()
     {
         return _fingerprints;
+    }
+
+    /**
+     * Allow updating badge number.
+     * @param badgeNumber New badge number.
+     */
+    public void setBadgeNumber(String badgeNumber)
+    {
+        _badgeNumber = badgeNumber;
     }
 }

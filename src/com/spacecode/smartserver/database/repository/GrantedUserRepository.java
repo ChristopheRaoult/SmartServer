@@ -134,4 +134,29 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
 
         return true;
     }
+
+    /**
+     * Update an user's badge number according to client's request.
+     * @param username      User to be updated.
+     * @param badgeNumber   New badge number.
+     * @return              True if success, false otherwise.
+     */
+    public boolean updateBadge(String username, String badgeNumber)
+    {
+        GrantedUserEntity gu = getByUsername(username);
+
+        if(gu == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            gu.setBadgeNumber(badgeNumber);
+            return _dao.update(gu) == 1;
+        } catch (SQLException sqle)
+        {
+            return false;
+        }
+    }
 }

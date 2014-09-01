@@ -7,11 +7,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
-/**
- * Created by Vincent on 23/12/13.
- */
 
 /**
  * Handle new connections and messages from clients.
@@ -19,7 +14,6 @@ import java.util.logging.Logger;
  */
 public final class SmartServerHandler extends SimpleChannelInboundHandler<String>
 {
-    private static final Logger LOGGER = Logger.getLogger(SmartServerHandler.class.getName());
     private static final CommandRegister COMMAND_REGISTER = new CommandRegister();
 
     /**
@@ -30,7 +24,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
     public void channelActive(final ChannelHandlerContext ctx)
     {
         SmartServer.addChannel(ctx.channel());
-        ConsoleLogger.info("Connection from "+ ctx.channel().remoteAddress());
+        SmartLogger.getLogger().info("Connection from " + ctx.channel().remoteAddress());
     }
 
     /**
@@ -46,7 +40,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
             return;
         }
 
-        ConsoleLogger.info(request);
+        SmartLogger.getLogger().info(request);
 
         String[] parameters = request.split(Character.toString(MessageHandler.DELIMITER));
 
@@ -55,7 +49,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
             COMMAND_REGISTER.execute(ctx, parameters);
         } catch (ClientCommandException cce)
         {
-            LOGGER.log(Level.WARNING, cce.getMessage(), cce);
+            SmartLogger.getLogger().log(Level.SEVERE, "ClientCommand exception occurred.", cce);
         }
     }
 
@@ -67,7 +61,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
-        LOGGER.log(Level.WARNING, "Exception caught by handler.", cause);
+        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by handler.", cause);
         ctx.close();
     }
 }

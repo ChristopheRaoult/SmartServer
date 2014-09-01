@@ -6,16 +6,20 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * DeviceConfiguration Entity
  */
-@DatabaseTable(tableName = "sc_device_configuration")
-public class DeviceConfigurationEntity
+@DatabaseTable(tableName = "sc_device")
+public class DeviceEntity
 {
     public static final String ID = "id";
+    public static final String SERIAL_NUMBER = "serial_number";
     public static final String NB_BADGE_READER = "nb_badge_reader";
     public static final String FP_READER_MASTER = "fp_reader_master";
     public static final String FP_READER_SLAVE = "fp_reader_slave";
 
     @DatabaseField(generatedId = true, columnName = ID)
     private int _id;
+
+    @DatabaseField(unique = true, columnName = SERIAL_NUMBER)
+    private String _serialNumber;
 
     @DatabaseField(columnName = NB_BADGE_READER)
     private int _nbOfBadgeReader;
@@ -29,16 +33,24 @@ public class DeviceConfigurationEntity
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    DeviceConfigurationEntity()
+    DeviceEntity()
     {
     }
 
     /**
-     * @return ID of the DeviceConfigurationEntity.
+     * @return ID of the DeviceEntity.
      */
     public int getId()
     {
         return _id;
+    }
+
+    /**
+     * @return Device's serial number.
+     */
+    public String getSerialNumber()
+    {
+        return _serialNumber;
     }
 
     /**

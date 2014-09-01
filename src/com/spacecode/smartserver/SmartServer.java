@@ -3,7 +3,7 @@ package com.spacecode.smartserver;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.DeviceConfigurationEntity;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -54,7 +54,7 @@ public final class SmartServer
      */
     public static void main(String[] args) throws IOException, SQLException
     {
-        ConsoleLogger.initialize();
+        SmartLogger.initialize();
         initializeShutdownHook();
 
         JdbcPooledConnectionSource connectionSource = DatabaseHandler.initializeDatabase();
@@ -67,25 +67,26 @@ public final class SmartServer
 
         if(DeviceHandler.connectDevice())
         {
-            ConsoleLogger.info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
+            SmartLogger.getLogger().info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
 
-            // Get device configuration from database (see DeviceConfigurationEntity class)
-            DeviceConfigurationEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
+            // Get device configuration from database (see DeviceEntity class)
+            DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration(DeviceHandler.getDevice().getSerialNumber());
 
             // No configuration: stop SmartServer.
             if(deviceConfig == null)
             {
-                ConsoleLogger.warning("Device not configured. SmartServer couldn't start. Please create a Device Configuration.");
+                SmartLogger.getLogger().severe("Device not configured. SmartServer couldn't start. Please create a Device Configuration.");
                 return;
             }
 
             // Use the configuration to connect/load modules.
             DeviceHandler.connectModules(deviceConfig);
+            DeviceHandler.loadGrantedUsers();
         }
 
         else
         {
-            ConsoleLogger.warning("Unable to connect to a SpaceCode RFID device....");
+            SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device....");
         }
 
         start(TCP_PORT);

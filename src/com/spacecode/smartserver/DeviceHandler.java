@@ -7,9 +7,10 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
-import com.spacecode.smartserver.database.entity.DeviceConfigurationEntity;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Handle RFIDDevice connection, instantiation, disconnection.
@@ -40,7 +41,7 @@ public final class DeviceHandler
 
         if(pluggedDevices.isEmpty() || pluggedDevices.size() > 1)
         {
-            ConsoleLogger.warning("0 or more than 1 device detected.");
+            SmartLogger.getLogger().warning("0 or more than 1 device detected.");
             return false;
         }
 
@@ -62,14 +63,14 @@ public final class DeviceHandler
 
                     default:
                         // device type unknown or not handled => return false.
-                        ConsoleLogger.warning("Unknown Device Type. Unable to connect to a device.");
+                        SmartLogger.getLogger().warning("Unknown Device Type. Unable to connect to a device.");
                         return false;
                 }
 
                 _device.addListener(new DeviceEventHandler());
             } catch (DeviceCreationException dce)
             {
-                ConsoleLogger.warning("Unable to instantiate a device.", dce);
+                SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
                 return false;
             }
 
@@ -110,7 +111,7 @@ public final class DeviceHandler
                 Thread.sleep(3000);
             } catch (InterruptedException ie)
             {
-                ConsoleLogger.warning("Interrupted while trying to reconnect Device.", ie);
+                SmartLogger.getLogger().log(Level.INFO, "Interrupted while trying to reconnect Device.", ie);
             }
         }
 
@@ -128,9 +129,9 @@ public final class DeviceHandler
     /**
      * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceConfiguration information.
      * TODO: Retry many times if any module couldn't be initialized/connected
-     * @param deviceConfig  DeviceConfigurationEntity instance to be read to get information about modules.
+     * @param deviceConfig  DeviceEntity instance to be read to get information about modules.
      */
-    public static void connectModules(DeviceConfigurationEntity deviceConfig)
+    public static void connectModules(DeviceEntity deviceConfig)
     {
         if(_device == null || deviceConfig == null)
         {
@@ -149,7 +150,7 @@ public final class DeviceHandler
                 {
                     if(FingerprintReader.connectFingerprintReaders(2) != 2)
                     {
-                        ConsoleLogger.warning("Couldn't initialize the two fingerprint readers.");
+                        SmartLogger.getLogger().warning("Couldn't initialize the two fingerprint readers.");
                     }
 
                     else if(!
@@ -157,7 +158,7 @@ public final class DeviceHandler
                             && _device.addFingerprintReader(slaveFpReaderSerial, false))
                             )
                     {
-                        ConsoleLogger.warning("Couldn't connect the two fingerprint readers.");
+                        SmartLogger.getLogger().warning("Couldn't connect the two fingerprint readers.");
                     }
                 }
 
@@ -166,18 +167,18 @@ public final class DeviceHandler
                 {
                     if(FingerprintReader.connectFingerprintReaders() != 1)
                     {
-                        ConsoleLogger.warning("Couldn't initialize the fingerprint reader.");
+                        SmartLogger.getLogger().warning("Couldn't initialize the fingerprint reader.");
                     }
 
                     else if(!_device.addFingerprintReader(masterFpReaderSerial, true))
                     {
-                        ConsoleLogger.warning("Couldn't connect the fingerprint reader.");
+                        SmartLogger.getLogger().warning("Couldn't connect the fingerprint reader.");
                     }
                 }
             }
-        } catch (FingerprintReader.FingerprintReaderException e)
+        } catch (FingerprintReader.FingerprintReaderException fre)
         {
-            ConsoleLogger.warning("An unexpected error occurred during fingerprint readers initialization.");
+            SmartLogger.getLogger().log(Level.INFO, "An unexpected error occurred during fingerprint readers initialization.", fre);
         }
 
         int nbOfBadgeReader = deviceConfig.getNbOfBadgeReader();
@@ -191,17 +192,25 @@ public final class DeviceHandler
         {
             if(!_device.addBadgeReader("/dev/ttyUSB1", true))
             {
-                ConsoleLogger.warning("Unable to add Master Badge Reader.");
+                SmartLogger.getLogger().warning("Unable to add Master Badge Reader.");
             }
 
             if(nbOfBadgeReader == 2)
             {
                 if(!_device.addBadgeReader("/dev/ttyUSB2", false))
                 {
-                    ConsoleLogger.warning("Unable to add Slave Badge Reader.");
+                    SmartLogger.getLogger().warning("Unable to add Slave Badge Reader.");
                 }
             }
         }
+    }
+
+    /**
+     * Load known granted users (from database) in the UsersService users cache.
+     */
+    public static void loadGrantedUsers()
+    {
+        //DatabaseHandler.get
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.spacecode.smartserver.database.entity.DeviceConfigurationEntity;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 
@@ -24,7 +24,7 @@ public class RepositoryFactory
             return null;
         }
 
-        if(className.equals(DeviceConfigurationEntity.class.getName()))
+        if(className.equals(DeviceEntity.class.getName()))
         {
             return new DeviceConfigurationRepository(dao);
         }

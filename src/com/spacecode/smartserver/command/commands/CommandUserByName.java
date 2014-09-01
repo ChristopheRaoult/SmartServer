@@ -1,6 +1,7 @@
 package com.spacecode.smartserver.command.commands;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
@@ -8,17 +9,15 @@ import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * StartLighting command.
+ * AddUser command.
  */
-public class CommandStartLighting implements ClientCommand
+public class CommandUserByName implements ClientCommand
 {
     /**
-     * Build a list of String with provided tags UID's and start lighting order.
-     * Send to the context, as a result, the list of tags UID's that could not be lighted.
+     * Request to get a copy-instance of a granted user. Send the serialized GrantedUser instance.
      * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
@@ -26,23 +25,27 @@ public class CommandStartLighting implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // if there is no parameter, then there is no tags to light
-        if(parameters.length == 0)
+        // waiting for 1 parameter: username.
+        if(parameters.length != 1)
         {
+            SmartServer.sendMessage(ctx, RequestCode.USER_BY_NAME, "");
             return;
         }
 
-        // create a new editable ArrayList from given tags (in parameters). Tags successfully lighted will be removed from the list.
-        List<String> tagsList = new ArrayList<>(Arrays.asList(parameters));
-        DeviceHandler.getDevice().startLightingTagsLed(tagsList);
+        String username = parameters[0];
+
+        GrantedUser user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+
+        if(user == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.USER_BY_NAME, "");
+            return;
+        }
 
         List<String> responsePackets = new ArrayList<>();
 
-        // add the request code first
-        responsePackets.add(RequestCode.START_LIGHTING);
-
-        // then all the tags UID left in the list (=> the ones which have not been lighted).
-        responsePackets.addAll(tagsList);
+        responsePackets.add(RequestCode.USER_BY_NAME);
+        responsePackets.add(user.serialize());
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
     }
