@@ -6,9 +6,11 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * DeviceConfiguration Entity
  */
-@DatabaseTable(tableName = "sc_device")
+@DatabaseTable(tableName = DeviceEntity.TABLE_NAME)
 public class DeviceEntity
 {
+    public static final String TABLE_NAME = "sc_device";
+
     public static final String ID = "id";
     public static final String SERIAL_NUMBER = "serial_number";
     public static final String NB_BADGE_READER = "nb_badge_reader";

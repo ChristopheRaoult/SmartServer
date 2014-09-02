@@ -35,7 +35,7 @@ public class CommandEnrollFinger implements ClientCommand
         if(parameters.length != 3)
         {
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
-            return;
+            throw new ClientCommandException("Invalid number of parameters.");
         }
 
         String username = parameters[0];

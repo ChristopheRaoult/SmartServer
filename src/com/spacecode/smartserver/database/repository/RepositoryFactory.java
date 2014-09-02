@@ -1,9 +1,7 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
-import com.spacecode.smartserver.database.entity.FingerprintEntity;
-import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.entity.*;
 
 /**
  * Manage instantiation of Repositories according to provided class name.
@@ -26,7 +24,7 @@ public class RepositoryFactory
 
         if(className.equals(DeviceEntity.class.getName()))
         {
-            return new DeviceConfigurationRepository(dao);
+            return new DeviceRepository(dao);
         }
 
         else if(className.equals(FingerprintEntity.class.getName()))
@@ -34,9 +32,19 @@ public class RepositoryFactory
             return new FingerprintRepository(dao);
         }
 
+        else if(className.equals(GrantedAccessEntity.class.getName()))
+        {
+            return new GrantedAccessRepository(dao);
+        }
+
         else if(className.equals(GrantedUserEntity.class.getName()))
         {
             return new GrantedUserRepository(dao);
+        }
+
+        else if(className.equals(GrantTypeEntity.class.getName()))
+        {
+            return new GrantTypeRepository(dao);
         }
 
         return null;

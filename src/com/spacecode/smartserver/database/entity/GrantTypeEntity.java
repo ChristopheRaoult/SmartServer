@@ -6,9 +6,11 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * GrantType Entity
  */
-@DatabaseTable(tableName = "sc_grant_type")
+@DatabaseTable(tableName = GrantTypeEntity.TABLE_NAME)
 public class GrantTypeEntity
 {
+    public static final String TABLE_NAME = "sc_grant_type";
+
     public static final String ID = "id";
     public static final String TYPE = "type";
 
@@ -35,7 +37,6 @@ public class GrantTypeEntity
     }
 
     /**
-     * Get value of the grant type.
      * @return String value of the grant type.
      */
     public String getType()

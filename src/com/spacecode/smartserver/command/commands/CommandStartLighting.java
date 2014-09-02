@@ -29,7 +29,7 @@ public class CommandStartLighting implements ClientCommand
         // if there is no parameter, then there is no tags to light
         if(parameters.length == 0)
         {
-            return;
+            throw new ClientCommandException("Invalid number of parameters.");
         }
 
         // create a new editable ArrayList from given tags (in parameters). Tags successfully lighted will be removed from the list.

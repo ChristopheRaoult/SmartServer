@@ -57,36 +57,51 @@ public final class SmartServer
         SmartLogger.initialize();
         initializeShutdownHook();
 
+        SmartLogger.getLogger().info("Initializing database...");
         JdbcPooledConnectionSource connectionSource = DatabaseHandler.initializeDatabase();
 
         if(connectionSource == null)
         {
-            // db failed
+            SmartLogger.getLogger().severe("Database couldn't be initialized. SmartServer won't start.");
             return;
         }
 
+        SmartLogger.getLogger().info("Database initialized.");
+
+        SmartLogger.getLogger().info("Connecting to local device...");
+
         if(DeviceHandler.connectDevice())
         {
-            SmartLogger.getLogger().info("Successfully connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
+            SmartLogger.getLogger().info("Connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
 
             // Get device configuration from database (see DeviceEntity class)
-            DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration(DeviceHandler.getDevice().getSerialNumber());
+            DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
 
             // No configuration: stop SmartServer.
             if(deviceConfig == null)
             {
-                SmartLogger.getLogger().severe("Device not configured. SmartServer couldn't start. Please create a Device Configuration.");
+                SmartLogger.getLogger().severe("Device not configured. SmartServer won't start. Please create a Device Configuration.");
                 return;
             }
 
             // Use the configuration to connect/load modules.
+            // TODO: do something if any failure (see directly in method)
             DeviceHandler.connectModules(deviceConfig);
-            DeviceHandler.loadGrantedUsers();
+
+            SmartLogger.getLogger().info("Loading users...");
+
+            if(!DatabaseHandler.loadGrantedUsers(deviceConfig))
+            {
+                SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
+                return;
+            }
+
+            SmartLogger.getLogger().info("Users loaded.");
         }
 
         else
         {
-            SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device....");
+            SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
         }
 
         start(TCP_PORT);

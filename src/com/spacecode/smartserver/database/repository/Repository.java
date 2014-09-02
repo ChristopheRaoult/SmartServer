@@ -1,11 +1,13 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
+import com.spacecode.smartserver.SmartLogger;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Generic Repository for all entities. To be inherited/specified for more getting methods.
@@ -18,6 +20,11 @@ public abstract class Repository<TEntity>
     protected Repository(Dao<TEntity, Integer> dao)
     {
         _dao = dao;
+    }
+
+    public final Dao<TEntity, Integer> getDao()
+    {
+        return _dao;
     }
 
     /**
@@ -88,6 +95,7 @@ public abstract class Repository<TEntity>
             _dao.create(newEntity);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while insert.", sqle);
             return false;
         }
 
@@ -107,6 +115,7 @@ public abstract class Repository<TEntity>
             _dao.update(entity);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while update.", sqle);
             return false;
         }
 
@@ -126,6 +135,7 @@ public abstract class Repository<TEntity>
             _dao.delete(entity);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while delete.", sqle);
             return false;
         }
 

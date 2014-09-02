@@ -6,9 +6,11 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * AccessType Entity
  */
-@DatabaseTable(tableName = "sc_access_type")
+@DatabaseTable(tableName = AccessTypeEntity.TABLE_NAME)
 public class AccessTypeEntity
 {
+    public static final String TABLE_NAME =  "sc_access_type";
+
     public static final String ID = "id";
     public static final String TYPE = "type";
 

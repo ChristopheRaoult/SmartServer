@@ -127,7 +127,7 @@ public final class DeviceHandler
     }
 
     /**
-     * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceConfiguration information.
+     * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceEntity information.
      * TODO: Retry many times if any module couldn't be initialized/connected
      * @param deviceConfig  DeviceEntity instance to be read to get information about modules.
      */
@@ -178,7 +178,8 @@ public final class DeviceHandler
             }
         } catch (FingerprintReader.FingerprintReaderException fre)
         {
-            SmartLogger.getLogger().log(Level.INFO, "An unexpected error occurred during fingerprint readers initialization.", fre);
+            SmartLogger.getLogger().log(Level.INFO,
+                    "An unexpected error occurred during fingerprint readers initialization.", fre);
         }
 
         int nbOfBadgeReader = deviceConfig.getNbOfBadgeReader();
@@ -203,14 +204,6 @@ public final class DeviceHandler
                 }
             }
         }
-    }
-
-    /**
-     * Load known granted users (from database) in the UsersService users cache.
-     */
-    public static void loadGrantedUsers()
-    {
-        //DatabaseHandler.get
     }
 
     /**

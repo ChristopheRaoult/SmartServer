@@ -6,9 +6,9 @@ import com.spacecode.smartserver.database.entity.DeviceEntity;
 /**
  * DeviceConfiguration Repository
  */
-public class DeviceConfigurationRepository extends Repository<DeviceEntity>
+public class DeviceRepository extends Repository<DeviceEntity>
 {
-    public DeviceConfigurationRepository(Dao<DeviceEntity, Integer> dao)
+    public DeviceRepository(Dao<DeviceEntity, Integer> dao)
     {
         super(dao);
     }

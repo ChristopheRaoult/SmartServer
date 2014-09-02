@@ -40,9 +40,9 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
             return;
         }
 
-        SmartLogger.getLogger().info(request);
-
         String[] parameters = request.split(Character.toString(MessageHandler.DELIMITER));
+
+        SmartLogger.getLogger().info(ctx.channel().remoteAddress().toString()+" - "+parameters[0]);
 
         try
         {

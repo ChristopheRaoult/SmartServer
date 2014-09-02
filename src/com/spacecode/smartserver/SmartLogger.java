@@ -17,7 +17,7 @@ public final class SmartLogger extends Logger
 
     /**
      * Protected method to construct a logger for a named subsystem.
-     * <p/>
+     *
      * The logger will be initially configured with a null Level
      * and with useParentHandlers set to true.
      *
@@ -84,6 +84,13 @@ public final class SmartLogger extends Logger
             builder.append("[").append(record.getLevel()).append("] ");
             builder.append(formatMessage(record));
             builder.append("\n");
+
+            if(record.getThrown() != null)
+            {
+                builder.append(record.getThrown().getMessage());
+                builder.append("\n");
+            }
+
             return builder.toString();
         }
     }

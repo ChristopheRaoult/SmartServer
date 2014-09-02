@@ -2,15 +2,22 @@ package com.spacecode.smartserver.database;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.spacecode.sdk.user.FingerIndex;
+import com.spacecode.sdk.user.GrantType;
+import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.*;
+import com.spacecode.smartserver.database.repository.DeviceRepository;
 import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.database.repository.RepositoryFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -29,6 +36,8 @@ public class DatabaseHandler
 
     private static Map<String, Dao> _classNameToDao = new HashMap<>();
     private static Map<String, Repository> _classNameToRepository = new HashMap<>();
+
+    private static DeviceEntity _deviceConfiguration;
 
     /** Must not be instantiated. */
     private DatabaseHandler()
@@ -116,28 +125,26 @@ public class DatabaseHandler
 
     /**
      * Look for a configuration for the current device.
-     * @param serialNumber  Serial Number of Device configuration to be found.
-     * @return              Instance of DeviceEntity class.
+     * @return Instance of DeviceEntity class.
      */
-    public static DeviceEntity getDeviceConfiguration(String serialNumber)
+    public static DeviceEntity getDeviceConfiguration()
     {
-        Dao<DeviceEntity, Integer> deviceConfigDao = getDao(DeviceEntity.class);
-
-        if(deviceConfigDao != null)
+        if(_deviceConfiguration != null)
         {
-            try
-            {
-                return deviceConfigDao.queryBuilder()
-                        .where()
-                        .eq(DeviceEntity.SERIAL_NUMBER, serialNumber)
-                        .queryForFirst();
-            } catch (SQLException sqle)
-            {
-                SmartLogger.getLogger().log(Level.WARNING, "Unable to get DeviceConfiguration item.", sqle);
-            }
+            return _deviceConfiguration;
         }
 
-        return null;
+        Repository deviceRepository = getRepository(DeviceEntity.class);
+
+        if(!(deviceRepository instanceof DeviceRepository))
+        {
+            return null;
+        }
+
+        Object result = deviceRepository.getEntityBy(DeviceEntity.SERIAL_NUMBER, DeviceHandler.getDevice().getSerialNumber());
+        _deviceConfiguration = result == null ? null : (DeviceEntity) result;
+
+        return _deviceConfiguration;
     }
 
     /**
@@ -147,9 +154,7 @@ public class DatabaseHandler
      */
     public static Dao getDao(Class entityClass)
     {
-        Dao dao = _classNameToDao.get(entityClass.getName());
-
-        if(dao == null)
+        if(!_classNameToDao.containsKey(entityClass.getName()))
         {
             try
             {
@@ -171,9 +176,8 @@ public class DatabaseHandler
     public static Repository getRepository(Class entityClass)
     {
         String className = entityClass.getName();
-        Repository repository = _classNameToRepository.get(className);
 
-        if(repository == null)
+        if(!_classNameToRepository.containsKey(className))
         {
             Dao dao = getDao(entityClass);
 
@@ -188,5 +192,87 @@ public class DatabaseHandler
         }
 
         return _classNameToRepository.get(className);
+    }
+
+    /**
+     * Load known granted users (from database) in the UsersService users cache.
+     * @param deviceConfig  DeviceEntity instance to be used to look for data.
+     */
+    public static boolean loadGrantedUsers(DeviceEntity deviceConfig)
+    {
+        Dao daoUser = getDao(GrantedUserEntity.class);
+
+        // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
+        String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
+
+        // raw query to get all users with their access type (on this device) and their fingerprints
+        StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
+        sb.append("FROM ").append(GrantedUserEntity.TABLE_NAME).append(" gue ");
+        // join all fingerprints
+        sb.append("LEFT JOIN ").append(FingerprintEntity.TABLE_NAME).append(" fpe ");
+        sb.append("ON gue.").append(GrantedUserEntity.ID).append(" = ");
+        sb.append("fpe.").append(FingerprintEntity.GRANTED_USER_ID).append(" ");
+        // join all granted accesses
+        sb.append("LEFT JOIN ").append(GrantedAccessEntity.TABLE_NAME).append(" gae ");
+        sb.append("ON gue.").append(GrantedUserEntity.ID).append(" = ");
+        sb.append("gae.").append(GrantedAccessEntity.GRANTED_USER_ID).append(" ");
+        // join grant types to granted accesses
+        sb.append("LEFT JOIN ").append(GrantTypeEntity.TABLE_NAME).append(" gte ");
+        sb.append("ON gae.").append(GrantedAccessEntity.GRANT_TYPE_ID).append(" = ");
+        sb.append("gte.").append(GrantTypeEntity.ID).append(" ");
+        // for the current device only
+        sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
+                .append(deviceConfig.getId());
+
+        Map<String, GrantedUser> _usernameToUser = new HashMap<>();
+
+        try
+        {
+            GenericRawResults results = daoUser.queryRaw(sb.toString());
+
+            Iterator<String[]> iterator = results.iterator();
+
+            // fill the users hashmap with results from Raw SQL query
+            while(iterator.hasNext())
+            {
+                String[] result = iterator.next();
+
+                int fingerIndexVal = Integer.parseInt(result[3]);
+                FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
+
+                if(fingerIndex == null)
+                {
+                    // should not happen but let's do nothing if it does
+                    continue;
+                }
+
+                if(_usernameToUser.containsKey(result[0]))
+                {
+                    // if user already exists, just add this new iteration (new fingerprint)
+                    _usernameToUser.get(result[0]).setFingerprintTemplate(fingerIndex, result[4]);
+                    continue;
+                }
+
+                // if user does not exist yet, create it and add its first fingerprint
+                GrantedUser user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
+
+                user.setFingerprintTemplate(fingerIndex, result[4]);
+                _usernameToUser.put(result[0], user);
+            }
+
+            results.close();
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load users from database.", sqle);
+            return false;
+        } catch(IllegalArgumentException iae)
+        {
+            // invalid fingerIndex or grantType from database
+            SmartLogger.getLogger().log(Level.SEVERE, "Loading users process failed because of corrupted data.", iae);
+            return false;
+        }
+
+        DeviceHandler.getDevice().getUsersService().addUsers(_usernameToUser.values());
+        return true;
     }
 }

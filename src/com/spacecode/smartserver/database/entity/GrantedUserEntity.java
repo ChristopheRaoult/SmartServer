@@ -4,7 +4,6 @@ import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
 
 import java.util.Date;
@@ -12,9 +11,11 @@ import java.util.Date;
 /**
  * GrantedUser Entity
  */
-@DatabaseTable(tableName = "sc_granted_user")
+@DatabaseTable(tableName = GrantedUserEntity.TABLE_NAME)
 public class GrantedUserEntity
 {
+    public static final String TABLE_NAME = "sc_granted_user";
+
     public static final String ID = "id";
     public static final String USERNAME = "username";
     public static final String BADGE_NUMBER = "badge_number";
@@ -35,6 +36,9 @@ public class GrantedUserEntity
     @ForeignCollectionField(eager = false)
     private ForeignCollection<FingerprintEntity> _fingerprints;
 
+    @ForeignCollectionField(eager = false)
+    private ForeignCollection<GrantedAccessEntity> _grantedAccesses;
+
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
@@ -44,6 +48,7 @@ public class GrantedUserEntity
 
     /**
      * Create a GrantedUser entity from username and badge number.
+     *
      * @param username      Username.
      * @param badgeNumber   Badge number.
      */
@@ -56,17 +61,15 @@ public class GrantedUserEntity
     }
 
     /**
-     * Create a GrantedUser entity from a GrantedUser (SDK) instance.
+     * Create a GrantedUser entity from a GrantedUser (SDK).
+     * Only fill Username and Badge Number fields.
+     * Fingerprints & Accesses must be created separately.
+     *
      * @param newUser   GrantedUser (SDK) instance to get information from.
      */
     public GrantedUserEntity(GrantedUser newUser)
     {
         this(newUser.getUsername(), newUser.getBadgeNumber());
-
-        for(FingerIndex index : newUser.getEnrolledFingersIndexes())
-        {
-            _fingerprints.add(new FingerprintEntity(this, index.getIndex(), newUser.getFingerprintTemplate(index)));
-        }
     }
 
     /**
@@ -99,6 +102,14 @@ public class GrantedUserEntity
     public ForeignCollection<FingerprintEntity> getFingerprints()
     {
         return _fingerprints;
+    }
+
+    /**
+     * @return GrantedAccessEntity collection (ForeignCollection).
+     */
+    public ForeignCollection<GrantedAccessEntity> getGrantedAccesses()
+    {
+        return _grantedAccesses;
     }
 
     /**

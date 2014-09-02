@@ -7,9 +7,11 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * InventoryRfidtag Entity
  */
-@DatabaseTable(tableName = "sc_inventory_rfid_tag")
+@DatabaseTable(tableName = InventoryRfidtag.TABLE_NAME)
 public class InventoryRfidtag
 {
+    public static final String TABLE_NAME = "sc_inventory_rfid_tag";
+
     public static final String ID = "id";
     public static final String INVENTORY_ID = "inventory_id";
     public static final String RFID_TAG_ID = "rfidtag_id";

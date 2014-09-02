@@ -8,9 +8,6 @@ import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * AddUser command.
  */
@@ -29,7 +26,7 @@ public class CommandUserByName implements ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.USER_BY_NAME, "");
-            return;
+            throw new ClientCommandException("Invalid number of parameters.");
         }
 
         String username = parameters[0];
@@ -42,11 +39,6 @@ public class CommandUserByName implements ClientCommand
             return;
         }
 
-        List<String> responsePackets = new ArrayList<>();
-
-        responsePackets.add(RequestCode.USER_BY_NAME);
-        responsePackets.add(user.serialize());
-
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, RequestCode.USER_BY_NAME, user.serialize());
     }
 }

@@ -29,7 +29,7 @@ public class CommandRemoveUser implements ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
-            return;
+            throw new ClientCommandException("Invalid number of parameters.");
         }
 
         String username = parameters[0];

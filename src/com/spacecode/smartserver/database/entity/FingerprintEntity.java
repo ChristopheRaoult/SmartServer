@@ -7,9 +7,11 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * Fingerprint Entity
  */
-@DatabaseTable(tableName = "sc_fingerprint")
+@DatabaseTable(tableName = FingerprintEntity.TABLE_NAME)
 public class FingerprintEntity
 {
+    public static final String TABLE_NAME = "sc_fingerprint";
+
     public static final String ID = "id";
     public static final String GRANTED_USER_ID = "granted_user_id";
     public static final String FINGER_INDEX = "finger_index";

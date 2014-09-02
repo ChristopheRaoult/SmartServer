@@ -33,7 +33,7 @@ public class CommandRemoveFingerprint implements ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
-            return;
+            throw new ClientCommandException("Invalid number of parameters.");
         }
 
         String username = parameters[0];

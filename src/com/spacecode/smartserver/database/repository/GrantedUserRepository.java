@@ -1,12 +1,15 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
+import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
+import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.logging.Level;
 
 /**
  * GrantedUserEntity Repository
@@ -35,58 +38,15 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
                     _dao.queryBuilder().where()
                             .eq(GrantedUserEntity.USERNAME, username)
                             .prepare());
-        } catch (SQLException e)
+        } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while getting user by name.", sqle);
             return null;
         }
     }
 
     /**
-     * Persist new user (from GrantedUser instance) in database.
-     * Also handle Fingerprints insert() calls.
-     * @param newUser   GrantedUserEntity to be inserted in the database.
-     * @return          True if success, false otherwise (SQL error, one fingerprint could not be inserted, etc).
-     */
-    @Override
-    public boolean insert(GrantedUserEntity newUser)
-    {
-        GrantedUserEntity gu = getByUsername(newUser.getUsername());
-
-        if(gu != null)
-        {
-            return false;
-        }
-
-        try
-        {
-            Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
-
-            // create user. Result is supposed to be "1" if row inserted
-            if(_dao.create(newUser) != 1 || !(fpRepo instanceof  FingerprintRepository))
-            {
-                return false;
-            }
-
-            if(newUser.getFingerprints() != null)
-            {
-                for(FingerprintEntity fpEntity : newUser.getFingerprints())
-                {
-                    if(!fpRepo.insert(fpEntity))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        } catch (SQLException e)
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Remove an user from the database (including all his fingerprints).
+     * Remove an user from the database (including all his fingerprints/accesses).
      * @param entity    User to be removed from the table.
      * @return          True if successful, false otherwise (SQLException).
      */
@@ -96,17 +56,13 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
         try
         {
             Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
+            Repository gaRepo = DatabaseHandler.getRepository(GrantedAccessEntity.class);
 
-            // create user. Result is supposed to be "1" if row inserted
-            if(!(fpRepo instanceof  FingerprintRepository))
-            {
-                return false;
-            }
-
-            // first, remove the fingerprints (foreign dependency)
+            // first, remove the foreign dependencies
             fpRepo.delete(entity.getFingerprints());
+            gaRepo.delete(entity.getGrantedAccesses());
 
-            // then remove the user
+            // then, remove the user
             _dao.delete(entity);
         } catch (SQLException sqle)
         {
@@ -117,7 +73,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
     }
 
     /**
-     * Remove a collection of users from the database (including all their fingerprints).
+     * Remove a collection of users from the database (including all their fingerprints/accesses).
      * @param entities  Collection of users to be removed from the table.
      * @return          True if successfully removed all users, false otherwise (SQLException).
      */
@@ -156,6 +112,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
             return _dao.update(gu) == 1;
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to update badge number.", sqle);
             return false;
         }
     }
