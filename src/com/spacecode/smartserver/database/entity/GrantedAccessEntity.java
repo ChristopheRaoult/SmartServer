@@ -50,6 +50,11 @@ public class GrantedAccessEntity
         _grantType = grantType;
     }
 
+    public int getId()
+    {
+        return _id;
+    }
+
     /**
      * @return GrantedUserEntity instance.
      */

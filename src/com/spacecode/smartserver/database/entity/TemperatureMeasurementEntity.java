@@ -36,4 +36,24 @@ public class TemperatureMeasurementEntity
     TemperatureMeasurementEntity()
     {
     }
+
+    public int getId()
+    {
+        return _id;
+    }
+
+    public DeviceEntity getDevice()
+    {
+        return _device;
+    }
+
+    public double getUid()
+    {
+        return _uid;
+    }
+
+    public Date getCreatedAt()
+    {
+        return _createdAt;
+    }
 }

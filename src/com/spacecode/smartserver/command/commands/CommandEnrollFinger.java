@@ -4,6 +4,7 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
+import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.command.ClientCommand;
 import com.spacecode.smartserver.command.ClientCommandException;
@@ -16,6 +17,7 @@ import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 
 /**
  * EnrollFinger command.
@@ -67,9 +69,10 @@ public class CommandEnrollFinger implements ClientCommand
                 SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
                 return;
             }
-        } catch (TimeoutException e)
+        } catch (TimeoutException te)
         {
             // enrollment process timeout expired
+            SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
             return;
         }

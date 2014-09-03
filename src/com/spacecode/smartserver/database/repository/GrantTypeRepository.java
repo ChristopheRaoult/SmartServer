@@ -15,7 +15,7 @@ import java.util.logging.Level;
  */
 public class GrantTypeRepository extends Repository<GrantTypeEntity>
 {
-    private static final Map<String, GrantTypeEntity> _typeToEntity = new HashMap<>();
+    private static final Map<String, GrantTypeEntity> TYPE_TO_ENTITY = new HashMap<>();
 
     protected GrantTypeRepository(Dao<GrantTypeEntity, Integer> dao)
     {
@@ -50,7 +50,7 @@ public class GrantTypeRepository extends Repository<GrantTypeEntity>
             return null;
         }
 
-        if(!_typeToEntity.containsKey(grantType.name()))
+        if(!TYPE_TO_ENTITY.containsKey(grantType.name()))
         {
             try
             {
@@ -58,14 +58,14 @@ public class GrantTypeRepository extends Repository<GrantTypeEntity>
                         .eq(GrantTypeEntity.TYPE, grantType.name())
                         .prepare());
 
-                _typeToEntity.put(grantType.name(), gte);
+                TYPE_TO_ENTITY.put(grantType.name(), gte);
             } catch (SQLException sqle)
             {
-                SmartLogger.getLogger().log(Level.SEVERE, "Unable to get Grant Type", sqle);
+                SmartLogger.getLogger().log(Level.SEVERE, "Unable to get GrantType.", sqle);
                 return null;
             }
         }
 
-        return _typeToEntity.get(grantType.name());
+        return TYPE_TO_ENTITY.get(grantType.name());
     }
 }

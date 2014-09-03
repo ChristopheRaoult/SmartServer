@@ -196,12 +196,9 @@ public final class DeviceHandler
                 SmartLogger.getLogger().warning("Unable to add Master Badge Reader.");
             }
 
-            if(nbOfBadgeReader == 2)
+            if(nbOfBadgeReader == 2 && !_device.addBadgeReader("/dev/ttyUSB2", false))
             {
-                if(!_device.addBadgeReader("/dev/ttyUSB2", false))
-                {
-                    SmartLogger.getLogger().warning("Unable to add Slave Badge Reader.");
-                }
+                SmartLogger.getLogger().warning("Unable to add Slave Badge Reader.");
             }
         }
     }

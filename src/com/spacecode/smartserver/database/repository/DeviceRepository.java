@@ -8,7 +8,7 @@ import com.spacecode.smartserver.database.entity.DeviceEntity;
  */
 public class DeviceRepository extends Repository<DeviceEntity>
 {
-    public DeviceRepository(Dao<DeviceEntity, Integer> dao)
+    protected DeviceRepository(Dao<DeviceEntity, Integer> dao)
     {
         super(dao);
     }

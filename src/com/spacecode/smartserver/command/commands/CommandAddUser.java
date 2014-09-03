@@ -82,7 +82,8 @@ public class CommandAddUser implements ClientCommand
             {
                 @Override
                 public Object call() throws Exception
-                {// First, get & create the user
+                {
+                    // First, get & create the user
                     Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
 
                     GrantedUserEntity gue = new GrantedUserEntity(newUser);

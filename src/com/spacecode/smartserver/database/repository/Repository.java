@@ -11,45 +11,49 @@ import java.util.logging.Level;
 
 /**
  * Generic Repository for all entities. To be inherited/specified for more getting methods.
- * @param <TEntity> Generic type for the Entity class.
+ * @param <E> Generic type for the Entity class.
  */
-public abstract class Repository<TEntity>
+public abstract class Repository<E>
 {
-    protected Dao<TEntity, Integer> _dao;
+    protected Dao<E, Integer> _dao;
 
-    protected Repository(Dao<TEntity, Integer> dao)
+    protected Repository(Dao<E, Integer> dao)
     {
         _dao = dao;
     }
 
-    public final Dao<TEntity, Integer> getDao()
+    /**
+     * @return Dao instance currently used by this repository.
+     */
+    public final Dao<E, Integer> getDao()
     {
         return _dao;
     }
 
     /**
-     * Provide access to an instance of TEntity (entity type) via its identifier.
+     * Provide access to an instance of E (entity type) via its identifier.
      * @param value Identifier key value.
-     * @return      TEntity instance or null if something went wrong (no result, sql exception).
+     * @return      E instance or null if something went wrong (no result, sql exception).
      */
-    public final TEntity getEntityById(int value)
+    public final E getEntityById(int value)
     {
         try
         {
             return _dao.queryForId(value);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity with Id.", sqle);
             return null;
         }
     }
 
     /**
-     * Provide access to a single instance of TEntity (entity type) via its field/value.
+     * Provide access to a single instance of E (entity type) via its field/value.
      * @param field Field filter.
      * @param value Expected value.
-     * @return      TEntity instance or null if something went wrong (no result, sql exception).
+     * @return      E instance or null if something went wrong (no result, sql exception).
      */
-    public final TEntity getEntityBy(String field, String value)
+    public final E getEntityBy(String field, String value)
     {
         try
         {
@@ -59,17 +63,18 @@ public abstract class Repository<TEntity>
                             .prepare());
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity with criteria.", sqle);
             return null;
         }
     }
 
     /**
-     * Provide access to a list of instance of TEntity (entity type) via a field name and value.
+     * Provide access to a list of instance of E (entity type) via a field name and value.
      * @param field Name of the field.
      * @param value Value expected.
-     * @return  List of TEntity containing all matching results (could be empty).
+     * @return  List of E containing all matching results (could be empty).
      */
-    public final List<TEntity> getEntitiesBy(String field, Object value)
+    public final List<E> getEntitiesBy(String field, Object value)
     {
         try
         {
@@ -79,6 +84,7 @@ public abstract class Repository<TEntity>
                             .prepare());
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entities with criteria.", sqle);
             return new ArrayList<>();
         }
     }
@@ -88,14 +94,14 @@ public abstract class Repository<TEntity>
      * @param newEntity New entity to be inserted in the table (as a new row).
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean insert(TEntity newEntity)
+    public boolean insert(E newEntity)
     {
         try
         {
             _dao.create(newEntity);
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while insert.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while inserting new entity.", sqle);
             return false;
         }
 
@@ -108,14 +114,14 @@ public abstract class Repository<TEntity>
      * @param entity    Entity to be updated in the table.
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean update(TEntity entity)
+    public boolean update(E entity)
     {
         try
         {
             _dao.update(entity);
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while update.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while updating entity.", sqle);
             return false;
         }
 
@@ -128,14 +134,14 @@ public abstract class Repository<TEntity>
      * @param entity    Entity to be removed from the table.
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean delete(TEntity entity)
+    public boolean delete(E entity)
     {
         try
         {
             _dao.delete(entity);
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while delete.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while deleting an entity.", sqle);
             return false;
         }
 
@@ -148,13 +154,14 @@ public abstract class Repository<TEntity>
      * @param entities  Collection to be removed from the table.
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean delete(Collection<TEntity> entities)
+    public boolean delete(Collection<E> entities)
     {
         try
         {
             _dao.delete(entities);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while deleting entities.", sqle);
             return false;
         }
 

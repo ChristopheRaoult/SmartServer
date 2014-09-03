@@ -116,6 +116,7 @@ public class DatabaseHandler
             try
             {
                 _connectionSource.close();
+                _connectionSource = null;
             } catch (SQLException sqle)
             {
                 SmartLogger.getLogger().log(Level.WARNING, "Unable to close connection pool.", sqle);
@@ -224,7 +225,7 @@ public class DatabaseHandler
         sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
                 .append(deviceConfig.getId());
 
-        Map<String, GrantedUser> _usernameToUser = new HashMap<>();
+        Map<String, GrantedUser> usernameToUser = new HashMap<>();
 
         try
         {
@@ -240,24 +241,22 @@ public class DatabaseHandler
                 int fingerIndexVal = Integer.parseInt(result[3]);
                 FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
 
-                if(fingerIndex == null)
+                // if the finger index (integer) from db is invalid, we ignore the line.
+                if(fingerIndex != null)
                 {
-                    // should not happen but let's do nothing if it does
-                    continue;
+                    if(usernameToUser.containsKey(result[0]))
+                    {
+                        // if user already exists, just add this new iteration (new fingerprint)
+                        usernameToUser.get(result[0]).setFingerprintTemplate(fingerIndex, result[4]);
+                        continue;
+                    }
+
+                    // if user does not exist yet, create it and add its first fingerprint
+                    GrantedUser user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
+
+                    user.setFingerprintTemplate(fingerIndex, result[4]);
+                    usernameToUser.put(result[0], user);
                 }
-
-                if(_usernameToUser.containsKey(result[0]))
-                {
-                    // if user already exists, just add this new iteration (new fingerprint)
-                    _usernameToUser.get(result[0]).setFingerprintTemplate(fingerIndex, result[4]);
-                    continue;
-                }
-
-                // if user does not exist yet, create it and add its first fingerprint
-                GrantedUser user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
-
-                user.setFingerprintTemplate(fingerIndex, result[4]);
-                _usernameToUser.put(result[0], user);
             }
 
             results.close();
@@ -272,7 +271,7 @@ public class DatabaseHandler
             return false;
         }
 
-        DeviceHandler.getDevice().getUsersService().addUsers(_usernameToUser.values());
+        DeviceHandler.getDevice().getUsersService().addUsers(usernameToUser.values());
         return true;
     }
 }

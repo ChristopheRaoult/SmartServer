@@ -77,6 +77,12 @@ public final class SmartLogger extends Logger
     {
         private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        /**
+         * Format the message/Thrown instance from LogRecord as we please.
+         * @param record    LogRecord containing logging message and (eventually) a Thrown instance.
+         * @return          A string of the formatted message to be displayed.
+         */
+        @Override
         public String format(LogRecord record)
         {
             StringBuilder builder = new StringBuilder();

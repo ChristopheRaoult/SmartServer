@@ -50,4 +50,29 @@ public class InventoryRfidtag
         _inventory = inventory;
         _rfidTag = rfidtag;
     }
+
+    public int getId()
+    {
+        return _id;
+    }
+
+    public InventoryEntity getInventory()
+    {
+        return _inventory;
+    }
+
+    public RfidTagEntity getRfidTag()
+    {
+        return _rfidTag;
+    }
+
+    public int getMovement()
+    {
+        return _movement;
+    }
+
+    public int getShelveNumber()
+    {
+        return _shelveNumber;
+    }
 }

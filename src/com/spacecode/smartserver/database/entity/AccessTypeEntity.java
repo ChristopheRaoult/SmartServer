@@ -36,6 +36,11 @@ public class AccessTypeEntity
         _type = accessType;
     }
 
+    public int getId()
+    {
+        return _id;
+    }
+
     /**
      * Get value of the access type.
      * @return String value of the access type.

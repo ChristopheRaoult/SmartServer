@@ -49,6 +49,11 @@ public class FingerprintEntity
         _template = template;
     }
 
+    public int getId()
+    {
+        return _id;
+    }
+
     /**
      * @return GrantedUserEntity attached to this fingerprint.
      */

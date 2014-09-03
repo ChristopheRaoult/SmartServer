@@ -26,4 +26,14 @@ public class RfidTagEntity
     RfidTagEntity()
     {
     }
+
+    public int getId()
+    {
+        return _id;
+    }
+
+    public String getUid()
+    {
+        return _uid;
+    }
 }

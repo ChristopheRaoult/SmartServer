@@ -66,6 +66,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
             _dao.delete(entity);
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while deleting GrantedUser.", sqle);
             return false;
         }
 

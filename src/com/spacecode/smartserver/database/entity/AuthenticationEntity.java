@@ -40,4 +40,29 @@ public class AuthenticationEntity
     AuthenticationEntity()
     {
     }
+
+    public int getId()
+    {
+        return _id;
+    }
+
+    public DeviceEntity getDevice()
+    {
+        return _device;
+    }
+
+    public GrantedUserEntity getGrantedUser()
+    {
+        return _grantedUser;
+    }
+
+    public AccessTypeEntity getAccessType()
+    {
+        return _accessType;
+    }
+
+    public Date getCreatedAt()
+    {
+        return _createdAt;
+    }
 }

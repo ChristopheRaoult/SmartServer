@@ -1,17 +1,19 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
+import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * FingerprintEntity Repository
  */
 public class FingerprintRepository extends Repository<FingerprintEntity>
 {
-    public FingerprintRepository(Dao<FingerprintEntity, Integer> dao)
+    protected FingerprintRepository(Dao<FingerprintEntity, Integer> dao)
     {
         super(dao);
     }
@@ -34,6 +36,7 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
                             .prepare());
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting Fingerprint.", sqle);
             return null;
         }
     }
@@ -67,6 +70,7 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
             }
         } catch (SQLException sqle)
         {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while updating Fingerprint.", sqle);
             return false;
         }
 

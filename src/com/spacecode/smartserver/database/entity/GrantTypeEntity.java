@@ -36,6 +36,11 @@ public class GrantTypeEntity
         _type = userGrant;
     }
 
+    public int getId()
+    {
+        return _id;
+    }
+
     /**
      * @return String value of the grant type.
      */

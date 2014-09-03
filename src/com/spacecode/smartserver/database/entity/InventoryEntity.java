@@ -52,4 +52,45 @@ public class InventoryEntity
     InventoryEntity()
     {
     }
+
+
+    public int getId()
+    {
+        return _id;
+    }
+
+    public DeviceEntity getDevice()
+    {
+        return _device;
+    }
+
+    public GrantedUserEntity getGrantedUser()
+    {
+        return _grantedUser;
+    }
+
+    public AccessTypeEntity getAccessType()
+    {
+        return _accessType;
+    }
+
+    public int getTotalAdded()
+    {
+        return _totalAdded;
+    }
+
+    public int getTotalPresent()
+    {
+        return _totalPresent;
+    }
+
+    public int getTotalRemoved()
+    {
+        return _totalRemoved;
+    }
+
+    public Date getCreatedAt()
+    {
+        return _createdAt;
+    }
 }

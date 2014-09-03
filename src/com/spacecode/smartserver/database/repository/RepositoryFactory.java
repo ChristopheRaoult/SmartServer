@@ -10,6 +10,13 @@ import com.spacecode.smartserver.database.entity.*;
 public class RepositoryFactory
 {
     /**
+     * Must not be instantiated.
+     */
+    private RepositoryFactory()
+    {
+    }
+
+    /**
      * Instantiate a repository according to parameters (or none if given values were not expected).
      * @param className Name of the Entity class to be used.
      * @param dao       Dao to be attached to the Repository instance.
