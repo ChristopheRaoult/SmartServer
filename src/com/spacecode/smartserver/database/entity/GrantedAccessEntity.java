@@ -56,10 +56,18 @@ public class GrantedAccessEntity
     }
 
     /**
-     * @return GrantedUserEntity instance.
+     * @return GrantedUserEntity instance (attached user).
      */
     public GrantedUserEntity getGrantedUser()
     {
         return _grantedUser;
+    }
+
+    /**
+     * @return DeviceEntity instance (attached device).
+     */
+    public DeviceEntity getDevice()
+    {
+        return _device;
     }
 }

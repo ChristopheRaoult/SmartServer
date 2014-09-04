@@ -38,6 +38,7 @@ public final class CommandRegister implements ClientCommand
         _commands.put(RequestCode.SERIAL_BRIDGE,        new CommandSerialBridge());
         _commands.put(RequestCode.START_LIGHTING,       new CommandStartLighting());
         _commands.put(RequestCode.STOP_LIGHTING,        new CommandStoptLighting());
+        _commands.put(RequestCode.UPDATE_PERMISSION,    new CommandUpdatePermission());
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
         _commands.put(RequestCode.USER_BY_NAME,         new CommandUserByName());
         _commands.put(RequestCode.USERS_LIST,           new CommandUsersList());

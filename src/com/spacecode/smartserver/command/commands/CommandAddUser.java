@@ -96,7 +96,7 @@ public class CommandAddUser implements ClientCommand
                     // get GrantTypeEntity instance corresponding to newUser grant type
                     Repository grantTypeRepo = DatabaseHandler.getRepository(GrantTypeEntity.class);
                     GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo)
-                            .fromGrantType(newUser.getGrantType());
+                            .fromGrantType(newUser.getPermission());
 
                     // create & persist fingerprints and access
                     Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
