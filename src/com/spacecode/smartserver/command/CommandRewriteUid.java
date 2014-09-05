@@ -1,17 +1,15 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.device.data.RewriteUIDResult;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
  * RewriteUid command.
  */
-public class CommandRewriteUid implements ClientCommand
+public class CommandRewriteUid extends ClientCommand
 {
     /**
      * Get the two parameters provided by Client (old Uid, new Uid), try to rewrite it and send the RewriteUIDResult code to the context.

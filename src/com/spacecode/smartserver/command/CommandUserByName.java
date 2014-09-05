@@ -1,17 +1,15 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
  * AddUser command.
  */
-public class CommandUserByName implements ClientCommand
+public class CommandUserByName extends ClientCommand
 {
     /**
      * Request to get a copy-instance of a granted user. Send the serialized GrantedUser instance.

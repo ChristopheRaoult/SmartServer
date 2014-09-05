@@ -1,4 +1,4 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.FingerIndex;
@@ -6,8 +6,6 @@ import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
@@ -22,7 +20,7 @@ import java.util.logging.Level;
 /**
  * EnrollFinger command.
  */
-public class CommandEnrollFinger implements ClientCommand
+public class CommandEnrollFinger extends ClientCommand
 {
     /**
      * Request to start enrollment process for a given user and finger index. Send (string) "true" if succeed, "false" otherwise.
@@ -31,7 +29,7 @@ public class CommandEnrollFinger implements ClientCommand
      * @throws ClientCommandException
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(final ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         // waiting for 3 parameters: username, finger index, "is Master reader?" (boolean)
         if(parameters.length != 3)
@@ -40,9 +38,9 @@ public class CommandEnrollFinger implements ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
-        String username = parameters[0];
-        FingerIndex fingerIndex;
-        boolean masterReader = Boolean.parseBoolean(parameters[2]);
+        final String username = parameters[0];
+        final FingerIndex fingerIndex;
+        final boolean masterReader = Boolean.parseBoolean(parameters[2]);
 
         try
         {
@@ -62,33 +60,41 @@ public class CommandEnrollFinger implements ClientCommand
             return;
         }
 
-        try
+        // Action needs to be parallelized in order to handle New Enrollment Sample event
+        parallelize(new Runnable()
         {
-            if(!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
+            @Override
+            public void run()
             {
-                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
-                return;
+                try
+                {
+                    if (!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
+                    {
+                        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                        return;
+                    }
+                } catch (TimeoutException te)
+                {
+                    // enrollment process timeout expired
+                    SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                    return;
+                }
+
+                // persist the enrolled template in db
+                GrantedUser gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+                String fpTpl = gu.getFingerprintTemplate(fingerIndex);
+
+                if (!persistFingerprintTemplate(username, fingerIndex.getIndex(), fpTpl))
+                {
+                    gu.setFingerprintTemplate(fingerIndex, null);
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                    return;
+                }
+
+                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "true");
             }
-        } catch (TimeoutException te)
-        {
-            // enrollment process timeout expired
-            SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
-            return;
-        }
-
-        // persist the enrolled template in db
-        GrantedUser gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
-        String fpTpl = gu.getFingerprintTemplate(fingerIndex);
-
-        if(!persistFingerprintTemplate(username, fingerIndex.getIndex(), fpTpl))
-        {
-            gu.setFingerprintTemplate(fingerIndex, null);
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
-            return;
-        }
-
-        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "true");
+        });
     }
 
     /**

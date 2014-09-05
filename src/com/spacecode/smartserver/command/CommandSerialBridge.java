@@ -1,9 +1,7 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.IOException;
@@ -17,7 +15,7 @@ import java.util.logging.Level;
  * Forwarding is made with "socat". From port ttyGS0 (g_serial emulated port) to ttyUSB0 (FTDI_IO USB to Serial port).
  * If the command is sent again, then stop the port forwarding and wake the server up.
  */
-public class CommandSerialBridge implements ClientCommand
+public class CommandSerialBridge extends ClientCommand
 {
     private static Process _portForwardingProcess = null;
     private static String _pfwStartCmd = "socat /dev/ttyGS0,raw,echo=0,crnl /dev/ttyUSB0,raw,echo=0,crnl";
@@ -30,7 +28,7 @@ public class CommandSerialBridge implements ClientCommand
      * @throws ClientCommandException
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         if(parameters.length == 0)
         {

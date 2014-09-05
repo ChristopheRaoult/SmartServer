@@ -1,10 +1,8 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;
@@ -14,7 +12,7 @@ import java.util.List;
 /**
  * StartLighting command.
  */
-public class CommandStartLighting implements ClientCommand
+public class CommandStartLighting extends ClientCommand
 {
     /**
      * Build a list of String with provided tags UID's and start lighting order.

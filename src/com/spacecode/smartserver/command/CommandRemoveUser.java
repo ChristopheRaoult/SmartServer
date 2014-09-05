@@ -1,10 +1,8 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 import com.spacecode.smartserver.database.repository.GrantedUserRepository;
@@ -14,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveUser command.
  */
-public class CommandRemoveUser implements ClientCommand
+public class CommandRemoveUser extends ClientCommand
 {
     /**
      * Request to remove a User from granted users list. Send (string) "true" if succeed, "false" otherwise.
@@ -23,7 +21,7 @@ public class CommandRemoveUser implements ClientCommand
      * @throws ClientCommandException
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         // waiting for 1 parameter: username of the user to be removed
         if(parameters.length != 1)

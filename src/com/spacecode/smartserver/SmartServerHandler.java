@@ -2,7 +2,7 @@ package com.spacecode.smartserver;
 
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.command.ClientCommandException;
-import com.spacecode.smartserver.command.CommandRegister;
+import com.spacecode.smartserver.command.ClientCommandRegister;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -14,7 +14,7 @@ import java.util.logging.Level;
  */
 public final class SmartServerHandler extends SimpleChannelInboundHandler<String>
 {
-    private static final CommandRegister COMMAND_REGISTER = new CommandRegister();
+    private static final ClientCommandRegister COMMAND_REGISTER = new ClientCommandRegister();
 
     /**
      * Called when a new connection (with a client) is created.

@@ -229,6 +229,8 @@ public class DatabaseHandler
 
         try
         {
+            // get one line per user having a granted access on this device
+            // one more line (with repeated user information) for each user's fingerprint.
             GenericRawResults results = daoUser.queryRaw(sb.toString());
 
             Iterator<String[]> iterator = results.iterator();
@@ -238,24 +240,31 @@ public class DatabaseHandler
             {
                 String[] result = iterator.next();
 
+                GrantedUser user = usernameToUser.get(result[0]);
+
+                // first, add the user if it's not known yet
+                if(user == null)
+                {
+                    user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
+                    usernameToUser.put(result[0], user);
+                }
+
+                // if there isn't any fingerprint [finger_index is null], go on
+                if(result[3] == null || user == null)
+                {
+                    // user should not be null at this stage, but test anyway
+                    continue;
+                }
+
+                // parse string value (from db) to int. Exception is caught as IllegalArgumentException.
                 int fingerIndexVal = Integer.parseInt(result[3]);
                 FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
 
-                // if the finger index (integer) from db is invalid, we ignore the line.
+                // if finger index from db is valid and in the expected range
                 if(fingerIndex != null)
                 {
-                    if(usernameToUser.containsKey(result[0]))
-                    {
-                        // if user already exists, just add this new iteration (new fingerprint)
-                        usernameToUser.get(result[0]).setFingerprintTemplate(fingerIndex, result[4]);
-                        continue;
-                    }
-
-                    // if user does not exist yet, create it and add its first fingerprint
-                    GrantedUser user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
-
+                    // add this new fingerprint template to the user
                     user.setFingerprintTemplate(fingerIndex, result[4]);
-                    usernameToUser.put(result[0], user);
                 }
             }
 

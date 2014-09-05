@@ -1,12 +1,10 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
@@ -18,7 +16,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveFingerprint command.
  */
-public class CommandRemoveFingerprint implements ClientCommand
+public class CommandRemoveFingerprint extends ClientCommand
 {
     /**
      * Request to add a new User to granted users list. Send (string) "true" if succeed, "false" otherwise.

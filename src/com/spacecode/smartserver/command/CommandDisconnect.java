@@ -1,8 +1,6 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Disconnect command.
  */
-public class CommandDisconnect implements ClientCommand
+public class CommandDisconnect extends ClientCommand
 {
     /**
      * Optional but better done: close the channel of the current context when the client asks for disconnection.

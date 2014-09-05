@@ -278,7 +278,7 @@ public final class DeviceHandler
         }
 
         @Override
-        public void fingerprintEnrollmentSample(byte sampleNumber)
+        public void fingerprintEnrollmentSample(final byte sampleNumber)
         {
             SmartServer.sendAllClients(EventCode.EVENT_ENROLLMENT_SAMPLE, String.valueOf(sampleNumber));
         }

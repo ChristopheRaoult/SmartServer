@@ -1,11 +1,9 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;
@@ -14,7 +12,7 @@ import java.util.List;
 /**
  * AddUser command.
  */
-public class CommandUsersList implements ClientCommand
+public class CommandUsersList extends ClientCommand
 {
     /**
      * Request to get the granted users list. Send the list of GrantedUsers as serialized users (strings).

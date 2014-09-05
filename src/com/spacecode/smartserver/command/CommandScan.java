@@ -1,17 +1,15 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.smartserver.DeviceHandler;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * StopLighting command.
+ * Scan command.
  */
-public class CommandStoptLighting implements ClientCommand
+public class CommandScan extends ClientCommand
 {
     /**
-     * Send StopLighting command to the current Device. No data is returned to client.
+     * Request a scan on current device. No data is sent/returned. Device events are handled by events handler.
      * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
@@ -19,6 +17,6 @@ public class CommandStoptLighting implements ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        DeviceHandler.getDevice().stopLightingTagsLed();
+        DeviceHandler.getDevice().requestScan();
     }
 }

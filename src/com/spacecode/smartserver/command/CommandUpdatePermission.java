@@ -1,4 +1,4 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.GrantType;
@@ -6,8 +6,6 @@ import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
@@ -24,7 +22,7 @@ import java.util.logging.Level;
 /**
  * Update Grant Type command.
  */
-public class CommandUpdatePermission implements ClientCommand
+public class CommandUpdatePermission extends ClientCommand
 {
     /**
      * Request to update an user's permission type to this device. Return true (if operation succeeded) or false (if failure).
@@ -33,7 +31,7 @@ public class CommandUpdatePermission implements ClientCommand
      * @throws ClientCommandException   If number of parameters is invalid.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         // waiting for 2 parameters: username and new Grant Type (permission on device).
         if(parameters.length != 2)

@@ -1,7 +1,6 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.smartserver.command.commands.*;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Arrays;
@@ -9,11 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * CommandRegister class allows SmartServerHandler to execute any appropriate Command object for a given request string.
+ * ClientCommandRegister class allows SmartServerHandler to execute any appropriate Command object for a given request string.
  * Request string (sent by the Client) is passed as a String array to execute() method with the ChannelHandlerContext. If any corresponding command is found,
- * CommandRegister instance executes execute() method from this command. Other parameters (if any) of the string array are passed with the ChannelHandlerContext.
+ * ClientCommandRegister instance executes execute() method from this command. Other parameters (if any) of the string array are passed with the ChannelHandlerContext.
  */
-public final class CommandRegister implements ClientCommand
+public final class ClientCommandRegister extends ClientCommand
 {
     // Key:     Command code (RequestCode value).
     // Value:   ClientCommand instance.
@@ -24,7 +23,7 @@ public final class CommandRegister implements ClientCommand
      * Initialize command register.
      * Add an entry to "_commands" HashMap with request code & command instance for each known request.
      */
-    public CommandRegister()
+    public ClientCommandRegister()
     {
         _commands.put(RequestCode.ADD_USER,             new CommandAddUser());
         _commands.put(RequestCode.DISCONNECT,           new CommandDisconnect());

@@ -1,4 +1,4 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.j256.ormlite.misc.TransactionManager;
 import com.spacecode.sdk.network.communication.RequestCode;
@@ -7,8 +7,6 @@ import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
@@ -25,7 +23,7 @@ import java.util.logging.Level;
 /**
  * AddUser command.
  */
-public class CommandAddUser implements ClientCommand
+public class CommandAddUser extends ClientCommand
 {
     /**
      * Request to add a new User to granted users list. Send (string) "true" if succeed, "false" otherwise.
@@ -34,7 +32,7 @@ public class CommandAddUser implements ClientCommand
      * @throws ClientCommandException
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         // waiting for only 1 parameter: serialized rantedUser
         if(parameters.length != 1)

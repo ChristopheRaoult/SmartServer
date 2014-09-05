@@ -1,11 +1,9 @@
-package com.spacecode.smartserver.command.commands;
+package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.command.ClientCommand;
-import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
 import com.spacecode.smartserver.database.repository.GrantedUserRepository;
@@ -15,7 +13,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * AddUser command.
  */
-public class CommandUpdateBadge implements ClientCommand
+public class CommandUpdateBadge extends ClientCommand
 {
     /**
      * Request to update an user's badge number. Return true (if operation succeeded) or false (if failure).
@@ -24,7 +22,7 @@ public class CommandUpdateBadge implements ClientCommand
      * @throws ClientCommandException
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         // waiting for 2 parameters: username and new badge number.
         if(parameters.length != 2)
