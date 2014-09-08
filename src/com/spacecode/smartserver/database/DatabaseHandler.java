@@ -206,12 +206,17 @@ public class DatabaseHandler
     /**
      * Load known granted users (from database) in the UsersService users cache.
      *
-     * @param deviceConfig  DeviceEntity instance to be used to look for data.
-     *
      * @return True if operation succeeded, false otherwise.
      */
-    public static boolean loadGrantedUsers(DeviceEntity deviceConfig)
+    public static boolean loadGrantedUsers()
     {
+        DeviceEntity deviceConfig = getDeviceConfiguration();
+
+        if(deviceConfig == null)
+        {
+            return false;
+        }
+
         Dao daoUser = getDao(GrantedUserEntity.class);
 
         // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
@@ -293,6 +298,54 @@ public class DatabaseHandler
 
         DeviceHandler.getDevice().getUsersService().addUsers(usernameToUser.values());
         return true;
+    }
+
+    public static Inventory getLastStoredInventory()
+    {
+        Dao daoUser = getDao(InventoryEntity.class);
+
+        // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
+        String columns = "inv.device_id, inv.granteduser_id, inv.accesstype_id, inv.total_added, inv.total_present, inv.total_removed, rt.uid, irt.movement, inv.created_at";
+
+        // raw query to get all columns for the last inventory
+        StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
+        sb.append("FROM ").append(InventoryEntity.TABLE_NAME).append(" inv ");
+        // join through the many-to-many relationship
+        sb.append("LEFT JOIN ").append(InventoryRfidTag.TABLE_NAME).append(" irt ");
+        sb.append("ON inv.").append(InventoryEntity.ID).append(" = ");
+        sb.append("irt.").append(InventoryRfidTag.INVENTORY_ID).append(" ");
+        // join all tags
+        sb.append("LEFT JOIN ").append(RfidTagEntity.TABLE_NAME).append(" rt ");
+        sb.append("ON rt.").append(RfidTagEntity.ID).append(" = ");
+        sb.append("irt.").append(InventoryRfidTag.RFID_TAG_ID).append(" ");
+        // for the current device only
+        sb.append("WHERE inv.").append(InventoryEntity.CREATED_AT)
+                .append(" =(SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
+                .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(")");
+
+        try
+        {
+            // get one line per user having a granted access on this device
+            // one more line (with repeated user information) for each user's fingerprint.
+            GenericRawResults results = daoUser.queryRaw(sb.toString());
+
+            Iterator<String[]> iterator = results.iterator();
+
+            // fill the users hashmap with results from Raw SQL query
+            while(iterator.hasNext())
+            {
+                String[] result = iterator.next();
+                // TODO : parse the result to build a proper Inventory instance, and give it to the Device as a "current inventory" on loading.
+            }
+
+            results.close();
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load users from database.", sqle);
+            return null;
+        }
+
+        return null;
     }
 
     /**
@@ -696,19 +749,27 @@ public class DatabaseHandler
             // create the many-to-many relationship between the Inventory table and the RfidTag table
             List<InventoryRfidTag> inventoryRfidTags = new ArrayList<>();
 
+            // get the matrix containing the axis number where each tag has been detected for the last time
+            Map<String, Byte> tagToAxis = DeviceHandler.getDevice().getTagToAxis();
+
+            int shelveNbr;
+
             for(String tagUid : _inventory.getTagsAdded())
             {
-                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 1));
+                shelveNbr = tagToAxis.get(tagUid) == null ? 0 : tagToAxis.get(tagUid);
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 1, shelveNbr));
             }
 
             for(String tagUid : _inventory.getTagsPresent())
             {
-                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 0));
+                shelveNbr = tagToAxis.get(tagUid) == null ? 0 : tagToAxis.get(tagUid);
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 0, shelveNbr));
             }
 
             for(String tagUid : _inventory.getTagsRemoved())
             {
-                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), -1));
+                shelveNbr = tagToAxis.get(tagUid) == null ? 0 : tagToAxis.get(tagUid);
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), -1, shelveNbr));
             }
 
             if(!inventTagRepo.insert(inventoryRfidTags))

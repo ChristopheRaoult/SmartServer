@@ -1,6 +1,7 @@
 package com.spacecode.smartserver;
 
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
@@ -90,11 +91,13 @@ public final class SmartServer
 
             SmartLogger.getLogger().info("Loading users...");
 
-            if(!DatabaseHandler.loadGrantedUsers(deviceConfig))
+            if(!DatabaseHandler.loadGrantedUsers())
             {
                 SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
                 return;
             }
+
+            Inventory inv = DatabaseHandler.getLastStoredInventory();
 
             SmartLogger.getLogger().info("Users loaded.");
         }
