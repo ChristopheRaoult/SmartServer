@@ -17,7 +17,7 @@ public class RfidTagEntity
     @DatabaseField(generatedId = true, columnName = ID)
     private int _id;
 
-    @DatabaseField(columnName = UID, canBeNull = false)
+    @DatabaseField(columnName = UID, canBeNull = false, unique = true)
     private String _uid;
 
     /**
@@ -27,11 +27,26 @@ public class RfidTagEntity
     {
     }
 
+    /**
+     * Default constructor.
+     * @param uid   RFID Tag unique identifier.
+     */
+    public RfidTagEntity(String uid)
+    {
+        _uid = uid;
+    }
+
+    /**
+     * @return Entity identifier.
+     */
     public int getId()
     {
         return _id;
     }
 
+    /**
+     * @return RFID Tag Unique Identifier.
+     */
     public String getUid()
     {
         return _uid;

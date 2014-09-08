@@ -52,8 +52,11 @@ public class TemperatureMeasurementEntity
         return _uid;
     }
 
+    /**
+     * @return Creation date of the measurement.
+     */
     public Date getCreatedAt()
     {
-        return _createdAt;
+        return new Date(_createdAt.getTime());
     }
 }

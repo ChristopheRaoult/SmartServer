@@ -4,21 +4,21 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.table.TableUtils;
+import com.spacecode.sdk.device.data.Inventory;
+import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantType;
 import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.*;
-import com.spacecode.smartserver.database.repository.DeviceRepository;
-import com.spacecode.smartserver.database.repository.Repository;
-import com.spacecode.smartserver.database.repository.RepositoryFactory;
+import com.spacecode.smartserver.database.repository.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 /**
@@ -26,13 +26,14 @@ import java.util.logging.Level;
  */
 public class DatabaseHandler
 {
+    // TODO: values to be read from a local .conf file (just like a real system service)
     private static final String DB_HOST             = "localhost:3306";
     private static final String DB_NAME             = "test";
     private static final String DB_USER             = "root";
     private static final String DB_PASSWORD         = "";
     private static final String CONNECTION_STRING   = "jdbc:mysql://"+DB_HOST+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD;
 
-    private static JdbcPooledConnectionSource           _connectionSource;
+    private static JdbcPooledConnectionSource       _connectionSource;
 
     private static Map<String, Dao> _classNameToDao = new HashMap<>();
     private static Map<String, Repository> _classNameToRepository = new HashMap<>();
@@ -46,6 +47,7 @@ public class DatabaseHandler
 
     /**
      * Initialize Connection Pool and create Schema (if not created).
+     *
      * @return JdbcPooledConnectionSource instance if succeeds, null otherwise.
      */
     public static JdbcPooledConnectionSource initializeDatabase()
@@ -68,7 +70,7 @@ public class DatabaseHandler
             TableUtils.createTableIfNotExists(_connectionSource, GrantedAccessEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedUserEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, InventoryEntity.class);
-            TableUtils.createTableIfNotExists(_connectionSource, InventoryRfidtag.class);
+            TableUtils.createTableIfNotExists(_connectionSource, InventoryRfidTag.class);
             TableUtils.createTableIfNotExists(_connectionSource, RfidTagEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, TemperatureMeasurementEntity.class);
 
@@ -76,18 +78,19 @@ public class DatabaseHandler
             {
                 // create table and fill with constants
                 TableUtils.createTable(_connectionSource, AccessTypeEntity.class);
-                daoAccessType.create(new AccessTypeEntity(com.spacecode.sdk.user.AccessType.UNDEFINED.name()));
-                daoAccessType.create(new AccessTypeEntity(com.spacecode.sdk.user.AccessType.BADGE.name()));
-                daoAccessType.create(new AccessTypeEntity(com.spacecode.sdk.user.AccessType.FINGERPRINT.name()));
+                daoAccessType.create(new AccessTypeEntity(AccessType.UNDEFINED.name()));
+                daoAccessType.create(new AccessTypeEntity(AccessType.BADGE.name()));
+                daoAccessType.create(new AccessTypeEntity(AccessType.FINGERPRINT.name()));
             }
 
             if(!daoGrantType.isTableExists())
             {
                 // create table and fill with constants
                 TableUtils.createTable(_connectionSource, GrantTypeEntity.class);
-                daoGrantType.create(new GrantTypeEntity(com.spacecode.sdk.user.GrantType.SLAVE.name()));
-                daoGrantType.create(new GrantTypeEntity(com.spacecode.sdk.user.GrantType.MASTER.name()));
-                daoGrantType.create(new GrantTypeEntity(com.spacecode.sdk.user.GrantType.ALL.name()));
+                daoGrantType.create(new GrantTypeEntity(GrantType.UNDEFINED.name()));
+                daoGrantType.create(new GrantTypeEntity(GrantType.SLAVE.name()));
+                daoGrantType.create(new GrantTypeEntity(GrantType.MASTER.name()));
+                daoGrantType.create(new GrantTypeEntity(GrantType.ALL.name()));
             }
         } catch (SQLException sqle)
         {
@@ -126,6 +129,7 @@ public class DatabaseHandler
 
     /**
      * Look for a configuration for the current device.
+     *
      * @return Instance of DeviceEntity class.
      */
     public static DeviceEntity getDeviceConfiguration()
@@ -150,7 +154,9 @@ public class DatabaseHandler
 
     /**
      * Provide an easy access to DAO's.
+     *
      * @param entityClass   Class instance of the Entity class to be used.
+     *
      * @return              Dao instance, or null if something went wrong (unknown entity class, SQLException...).
      */
     public static Dao getDao(Class entityClass)
@@ -171,7 +177,9 @@ public class DatabaseHandler
 
     /**
      * Provide an easy access to repositories.
+     *
      * @param entityClass   Entity class to be used.
+     *
      * @return              Repository instance, or null if something went wrong  (unknown entity or null DAO).
      */
     public static Repository getRepository(Class entityClass)
@@ -197,7 +205,10 @@ public class DatabaseHandler
 
     /**
      * Load known granted users (from database) in the UsersService users cache.
+     *
      * @param deviceConfig  DeviceEntity instance to be used to look for data.
+     *
+     * @return True if operation succeeded, false otherwise.
      */
     public static boolean loadGrantedUsers(DeviceEntity deviceConfig)
     {
@@ -282,5 +293,430 @@ public class DatabaseHandler
 
         DeviceHandler.getDevice().getUsersService().addUsers(usernameToUser.values());
         return true;
+    }
+
+    /**
+     * Process the data persistence:
+     * GrantedUserEntity, Fingerprint(s), GrantedAccessEntity.
+     *
+     * @param newUser   Instance of GrantedUser (SDK) to be added to database.
+     *
+     * @return          True if success, false otherwise (username already used, SQLException, etc).
+     */
+    public static boolean persistUser(final GrantedUser newUser)
+    {
+        try
+        {
+            TransactionManager.callInTransaction(getConnectionSource(), new PersistUserCallable(newUser));
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error while persisting new user.", sqle);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Start the user deletion process (user + fingerprints).
+     *
+     * @param username  Name of to-be-deleted user.
+     *
+     * @return          True if successful, false otherwise (unknown user, SQLException...).
+     */
+    public static boolean deleteUser(String username)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            // user unknown
+            return false;
+        }
+
+        return userRepo.delete(gue);
+    }
+
+    /**
+     * Get FingerprintRepository and start data persistence process.
+     *
+     * @param username      User to be attached to the fingerprint entity.
+     * @param fingerIndex   Finger index (int) to be written in new row.
+     * @param fpTpl         Base64 encoded fingerprint template.
+     *
+     * @return              True if success, false otherwise (user unknown in DB, SQLException...).
+     */
+    public static boolean persistFingerprint(String username, int fingerIndex, String fpTpl)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository fpRepo   = getRepository(FingerprintEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        if(!(fpRepo instanceof FingerprintRepository))
+        {
+            return false;
+        }
+
+        return fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
+    }
+
+    /**
+     * Delete a given fingerprint (username + finger index) from database.
+     *
+     * @param username  User attached to the fingerprint.
+     * @param index     FingerIndex's index of the fingerprint.
+     *
+     * @return          True if successful, false otherwise.
+     */
+    public static boolean deleteFingerprint(String username, int index)
+    {
+        Repository fpRepo = getRepository(FingerprintEntity.class);
+
+        if(!(fpRepo instanceof FingerprintRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        FingerprintEntity fpe = ((FingerprintRepository)fpRepo).getFingerprint(gue, index);
+
+        if(fpe == null)
+        {
+            return false;
+        }
+
+        return fpRepo.delete(fpe);
+    }
+
+    /**
+     * Persist new badge number in database.
+     *
+     * @param username      User to be updated.
+     * @param badgeNumber   New badge number.
+     *
+     * @return              True if success, false otherwise (user not known, SQLException, etc).
+     */
+    public static boolean persistBadgeNumber(String username, String badgeNumber)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+
+        if(!(userRepo instanceof GrantedUserRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        return ((GrantedUserRepository)userRepo).updateBadge(username, badgeNumber);
+    }
+
+    /**
+     * Persist new permission in database.
+     *
+     * @param username      User to be updated.
+     * @param grantType     New permission.
+     *
+     * @return              True if success, false otherwise (user not known, SQLException, etc).
+     */
+    public static boolean persistPermission(String username, GrantType grantType)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository accessRepo = getRepository(GrantedAccessEntity.class);
+        Repository grantTypeRepo = getRepository(GrantTypeEntity.class);
+
+        if( !(userRepo instanceof GrantedUserRepository) ||
+            !(grantTypeRepo instanceof GrantTypeRepository) ||
+            !(accessRepo instanceof GrantedAccessRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository)userRepo).getByUsername(username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo).fromGrantType(grantType);
+
+        if(gte == null)
+        {
+            SmartLogger.getLogger().severe("Persisting permission: unknown grant type " + grantType + ".");
+            return false;
+        }
+
+        GrantedAccessEntity gae = new GrantedAccessEntity(gue,
+                getDeviceConfiguration(),
+                gte
+        );
+
+        Iterator<GrantedAccessEntity> it = gue.getGrantedAccesses().iterator();
+
+        while(it.hasNext())
+        {
+            if(it.next().getDevice().getId() == getDeviceConfiguration().getId())
+            {
+                it.remove();
+                break;
+            }
+        }
+
+        return gue.getGrantedAccesses().add(gae);
+    }
+
+    /**
+     * On successful authentication (event raised by Device), persist (log) information in database.
+     *
+     * @param grantedUser   GrantedUser instance who successfully authenticated.
+     * @param accessType    AccessType enum value (fingerprint, badge...).
+     *
+     * @return True if operation was successful, false otherwise.
+     */
+    public static boolean persistAuthentication(GrantedUser grantedUser, AccessType accessType)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
+        Repository authenticationRepo = getRepository(AuthenticationEntity.class);
+
+        if( !(userRepo instanceof GrantedUserRepository) ||
+            !(accessTypeRepo instanceof AccessTypeRepository))
+        {
+            // not supposed to happen as the repositories map is filled automatically
+            return false;
+        }
+
+        GrantedUserEntity gue = ((GrantedUserRepository)userRepo).getByUsername(grantedUser.getUsername());
+
+        if(gue == null)
+        {
+            // user does not exist in database
+            return false;
+        }
+
+        AccessTypeEntity ate = ((AccessTypeRepository)accessTypeRepo).fromAccessType(accessType);
+
+        if(ate == null)
+        {
+            SmartLogger.getLogger().severe("Persisting authentication: unknown access type " + accessType + ".");
+            return false;
+        }
+
+        return authenticationRepo.insert(new AuthenticationEntity(getDeviceConfiguration(), gue, ate));
+    }
+
+    /**
+     * Persist new inventory in the database, including related RfidTagEntities
+     * (many-to-many relationship through InventoryRfidTag).
+     *
+     * @param lastInventory Provided by RfidDevice instance. Inventory made when last scan completed.
+     *
+     * @return  True if operation succeeded, false otherwise.
+     */
+    public static boolean persistInventory(Inventory lastInventory)
+    {
+        try
+        {
+            TransactionManager.callInTransaction(getConnectionSource(), new PersistInventoryCallable(lastInventory));
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Error while persisting new inventory.", sqle);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Callable subclass called when persisting a new user (SQL transaction)
+     */
+    private static class PersistUserCallable implements Callable<Void>
+    {
+        private final GrantedUser _newUser;
+
+        private PersistUserCallable(GrantedUser newUser)
+        {
+            _newUser = newUser;
+        }
+
+        @Override
+        public Void call() throws Exception
+        {
+            // First, get & create the user
+            Repository userRepo = getRepository(GrantedUserEntity.class);
+
+            GrantedUserEntity gue = new GrantedUserEntity(_newUser);
+
+            if(!userRepo.insert(gue))
+            {
+                throw new SQLException("Failed when inserting new user.");
+            }
+
+            // get GrantTypeEntity instance corresponding to newUser grant type
+            Repository grantTypeRepo = getRepository(GrantTypeEntity.class);
+            GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo)
+                    .fromGrantType(_newUser.getPermission());
+
+            if(gte == null)
+            {
+                throw new SQLException("Persisting user: unknown grant type "+ _newUser.getPermission() +".");
+            }
+
+            // create & persist fingerprints and access
+            Repository fpRepo = getRepository(FingerprintEntity.class);
+            Repository gaRepo = getRepository(GrantedAccessEntity.class);
+
+            GrantedAccessEntity gae = new GrantedAccessEntity(gue, getDeviceConfiguration(), gte);
+
+            // add the fingerprints
+            for(FingerIndex index : _newUser.getEnrolledFingersIndexes())
+            {
+                if(!fpRepo.insert(
+                        new FingerprintEntity(gue, index.getIndex(),
+                                _newUser.getFingerprintTemplate(index))
+                ))
+                {
+                    throw new SQLException("Failed when inserting new fingerprint.");
+                }
+            }
+
+            // add the access to current device (if any)
+            if(!gaRepo.insert(gae))
+            {
+                throw new SQLException("Failed when inserting new granted access.");
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Callable subclass called when persisting a new inventory (SQL transaction)
+     */
+    private static class PersistInventoryCallable implements Callable<Void>
+    {
+        private final Inventory _inventory;
+
+        private PersistInventoryCallable(Inventory inventory)
+        {
+            _inventory = inventory;
+        }
+
+        @Override
+        public Void call() throws Exception
+        {
+            // First, get & create the inventory
+            Repository inventoryRepo = getRepository(InventoryEntity.class);
+            Repository userRepo = getRepository(GrantedUserEntity.class);
+            Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
+            Repository rfidTagRepo = getRepository(RfidTagEntity.class);
+            Repository inventTagRepo = getRepository(InventoryRfidTag.class);
+
+            if( !(userRepo instanceof GrantedUserRepository) ||
+                !(accessTypeRepo instanceof AccessTypeRepository) ||
+                !(rfidTagRepo instanceof RfidTagRepository) ||
+                !(inventTagRepo instanceof InventoryRfidTagRepository))
+            {
+                // not supposed to happen as the repositories map is filled automatically
+                throw new SQLException("Invalid repositories. Unable to insert Inventory in database.");
+            }
+
+            GrantedUserEntity gue = null;
+
+            if(_inventory.getInitiatingUserName() != null && !"".equals(_inventory.getInitiatingUserName().trim()))
+            {
+                gue = ((GrantedUserRepository) userRepo).getByUsername(_inventory.getInitiatingUserName());
+            }
+
+            AccessTypeEntity ate = ((AccessTypeRepository) accessTypeRepo).fromAccessType(_inventory.getAccessType());
+
+            if(ate == null)
+            {
+                throw new SQLException("Invalid access type. Unable to insert Inventory in database.");
+            }
+
+            InventoryEntity ie = new InventoryEntity(_inventory, getDeviceConfiguration(), gue, ate);
+
+            if(!inventoryRepo.insert(ie))
+            {
+                throw new SQLException("Failed when inserting new Inventory.");
+            }
+
+            Map<String, RfidTagEntity> uidToEntity = new HashMap<>();
+            List<String> allUids = new ArrayList<>(_inventory.getTagsAll());
+            allUids.addAll(_inventory.getTagsRemoved());
+
+            // browse all UID's (tags added, present, removed) to fill the map with entities
+            for(String tagUid : allUids)
+            {
+                RfidTagEntity rte = ((RfidTagRepository) rfidTagRepo).createIfNotExists(tagUid);
+
+                if(rte == null)
+                {
+                    throw new SQLException("Unable to createIfNotExists a tag in database.");
+                }
+
+                uidToEntity.put(tagUid, rte);
+            }
+
+            // create the many-to-many relationship between the Inventory table and the RfidTag table
+            List<InventoryRfidTag> inventoryRfidTags = new ArrayList<>();
+
+            for(String tagUid : _inventory.getTagsAdded())
+            {
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 1));
+            }
+
+            for(String tagUid : _inventory.getTagsPresent())
+            {
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), 0));
+            }
+
+            for(String tagUid : _inventory.getTagsRemoved())
+            {
+                inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), -1));
+            }
+
+            if(!inventTagRepo.insert(inventoryRfidTags))
+            {
+                throw new SQLException("Unable to insert all tags and movements from new inventory in database.");
+            }
+
+            return null;
+        }
     }
 }

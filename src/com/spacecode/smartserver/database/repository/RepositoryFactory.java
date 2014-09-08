@@ -29,7 +29,17 @@ public class RepositoryFactory
             return null;
         }
 
-        if(className.equals(DeviceEntity.class.getName()))
+        if(className.equals(AccessTypeEntity.class.getName()))
+        {
+            return new AccessTypeRepository(dao);
+        }
+
+        else if(className.equals(AuthenticationEntity.class.getName()))
+        {
+            return new AuthenticationRepository(dao);
+        }
+
+        else if(className.equals(DeviceEntity.class.getName()))
         {
             return new DeviceRepository(dao);
         }
@@ -52,6 +62,21 @@ public class RepositoryFactory
         else if(className.equals(GrantTypeEntity.class.getName()))
         {
             return new GrantTypeRepository(dao);
+        }
+
+        else if(className.equals(InventoryEntity.class.getName()))
+        {
+            return new InventoryRepository(dao);
+        }
+
+        else if(className.equals(InventoryRfidTag.class.getName()))
+        {
+            return new InventoryRfidTagRepository(dao);
+        }
+
+        else if(className.equals(RfidTagEntity.class.getName()))
+        {
+            return new RfidTagRepository(dao);
         }
 
         return null;

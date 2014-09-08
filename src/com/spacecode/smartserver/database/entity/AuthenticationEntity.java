@@ -41,28 +41,57 @@ public class AuthenticationEntity
     {
     }
 
+    /**
+     * Default constructor.
+     * @param device    Device which has been opened by User.
+     * @param gte       User who opened the device.
+     * @param ate       Access type value (fingerprint reader, badge reader...).
+     */
+    public AuthenticationEntity(DeviceEntity device, GrantedUserEntity gte, AccessTypeEntity ate)
+    {
+        _device = device;
+        _grantedUser = gte;
+        _accessType = ate;
+        _createdAt = new Date();
+    }
+
+    /**
+     * @return Id of the entity.
+     */
     public int getId()
     {
         return _id;
     }
 
+    /**
+     * @return DeviceEntity instance.
+     */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
+    /**
+     * @return GrantedUserEntity instance.
+     */
     public GrantedUserEntity getGrantedUser()
     {
         return _grantedUser;
     }
 
+    /**
+     * @return AccessTypeEntity instance.
+     */
     public AccessTypeEntity getAccessType()
     {
         return _accessType;
     }
 
+    /**
+     * @return Date the authentication was persisted.
+     */
     public Date getCreatedAt()
     {
-        return _createdAt;
+        return new Date(_createdAt.getTime());
     }
 }

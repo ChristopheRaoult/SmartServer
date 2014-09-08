@@ -109,6 +109,26 @@ public abstract class Repository<E>
     }
 
     /**
+     * Default method to insert a collection of new E.
+     *
+     * @param newEntities   Collection of E to be inserted.
+     *
+     * @return True if successful, false otherwise (SQLException).
+     */
+    public boolean insert(Collection<E> newEntities)
+    {
+        for(E entity : newEntities)
+        {
+            if(!insert(entity))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Default method to update an entity in the repository table.
      * Update is made according to entity's Id.
      * @param entity    Entity to be updated in the table.

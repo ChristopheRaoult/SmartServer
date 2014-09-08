@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.sdk.device.data.Inventory;
 
 import java.util.Date;
 
@@ -53,44 +54,80 @@ public class InventoryEntity
     {
     }
 
+    public InventoryEntity(Inventory inventory, DeviceEntity device, GrantedUserEntity gue, AccessTypeEntity ate)
+    {
+        _device = device;
+        _grantedUser = gue;
+        _accessType = ate;
 
+        _totalAdded = inventory.getNumberAdded();
+        _totalPresent = inventory.getNumberPresent();
+        _totalRemoved = inventory.getNumberRemoved();
+
+        _createdAt = inventory.getCreationDate();
+    }
+
+    /**
+     * @return Unique entity identifier.
+     */
     public int getId()
     {
         return _id;
     }
 
+    /**
+     * @return Device which performed this inventory.
+     */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
+    /**
+     * @return User which started this inventory by authenticating (or null if manual scan).
+     */
     public GrantedUserEntity getGrantedUser()
     {
         return _grantedUser;
     }
 
+    /**
+     * @return Access type (if started by a user) or Undefined (value of AccessType enumeration).
+     */
     public AccessTypeEntity getAccessType()
     {
         return _accessType;
     }
 
+    /**
+     * @return Number of tags "Added" in the device, since the last inventory.
+     */
     public int getTotalAdded()
     {
         return _totalAdded;
     }
 
+    /**
+     * @return Number of tags still "Present" in the device, since the last inventory.
+     */
     public int getTotalPresent()
     {
         return _totalPresent;
     }
 
+    /**
+     * @return Number of tags "Removed" from the device, since the last inventory.
+     */
     public int getTotalRemoved()
     {
         return _totalRemoved;
     }
 
+    /**
+     * @return Completion date of the inventory.
+     */
     public Date getCreatedAt()
     {
-        return _createdAt;
+        return new Date(_createdAt.getTime());
     }
 }

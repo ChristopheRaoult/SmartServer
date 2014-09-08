@@ -45,7 +45,7 @@ public class GrantTypeRepository extends Repository<GrantTypeEntity>
      */
     public GrantTypeEntity fromGrantType(GrantType grantType)
     {
-        if(grantType == null || grantType == GrantType.UNDEFINED)
+        if(grantType == null)
         {
             return null;
         }

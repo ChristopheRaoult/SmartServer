@@ -7,13 +7,14 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
 
 import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Handle RFIDDevice connection, instantiation, disconnection.
+ * Handle RfidDevice connection, instantiation, disconnection.
  * Provide access to the device.
  */
 public final class DeviceHandler
@@ -81,7 +82,7 @@ public final class DeviceHandler
     }
 
     /**
-     * Release current RFIDDevice (if it has been initialized).
+     * Release current device (if it has been initialized).
      */
     public static void disconnectDevice()
     {
@@ -211,76 +212,87 @@ public final class DeviceHandler
         @Override
         public void deviceDisconnected()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_DEVICE_DISCONNECTED);
+            SmartServer.sendAllClients(EventCode.DEVICE_DISCONNECTED);
 
-            // TODO: device is manually disconnected if serial bridge gets enabled. DO NOT try to reconnectDevice is that case.
+            // TODO: device is manually disconnected if serial bridge gets enabled. DO NOT try to reconnectDevice is that case..
+            // TODO: Find a way to detect if it's a disconnection because of Serial Bridge command (do nothing) or not (do reconnect)
             // => reconnectDevice()
         }
 
         @Override
         public void doorOpened()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_DOOR_OPENED);
+            SmartServer.sendAllClients(EventCode.DOOR_OPENED);
         }
 
         @Override
         public void doorClosed()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_DOOR_CLOSED);
+            SmartServer.sendAllClients(EventCode.DOOR_CLOSED);
         }
 
         @Override
         public void scanStarted()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_STARTED);
+            SmartServer.sendAllClients(EventCode.SCAN_STARTED);
         }
 
         @Override
         public void scanCancelledByHost()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_CANCELLED_BY_HOST);
+            SmartServer.sendAllClients(EventCode.SCAN_CANCELLED_BY_HOST);
         }
 
         @Override
         public void scanCompleted()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_COMPLETED);
+            DatabaseHandler.persistInventory(_device.getLastInventory());
+
+            SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }
 
         @Override
         public void scanFailed()
         {
-            SmartServer.sendAllClients(EventCode.EVENT_SCAN_FAILED);
+            SmartServer.sendAllClients(EventCode.SCAN_FAILED);
         }
 
         @Override
         public void tagAdded(String tagUID)
         {
-            SmartServer.sendAllClients(EventCode.EVENT_TAG_ADDED, tagUID);
+            SmartServer.sendAllClients(EventCode.TAG_ADDED, tagUID);
         }
 
         @Override
         public void authenticationSuccess(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
             super.authenticationSuccess(grantedUser, accessType, isMaster);
+
+            SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
+                    accessType.name(), String.valueOf(isMaster));
+
+            DatabaseHandler.persistAuthentication(grantedUser, accessType);
         }
 
         @Override
         public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
             super.authenticationFailure(grantedUser, accessType, isMaster);
+
+            SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, grantedUser.serialize(),
+                    accessType.name(), String.valueOf(isMaster));
         }
 
         @Override
         public void fingerTouched(boolean isMaster)
         {
-            SmartServer.sendAllClients(EventCode.EVENT_FINGER_TOUCHED, Boolean.valueOf(isMaster).toString());
+            SmartServer.sendAllClients(EventCode.FINGER_TOUCHED, Boolean.valueOf(isMaster).toString());
         }
 
         @Override
         public void fingerprintEnrollmentSample(final byte sampleNumber)
         {
-            SmartServer.sendAllClients(EventCode.EVENT_ENROLLMENT_SAMPLE, String.valueOf(sampleNumber));
+            SmartServer.sendAllClients(EventCode.ENROLLMENT_SAMPLE, String.valueOf(sampleNumber));
         }
     }
 }

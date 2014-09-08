@@ -5,9 +5,6 @@ import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.GrantedUserEntity;
-import com.spacecode.smartserver.database.repository.GrantedUserRepository;
-import com.spacecode.smartserver.database.repository.Repository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -42,7 +39,7 @@ public class CommandUpdateBadge extends ClientCommand
             return;
         }
 
-        if(!persistNewBadgeNumber(username, badgeNumber))
+        if(!DatabaseHandler.persistBadgeNumber(username, badgeNumber))
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, "false");
             return;
@@ -50,24 +47,5 @@ public class CommandUpdateBadge extends ClientCommand
 
         user.setBadgeNumber(badgeNumber);
         SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, "true");
-    }
-
-    /**
-     * Persist new badge number in database.
-     * @param username      User to be updated.
-     * @param badgeNumber   New badge number.
-     * @return              True if success, false otherwise (user not known, SQLException, etc).
-     */
-    private boolean persistNewBadgeNumber(String username, String badgeNumber)
-    {
-        Repository userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
-
-        if(!(userRepo instanceof GrantedUserRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
-        return ((GrantedUserRepository)userRepo).updateBadge(username, badgeNumber);
     }
 }
