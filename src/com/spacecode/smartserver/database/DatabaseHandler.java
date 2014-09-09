@@ -17,6 +17,8 @@ import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.*;
 
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -141,11 +143,6 @@ public class DatabaseHandler
 
         Repository deviceRepository = getRepository(DeviceEntity.class);
 
-        if(!(deviceRepository instanceof DeviceRepository))
-        {
-            return null;
-        }
-
         Object result = deviceRepository.getEntityBy(DeviceEntity.SERIAL_NUMBER, DeviceHandler.getDevice().getSerialNumber());
         _deviceConfiguration = result == null ? null : (DeviceEntity) result;
 
@@ -159,7 +156,7 @@ public class DatabaseHandler
      *
      * @return              Dao instance, or null if something went wrong (unknown entity class, SQLException...).
      */
-    public static Dao getDao(Class entityClass)
+    public static <E extends Entity> Dao<E, Integer> getDao(Class<E> entityClass)
     {
         if(!_classNameToDao.containsKey(entityClass.getName()))
         {
@@ -182,7 +179,7 @@ public class DatabaseHandler
      *
      * @return              Repository instance, or null if something went wrong  (unknown entity or null DAO).
      */
-    public static Repository getRepository(Class entityClass)
+    public static <E extends Entity> Repository<E> getRepository(Class<E> entityClass)
     {
         String className = entityClass.getName();
 
@@ -249,24 +246,20 @@ public class DatabaseHandler
             // one more line (with repeated user information) for each user's fingerprint.
             GenericRawResults results = daoUser.queryRaw(sb.toString());
 
-            Iterator<String[]> iterator = results.iterator();
-
             // fill the users hashmap with results from Raw SQL query
-            while(iterator.hasNext())
+            for (String[] result : (Iterable<String[]>) results)
             {
-                String[] result = iterator.next();
-
                 GrantedUser user = usernameToUser.get(result[0]);
 
                 // first, add the user if it's not known yet
-                if(user == null)
+                if (user == null)
                 {
                     user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
                     usernameToUser.put(result[0], user);
                 }
 
                 // if there isn't any fingerprint [finger_index is null], go on
-                if(result[3] == null || user == null)
+                if (result[3] == null)
                 {
                     // user should not be null at this stage, but test anyway
                     continue;
@@ -277,7 +270,7 @@ public class DatabaseHandler
                 FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
 
                 // if finger index from db is valid and in the expected range
-                if(fingerIndex != null)
+                if (fingerIndex != null)
                 {
                     // add this new fingerprint template to the user
                     user.setFingerprintTemplate(fingerIndex, result[4]);
@@ -300,12 +293,31 @@ public class DatabaseHandler
         return true;
     }
 
+    /**
+     * Load information from the last inventory stored in database.
+     *
+     * Allow getting information of the last inventory in order to be able to:
+     * <ul>
+     *     <li>Query for last inventory even when device has just started.</li>
+     *     <li>Define which tags should be considered as added, present or removed for the next inventory.</li>
+     * </ul>
+     *
+     * @return Inventory instance, or null if something went wrong (SQL Exception).
+     */
     public static Inventory getLastStoredInventory()
     {
         Dao daoUser = getDao(InventoryEntity.class);
 
-        // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
-        String columns = "inv.device_id, inv.granteduser_id, inv.accesstype_id, inv.total_added, inv.total_present, inv.total_removed, rt.uid, irt.movement, inv.created_at";
+        // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present, 4: total tags removed
+        // 5: tag uid, 6: tag movement, 7: inventory creation date
+        String columns = "inv."+InventoryEntity.GRANTED_USER_ID+"," +
+                " inv."+InventoryEntity.ACCESS_TYPE_ID+"," +
+                " inv."+InventoryEntity.TOTAL_ADDED+"," +
+                " inv."+InventoryEntity.TOTAL_PRESENT+"," +
+                " inv."+InventoryEntity.TOTAL_REMOVED+"," +
+                " rt."+RfidTagEntity.UID+"," +
+                " irt."+InventoryRfidTag.MOVEMENT+"," +
+                " inv."+InventoryEntity.CREATED_AT;
 
         // raw query to get all columns for the last inventory
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
@@ -320,32 +332,100 @@ public class DatabaseHandler
         sb.append("irt.").append(InventoryRfidTag.RFID_TAG_ID).append(" ");
         // for the current device only
         sb.append("WHERE inv.").append(InventoryEntity.CREATED_AT)
-                .append(" =(SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
-                .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(")");
+                .append(" = (SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
+                .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(") ");
+        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID).append(" = ").append(getDeviceConfiguration().getId());
+
+        Inventory lastInventoryFromDb = new Inventory();
 
         try
         {
-            // get one line per user having a granted access on this device
-            // one more line (with repeated user information) for each user's fingerprint.
+            // one line per tag movement in the inventory (if any)
             GenericRawResults results = daoUser.queryRaw(sb.toString());
 
-            Iterator<String[]> iterator = results.iterator();
+            List<String> tagsAdded = new ArrayList<>();
+            List<String> tagsPresent = new ArrayList<>();
+            List<String> tagsRemoved = new ArrayList<>();
 
-            // fill the users hashmap with results from Raw SQL query
-            while(iterator.hasNext())
+            String[] lastRow = null;
+
+            // fill the inventory instance with results from Raw SQL query
+            for (String[] result : (Iterable<String[]>) results)
             {
-                String[] result = iterator.next();
-                // TODO : parse the result to build a proper Inventory instance, and give it to the Device as a "current inventory" on loading.
+                switch(result[6])
+                {
+                    case "1":
+                        tagsAdded.add(result[5]);
+                        break;
+
+                    case "0":
+                        tagsPresent.add(result[5]);
+                        break;
+
+                    case "-1":
+                        tagsRemoved.add(result[5]);
+                        break;
+
+                    default:
+                        // invalid row or value. Should not happen.
+                        continue;
+                }
+
+                // store the last line in order to initialize (once) repeated data (creation date, username...).
+                lastRow = result;
             }
 
             results.close();
+
+            if(lastRow == null)
+            {
+                // there were no result: inventory table is empty.
+                return lastInventoryFromDb;
+            }
+
+            /*
+            Parse GrantedUser id as int to get its name from db
+            Get AccessType as a value from enum
+            Parse Creation Date as a Date
+             */
+            String username = null;
+            AccessType accessType = null;
+            Date creationDate = null;
+
+            // user
+            if(lastRow[0] != null)
+            {
+                int userId = Integer.parseInt(lastRow[0]);
+                GrantedUserEntity gue = getRepository(GrantedUserEntity.class).getEntityById(userId);
+
+                if(gue != null)
+                {
+                    username = gue.getUsername();
+                }
+            }
+
+            // access type
+            int accessTypeId = Integer.parseInt(lastRow[1]);
+            AccessTypeEntity ate = getRepository(AccessTypeEntity.class).getEntityById(accessTypeId);
+
+            if(ate != null)
+            {
+                accessType = AccessTypeRepository.asAccessType(ate);
+            }
+
+            creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastRow[7]);
+
+            lastInventoryFromDb = new Inventory(tagsAdded, tagsPresent, tagsRemoved, username, accessType, creationDate);
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load users from database.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load last inventory from database.", sqle);
             return null;
+        } catch(IllegalArgumentException | ParseException e)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid data provided for last inventory loading.", e);
         }
 
-        return null;
+        return lastInventoryFromDb;
     }
 
     /**
@@ -379,23 +459,12 @@ public class DatabaseHandler
      */
     public static boolean deleteUser(String username)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
 
-        if(!(userRepo instanceof GrantedUserRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
+        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
-        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+        return gue != null && userRepo.delete(gue);
 
-        if(gue == null)
-        {
-            // user unknown
-            return false;
-        }
-
-        return userRepo.delete(gue);
     }
 
     /**
@@ -409,27 +478,13 @@ public class DatabaseHandler
      */
     public static boolean persistFingerprint(String username, int fingerIndex, String fpTpl)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
-        Repository fpRepo   = getRepository(FingerprintEntity.class);
+        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<FingerprintEntity> fpRepo   = getRepository(FingerprintEntity.class);
 
-        if(!(userRepo instanceof GrantedUserRepository))
-        {
-            return false;
-        }
+        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
-        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+        return gue != null && fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
 
-        if(gue == null)
-        {
-            return false;
-        }
-
-        if(!(fpRepo instanceof FingerprintRepository))
-        {
-            return false;
-        }
-
-        return fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
 
     /**
@@ -442,23 +497,10 @@ public class DatabaseHandler
      */
     public static boolean deleteFingerprint(String username, int index)
     {
-        Repository fpRepo = getRepository(FingerprintEntity.class);
+        Repository<FingerprintEntity> fpRepo = getRepository(FingerprintEntity.class);
+        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
 
-        if(!(fpRepo instanceof FingerprintRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
-        Repository userRepo = getRepository(GrantedUserEntity.class);
-
-        if(!(userRepo instanceof GrantedUserRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
-        GrantedUserEntity gue = ((GrantedUserRepository) userRepo).getByUsername(username);
+        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
         if(gue == null)
         {
@@ -467,12 +509,8 @@ public class DatabaseHandler
 
         FingerprintEntity fpe = ((FingerprintRepository)fpRepo).getFingerprint(gue, index);
 
-        if(fpe == null)
-        {
-            return false;
-        }
+        return fpe != null && fpRepo.delete(fpe);
 
-        return fpRepo.delete(fpe);
     }
 
     /**
@@ -487,12 +525,6 @@ public class DatabaseHandler
     {
         Repository userRepo = getRepository(GrantedUserEntity.class);
 
-        if(!(userRepo instanceof GrantedUserRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
         return ((GrantedUserRepository)userRepo).updateBadge(username, badgeNumber);
     }
 
@@ -506,19 +538,10 @@ public class DatabaseHandler
      */
     public static boolean persistPermission(String username, GrantType grantType)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
-        Repository accessRepo = getRepository(GrantedAccessEntity.class);
+        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
         Repository grantTypeRepo = getRepository(GrantTypeEntity.class);
 
-        if( !(userRepo instanceof GrantedUserRepository) ||
-            !(grantTypeRepo instanceof GrantTypeRepository) ||
-            !(accessRepo instanceof GrantedAccessRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
-        GrantedUserEntity gue = ((GrantedUserRepository)userRepo).getByUsername(username);
+        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
         if(gue == null)
         {
@@ -562,18 +585,11 @@ public class DatabaseHandler
      */
     public static boolean persistAuthentication(GrantedUser grantedUser, AccessType accessType)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
         Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
-        Repository authenticationRepo = getRepository(AuthenticationEntity.class);
+        Repository<AuthenticationEntity> authenticationRepo = getRepository(AuthenticationEntity.class);
 
-        if( !(userRepo instanceof GrantedUserRepository) ||
-            !(accessTypeRepo instanceof AccessTypeRepository))
-        {
-            // not supposed to happen as the repositories map is filled automatically
-            return false;
-        }
-
-        GrantedUserEntity gue = ((GrantedUserRepository)userRepo).getByUsername(grantedUser.getUsername());
+        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, grantedUser.getUsername());
 
         if(gue == null)
         {
@@ -630,7 +646,7 @@ public class DatabaseHandler
         public Void call() throws Exception
         {
             // First, get & create the user
-            Repository userRepo = getRepository(GrantedUserEntity.class);
+            Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
 
             GrantedUserEntity gue = new GrantedUserEntity(_newUser);
 
@@ -650,8 +666,8 @@ public class DatabaseHandler
             }
 
             // create & persist fingerprints and access
-            Repository fpRepo = getRepository(FingerprintEntity.class);
-            Repository gaRepo = getRepository(GrantedAccessEntity.class);
+            Repository<FingerprintEntity> fpRepo = getRepository(FingerprintEntity.class);
+            Repository<GrantedAccessEntity> gaRepo = getRepository(GrantedAccessEntity.class);
 
             GrantedAccessEntity gae = new GrantedAccessEntity(gue, getDeviceConfiguration(), gte);
 
@@ -693,32 +709,24 @@ public class DatabaseHandler
         public Void call() throws Exception
         {
             // First, get & create the inventory
-            Repository inventoryRepo = getRepository(InventoryEntity.class);
-            Repository userRepo = getRepository(GrantedUserEntity.class);
+            Repository<InventoryEntity> inventoryRepo = getRepository(InventoryEntity.class);
+            Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
             Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
             Repository rfidTagRepo = getRepository(RfidTagEntity.class);
-            Repository inventTagRepo = getRepository(InventoryRfidTag.class);
-
-            if( !(userRepo instanceof GrantedUserRepository) ||
-                !(accessTypeRepo instanceof AccessTypeRepository) ||
-                !(rfidTagRepo instanceof RfidTagRepository) ||
-                !(inventTagRepo instanceof InventoryRfidTagRepository))
-            {
-                // not supposed to happen as the repositories map is filled automatically
-                throw new SQLException("Invalid repositories. Unable to insert Inventory in database.");
-            }
+            Repository<InventoryRfidTag> inventTagRepo = getRepository(InventoryRfidTag.class);
 
             GrantedUserEntity gue = null;
 
             if(_inventory.getInitiatingUserName() != null && !"".equals(_inventory.getInitiatingUserName().trim()))
             {
-                gue = ((GrantedUserRepository) userRepo).getByUsername(_inventory.getInitiatingUserName());
+                gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, _inventory.getInitiatingUserName());
             }
 
             AccessTypeEntity ate = ((AccessTypeRepository) accessTypeRepo).fromAccessType(_inventory.getAccessType());
 
             if(ate == null)
             {
+                // GrantedUser can be null for an inventory (if manually started) but AccessType can't.
                 throw new SQLException("Invalid access type. Unable to insert Inventory in database.");
             }
 

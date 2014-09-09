@@ -44,6 +44,7 @@ public class CommandAddUser extends ClientCommand
 
         if(!DatabaseHandler.persistUser(newUser))
         {
+            // if insert in db failed, remove user from local users.
             DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
             return;

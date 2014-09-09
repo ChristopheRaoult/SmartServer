@@ -8,18 +8,14 @@ import com.j256.ormlite.table.DatabaseTable;
  * InventoryRfidTag Entity (table linking InventoryEntity and RfidTagEntity (many-to-many relationship)).
  */
 @DatabaseTable(tableName = InventoryRfidTag.TABLE_NAME)
-public class InventoryRfidTag
+public final class InventoryRfidTag extends Entity
 {
     public static final String TABLE_NAME = "sc_inventory_rfid_tag";
 
-    public static final String ID = "id";
     public static final String INVENTORY_ID = "inventory_id";
-    public static final String RFID_TAG_ID = "rfidtag_id";
+    public static final String RFID_TAG_ID = "rfid_tag_id";
     public static final String MOVEMENT = "movement";
     public static final String SHELVE_NUMBER = "shelve_number";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(foreign = true, columnName = INVENTORY_ID, canBeNull = false)
     private InventoryEntity _inventory;
@@ -67,14 +63,6 @@ public class InventoryRfidTag
     {
         this(inventory, rfidTag, movementType);
         _shelveNumber = shelveNumber;
-    }
-
-    /**
-     * @return Entity identifier.
-     */
-    public int getId()
-    {
-        return _id;
     }
 
     /**

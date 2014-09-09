@@ -7,17 +7,13 @@ import com.j256.ormlite.table.DatabaseTable;
  * GrantedAccess Entity
  */
 @DatabaseTable(tableName = GrantedAccessEntity.TABLE_NAME)
-public class GrantedAccessEntity
+public final class GrantedAccessEntity extends Entity
 {
     public static final String TABLE_NAME =  "sc_granted_access";
 
-    public static final String ID = "id";
     public static final String DEVICE_ID = "device_id";
     public static final String GRANTED_USER_ID = "granted_user_id";
     public static final String GRANT_TYPE_ID = "grant_type_id";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
@@ -48,11 +44,6 @@ public class GrantedAccessEntity
         _grantedUser = grantedUser;
         _device = device;
         _grantType = grantType;
-    }
-
-    public int getId()
-    {
-        return _id;
     }
 
     /**

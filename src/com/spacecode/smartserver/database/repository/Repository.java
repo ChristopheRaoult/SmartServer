@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.spacecode.smartserver.SmartLogger;
+import com.spacecode.smartserver.database.entity.Entity;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.logging.Level;
  * Generic Repository for all entities. To be inherited/specified for more getting methods.
  * @param <E> Generic type for the Entity class.
  */
-public abstract class Repository<E>
+public abstract class Repository<E extends Entity>
 {
     protected Dao<E, Integer> _dao;
 

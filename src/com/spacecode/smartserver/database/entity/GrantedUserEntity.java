@@ -12,17 +12,13 @@ import java.util.Date;
  * GrantedUser Entity
  */
 @DatabaseTable(tableName = GrantedUserEntity.TABLE_NAME)
-public class GrantedUserEntity
+public final class GrantedUserEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_granted_user";
 
-    public static final String ID = "id";
     public static final String USERNAME = "username";
     public static final String BADGE_NUMBER = "badge_number";
     public static final String CREATED_AT = "created_at";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true)
     private String _username;
@@ -70,14 +66,6 @@ public class GrantedUserEntity
     public GrantedUserEntity(GrantedUser newUser)
     {
         this(newUser.getUsername(), newUser.getBadgeNumber());
-    }
-
-    /**
-     * @return GrantedUserEntity identifier.
-     */
-    public int getId()
-    {
-        return _id;
     }
 
     /**

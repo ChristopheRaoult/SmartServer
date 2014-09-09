@@ -89,6 +89,7 @@ public final class SmartServer
             // TODO: do something if any failure (see directly in method)
             DeviceHandler.connectModules(deviceConfig);
 
+            // Load users from DB into UsersService.
             SmartLogger.getLogger().info("Loading users...");
 
             if(!DatabaseHandler.loadGrantedUsers())
@@ -97,9 +98,15 @@ public final class SmartServer
                 return;
             }
 
-            Inventory inv = DatabaseHandler.getLastStoredInventory();
-
             SmartLogger.getLogger().info("Users loaded.");
+
+            // Load last inventory from DB and load it into device.
+            Inventory lastInventoryFromDb = DatabaseHandler.getLastStoredInventory();
+
+            if(lastInventoryFromDb != null)
+            {
+                DeviceHandler.getDevice().setLastInventory(lastInventoryFromDb);
+            }
         }
 
         else

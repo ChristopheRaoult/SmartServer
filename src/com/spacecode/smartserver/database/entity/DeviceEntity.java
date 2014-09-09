@@ -7,18 +7,14 @@ import com.j256.ormlite.table.DatabaseTable;
  * DeviceConfiguration Entity
  */
 @DatabaseTable(tableName = DeviceEntity.TABLE_NAME)
-public class DeviceEntity
+public final class DeviceEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_device";
 
-    public static final String ID = "id";
     public static final String SERIAL_NUMBER = "serial_number";
     public static final String NB_BADGE_READER = "nb_badge_reader";
     public static final String FP_READER_MASTER = "fp_reader_master";
     public static final String FP_READER_SLAVE = "fp_reader_slave";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(unique = true, columnName = SERIAL_NUMBER)
     private String _serialNumber;
@@ -37,14 +33,6 @@ public class DeviceEntity
      */
     DeviceEntity()
     {
-    }
-
-    /**
-     * @return ID of the DeviceEntity.
-     */
-    public int getId()
-    {
-        return _id;
     }
 
     /**

@@ -7,15 +7,11 @@ import com.j256.ormlite.table.DatabaseTable;
  * AccessType Entity
  */
 @DatabaseTable(tableName = AccessTypeEntity.TABLE_NAME)
-public class AccessTypeEntity
+public final class AccessTypeEntity extends Entity
 {
     public static final String TABLE_NAME =  "sc_access_type";
 
-    public static final String ID = "id";
     public static final String TYPE = "type";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(columnName = TYPE, canBeNull = false)
     private String _type;
@@ -34,11 +30,6 @@ public class AccessTypeEntity
     public AccessTypeEntity(String accessType)
     {
         _type = accessType;
-    }
-
-    public int getId()
-    {
-        return _id;
     }
 
     /**

@@ -7,15 +7,11 @@ import com.j256.ormlite.table.DatabaseTable;
  * GrantType Entity
  */
 @DatabaseTable(tableName = GrantTypeEntity.TABLE_NAME)
-public class GrantTypeEntity
+public final class GrantTypeEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_grant_type";
 
-    public static final String ID = "id";
     public static final String TYPE = "type";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(columnName = TYPE, canBeNull = false)
     private String _type;
@@ -34,11 +30,6 @@ public class GrantTypeEntity
     public GrantTypeEntity(String userGrant)
     {
         _type = userGrant;
-    }
-
-    public int getId()
-    {
-        return _id;
     }
 
     /**

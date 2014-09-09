@@ -29,6 +29,11 @@ public class AccessTypeRepository extends Repository<AccessTypeEntity>
      */
     public static AccessType asAccessType(AccessTypeEntity ate)
     {
+        if(ate == null)
+        {
+            return null;
+        }
+
         try
         {
             return AccessType.valueOf(ate.getType());

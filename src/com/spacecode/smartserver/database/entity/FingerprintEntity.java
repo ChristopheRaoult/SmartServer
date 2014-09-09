@@ -8,17 +8,13 @@ import com.j256.ormlite.table.DatabaseTable;
  * Fingerprint Entity
  */
 @DatabaseTable(tableName = FingerprintEntity.TABLE_NAME)
-public class FingerprintEntity
+public final class FingerprintEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_fingerprint";
 
-    public static final String ID = "id";
     public static final String GRANTED_USER_ID = "granted_user_id";
     public static final String FINGER_INDEX = "finger_index";
     public static final String TEMPLATE = "template";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
     private GrantedUserEntity _grantedUser;
@@ -47,11 +43,6 @@ public class FingerprintEntity
         _grantedUser = user;
         _fingerIndex = index;
         _template = template;
-    }
-
-    public int getId()
-    {
-        return _id;
     }
 
     /**

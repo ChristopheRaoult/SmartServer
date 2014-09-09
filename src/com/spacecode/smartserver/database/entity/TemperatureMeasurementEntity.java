@@ -9,23 +9,19 @@ import java.util.Date;
  * TemperatureMeasurement Entity
  */
 @DatabaseTable(tableName = TemperatureMeasurementEntity.TABLE_NAME)
-public class TemperatureMeasurementEntity
+public final class TemperatureMeasurementEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_temperature";
 
-    public static final String ID = "id";
     public static final String DEVICE_ID = "device_id";
     public static final String VALUE = "value";
     public static final String CREATED_AT = "created_at";
-
-    @DatabaseField(generatedId = true, columnName = ID)
-    private int _id;
 
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
 
     @DatabaseField(columnName = VALUE, canBeNull = false)
-    private double _uid;
+    private double _value;
 
     @DatabaseField(columnName = CREATED_AT)
     private Date _createdAt;
@@ -37,19 +33,20 @@ public class TemperatureMeasurementEntity
     {
     }
 
-    public int getId()
-    {
-        return _id;
-    }
-
+    /**
+     * @return Device who took the measure.
+     */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
-    public double getUid()
+    /**
+     * @return Temperature measure value.
+     */
+    public double getValue()
     {
-        return _uid;
+        return _value;
     }
 
     /**

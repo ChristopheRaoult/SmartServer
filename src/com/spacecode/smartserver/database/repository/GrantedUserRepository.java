@@ -55,8 +55,8 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
     {
         try
         {
-            Repository fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
-            Repository gaRepo = DatabaseHandler.getRepository(GrantedAccessEntity.class);
+            Repository<FingerprintEntity> fpRepo = DatabaseHandler.getRepository(FingerprintEntity.class);
+            Repository<GrantedAccessEntity> gaRepo = DatabaseHandler.getRepository(GrantedAccessEntity.class);
 
             // first, remove the foreign dependencies
             fpRepo.delete(entity.getFingerprints());
