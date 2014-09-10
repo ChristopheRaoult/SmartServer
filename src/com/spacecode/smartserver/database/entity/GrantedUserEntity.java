@@ -18,6 +18,7 @@ public final class GrantedUserEntity extends Entity
 
     public static final String USERNAME = "username";
     public static final String BADGE_NUMBER = "badge_number";
+    public static final String THIEF_FINGER_INDEX = "thief_finger_index";
     public static final String CREATED_AT = "created_at";
 
     @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true)
@@ -25,6 +26,9 @@ public final class GrantedUserEntity extends Entity
 
     @DatabaseField(columnName = BADGE_NUMBER)
     private String _badgeNumber;
+
+    @DatabaseField(columnName = THIEF_FINGER_INDEX)
+    private Integer _thiefFingerIndex;
 
     @DatabaseField(columnName = CREATED_AT)
     private Date _createdAt;
@@ -85,6 +89,42 @@ public final class GrantedUserEntity extends Entity
     }
 
     /**
+     * Allow updating badge number.
+     *
+     * @param badgeNumber New badge number.
+     */
+    public void setBadgeNumber(String badgeNumber)
+    {
+        _badgeNumber = badgeNumber;
+    }
+
+    /**
+     * @return Creation Date
+     */
+    public Date getCreatedAt()
+    {
+        return new Date(_createdAt.getTime());
+    }
+
+    /**
+     * @return "Thief finger" index (finger used in case of robbery/mugging).
+     */
+    public Integer getThiefFingerIndex()
+    {
+        return _thiefFingerIndex;
+    }
+
+    /**
+     * Allow setting user's "thief finger" index (finger used in case of robbery/mugging).
+     *
+     * @param thiefFingerIndex New value.
+     */
+    public void setThiefFingerIndex(Integer thiefFingerIndex)
+    {
+        _thiefFingerIndex = thiefFingerIndex;
+    }
+
+    /**
      * @return FingerprintEntity collection (ForeignCollection).
      */
     public ForeignCollection<FingerprintEntity> getFingerprints()
@@ -98,14 +138,5 @@ public final class GrantedUserEntity extends Entity
     public ForeignCollection<GrantedAccessEntity> getGrantedAccesses()
     {
         return _grantedAccesses;
-    }
-
-    /**
-     * Allow updating badge number.
-     * @param badgeNumber New badge number.
-     */
-    public void setBadgeNumber(String badgeNumber)
-    {
-        _badgeNumber = badgeNumber;
     }
 }

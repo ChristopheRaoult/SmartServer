@@ -1,8 +1,10 @@
 package com.spacecode.smartserver;
 
-import com.spacecode.sdk.device.*;
+import com.spacecode.sdk.device.DeviceCreationException;
+import com.spacecode.sdk.device.RfidDevice;
 import com.spacecode.sdk.device.data.ConnectionStatus;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
+import com.spacecode.sdk.device.event.AdvancedDeviceEventHandler;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
@@ -52,22 +54,7 @@ public final class DeviceHandler
 
             try
             {
-                switch(deviceInfo.getDeviceType())
-                {
-                    case RfidDevice.DeviceType.SMARTBOARD:
-                        _device = new SmartBoard(null, deviceInfo.getSerialPort());
-                        break;
-
-                    case RfidDevice.DeviceType.SMARTDRAWER:
-                        _device = new SmartDrawer(null, deviceInfo.getSerialPort());
-                        break;
-
-                    default:
-                        // device type unknown or not handled => return false.
-                        SmartLogger.getLogger().warning("Unknown Device Type. Unable to connect to a device.");
-                        return false;
-                }
-
+                _device = new RfidDevice(null, deviceInfo.getSerialPort());
                 _device.addListener(new DeviceEventHandler());
             } catch (DeviceCreationException dce)
             {
@@ -75,6 +62,7 @@ public final class DeviceHandler
                 return false;
             }
 
+            // take the first device plugged, as we only run if exactly one is available
             break;
         }
 
@@ -95,6 +83,7 @@ public final class DeviceHandler
 
     /**
      * Try to reconnect device five times (waiting 3sec after each try).
+     *
      * @return True if reconnection succeeded, false otherwise.
      */
     public static boolean reconnectDevice()
@@ -130,6 +119,7 @@ public final class DeviceHandler
     /**
      * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceEntity information.
      * TODO: Retry many times if any module couldn't be initialized/connected
+     *
      * @param deviceConfig  DeviceEntity instance to be read to get information about modules.
      */
     public static void connectModules(DeviceEntity deviceConfig)
@@ -207,7 +197,7 @@ public final class DeviceHandler
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
-    private static class DeviceEventHandler extends RfidDeviceEventHandler
+    private static class DeviceEventHandler implements AdvancedDeviceEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -266,8 +256,6 @@ public final class DeviceHandler
         @Override
         public void authenticationSuccess(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
-            super.authenticationSuccess(grantedUser, accessType, isMaster);
-
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
@@ -277,8 +265,6 @@ public final class DeviceHandler
         @Override
         public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
         {
-            super.authenticationFailure(grantedUser, accessType, isMaster);
-
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
         }
@@ -293,6 +279,30 @@ public final class DeviceHandler
         public void fingerprintEnrollmentSample(final byte sampleNumber)
         {
             SmartServer.sendAllClients(EventCode.ENROLLMENT_SAMPLE, String.valueOf(sampleNumber));
+        }
+
+        @Override
+        public void badgeReaderConnected(boolean isMaster)
+        {
+            SmartLogger.getLogger().info("Badge reader ("+ (isMaster ? "Master" : "Slave")+") connected.");
+        }
+
+        @Override
+        public void badgeReaderDisconnected(boolean isMaster)
+        {
+            SmartLogger.getLogger().info("Badge reader ("+ (isMaster ? "Master" : "Slave")+") disconnected.");
+        }
+
+        @Override
+        public void tagPresence()
+        {
+            SmartLogger.getLogger().info("Tag presence.");
+        }
+
+        @Override
+        public void scanCancelledByDoor()
+        {
+            SmartLogger.getLogger().info("Scan has been cancelled because someone opened the door.");
         }
     }
 }

@@ -23,7 +23,7 @@ public class CommandRemoveUser extends ClientCommand
         // waiting for 1 parameter: username of the user to be removed
         if(parameters.length != 1)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -31,16 +31,16 @@ public class CommandRemoveUser extends ClientCommand
 
         if(!DeviceHandler.getDevice().getUsersService().removeUser(username))
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;
         }
 
         if(!DatabaseHandler.deleteUser(username))
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, "true");
+        SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, TRUE);
     }
 }

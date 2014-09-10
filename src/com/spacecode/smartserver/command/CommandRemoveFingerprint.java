@@ -25,7 +25,7 @@ public class CommandRemoveFingerprint extends ClientCommand
         // waiting for 2 parameters: username and finger index
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -39,14 +39,14 @@ public class CommandRemoveFingerprint extends ClientCommand
         } catch(NumberFormatException nfe)
         {
             // integer for the finger index is not valid
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
         }
 
         // no finger index matching with the given integer value
         if(fingerIndex == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
         }
 
@@ -54,18 +54,18 @@ public class CommandRemoveFingerprint extends ClientCommand
 
         if(user == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
         }
 
         // persist deletion in database
         if(!DatabaseHandler.deleteFingerprint(username, fingerIndex.getIndex()))
         {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "false");
+            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
         }
 
         user.setFingerprintTemplate(fingerIndex, null);
-        SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, "true");
+        SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, TRUE);
     }
 }

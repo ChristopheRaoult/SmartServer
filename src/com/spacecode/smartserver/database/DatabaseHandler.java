@@ -28,7 +28,7 @@ import java.util.logging.Level;
  */
 public class DatabaseHandler
 {
-    // TODO: values to be read from a local .conf file (just like a real system service)
+    // TODO: values to be read from a local .conf file (just like a real *nix system service)
     private static final String DB_HOST             = "localhost:3306";
     private static final String DB_NAME             = "test";
     private static final String DB_USER             = "root";
@@ -64,6 +64,7 @@ public class DatabaseHandler
 
             Dao<AccessTypeEntity, Integer> daoAccessType = DaoManager.createDao(_connectionSource, AccessTypeEntity.class);
             Dao<GrantTypeEntity, Integer> daoGrantType = DaoManager.createDao(_connectionSource, GrantTypeEntity.class);
+            Dao<AlertTypeEntity, Integer> daoAlertType = DaoManager.createDao(_connectionSource, AlertTypeEntity.class);
 
             // create model (if necessary)
             TableUtils.createTableIfNotExists(_connectionSource, AuthenticationEntity.class);
@@ -93,6 +94,16 @@ public class DatabaseHandler
                 daoGrantType.create(new GrantTypeEntity(GrantType.SLAVE.name()));
                 daoGrantType.create(new GrantTypeEntity(GrantType.MASTER.name()));
                 daoGrantType.create(new GrantTypeEntity(GrantType.ALL.name()));
+            }
+
+            if(!daoAlertType.isTableExists())
+            {
+                // create table and fill with constants
+                TableUtils.createTable(_connectionSource, AlertTypeEntity.class);
+                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.DEVICE_DISCONNECTED));
+                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.DOOR_DELAY));
+                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.TEMPERATURE));
+                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.THIEF_FINGER));
             }
         } catch (SQLException sqle)
         {
@@ -526,6 +537,21 @@ public class DatabaseHandler
         Repository userRepo = getRepository(GrantedUserEntity.class);
 
         return ((GrantedUserRepository)userRepo).updateBadge(username, badgeNumber);
+    }
+
+    /**
+     * Persist new "thief finger" index in database.
+     *
+     * @param username      User to be updated.
+     * @param fingerIndex   New "thief finger" index.
+     *
+     * @return              True if success, false otherwise (user not known, SQLException, etc).
+     */
+    public static boolean persistThiefFingerIndex(String username, Integer fingerIndex)
+    {
+        Repository userRepo = getRepository(GrantedUserEntity.class);
+
+        return ((GrantedUserRepository)userRepo).updateThiefFingerIndex(username, fingerIndex);
     }
 
     /**

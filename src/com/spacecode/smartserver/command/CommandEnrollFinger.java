@@ -29,7 +29,7 @@ public class CommandEnrollFinger extends ClientCommand
         // waiting for 3 parameters: username, finger index, "is Master reader?" (boolean)
         if(parameters.length != 3)
         {
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -44,14 +44,14 @@ public class CommandEnrollFinger extends ClientCommand
         } catch(NumberFormatException nfe)
         {
             // integer for the finger index is not valid
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             return;
         }
 
         // no finger index matching with the given integer value
         if(fingerIndex == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             return;
         }
 
@@ -65,14 +65,14 @@ public class CommandEnrollFinger extends ClientCommand
                 {
                     if (!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
                     {
-                        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
                         return;
                     }
                 } catch (TimeoutException te)
                 {
                     // enrollment process timeout expired
                     SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
-                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
                     return;
                 }
 
@@ -83,11 +83,11 @@ public class CommandEnrollFinger extends ClientCommand
                 if (!DatabaseHandler.persistFingerprint(username, fingerIndex.getIndex(), fpTpl))
                 {
                     gu.setFingerprintTemplate(fingerIndex, null);
-                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "false");
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
                     return;
                 }
 
-                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, "true");
+                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, TRUE);
             }
         });
     }

@@ -28,7 +28,7 @@ public class CommandUpdatePermission extends ClientCommand
         // waiting for 2 parameters: username and new Grant Type (permission on device).
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, "false");
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -42,7 +42,7 @@ public class CommandUpdatePermission extends ClientCommand
         } catch(IllegalArgumentException iae)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Invalid GrantType for permission update", iae);
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, "false");
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
         }
 
@@ -51,17 +51,17 @@ public class CommandUpdatePermission extends ClientCommand
         // grantType can't be null with "valueOf" (enum) but anyway
         if(user == null || grantType == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, "false");
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
         }
 
         if(!DatabaseHandler.persistPermission(username, grantType))
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, "false");
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
         }
 
         user.setPermission(grantType);
-        SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, "true");
+        SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, TRUE);
     }
 }

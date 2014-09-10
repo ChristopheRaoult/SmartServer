@@ -24,7 +24,7 @@ public class CommandAddUser extends ClientCommand
         // waiting for only 1 parameter: serialized rantedUser
         if(parameters.length != 1)
         {
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -32,13 +32,13 @@ public class CommandAddUser extends ClientCommand
 
         if(newUser == null || newUser.getUsername() == null || "".equals(newUser.getUsername().trim()))
         {
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }
 
         if(!DeviceHandler.getDevice().getUsersService().addUser(newUser))
         {
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }
 
@@ -46,10 +46,10 @@ public class CommandAddUser extends ClientCommand
         {
             // if insert in db failed, remove user from local users.
             DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "false");
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.ADD_USER, "true");
+        SmartServer.sendMessage(ctx, RequestCode.ADD_USER, TRUE);
     }
 }

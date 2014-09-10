@@ -94,26 +94,56 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
 
     /**
      * Update an user's badge number according to client's request.
+     *
      * @param username      User to be updated.
      * @param badgeNumber   New badge number.
+     *
      * @return              True if success, false otherwise.
      */
     public boolean updateBadge(String username, String badgeNumber)
     {
-        GrantedUserEntity gu = getByUsername(username);
+        GrantedUserEntity gue = getByUsername(username);
 
-        if(gu == null)
+        if(gue == null)
         {
             return false;
         }
 
         try
         {
-            gu.setBadgeNumber(badgeNumber);
-            return _dao.update(gu) == 1;
+            gue.setBadgeNumber(badgeNumber);
+            return _dao.update(gue) == 1;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to update badge number.", sqle);
+            return false;
+        }
+    }
+
+    /**
+     * Update an user's "thief finger" according to client's request.
+     *
+     * @param username      User to be updated.
+     * @param fingerIndex   New "thief finger" index.
+     *
+     * @return              True if success, false otherwise.
+     */
+    public boolean updateThiefFingerIndex(String username, Integer fingerIndex)
+    {
+        GrantedUserEntity gue = getByUsername(username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            gue.setThiefFingerIndex(fingerIndex);
+            return _dao.update(gue) == 1;
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to update thief finger index.", sqle);
             return false;
         }
     }

@@ -13,6 +13,9 @@ abstract class ClientCommand
 {
     private static ExecutorService _threadPool = Executors.newFixedThreadPool(2);
 
+    protected static String TRUE = "true";
+    protected static String FALSE = "false";
+
     /**
      * To be overridden for each command behavior.
      *
