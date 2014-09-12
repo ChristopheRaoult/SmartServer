@@ -4,7 +4,10 @@ import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.RfidDevice;
 import com.spacecode.sdk.device.data.ConnectionStatus;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
+import com.spacecode.sdk.device.event.AccessControlDeviceEventHandler;
 import com.spacecode.sdk.device.event.AdvancedDeviceEventHandler;
+import com.spacecode.sdk.device.event.DeviceEventHandler;
+import com.spacecode.sdk.device.event.DoorDeviceEventHandler;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
@@ -55,7 +58,7 @@ public final class DeviceHandler
             try
             {
                 _device = new RfidDevice(null, deviceInfo.getSerialPort());
-                _device.addListener(new DeviceEventHandler());
+                _device.addListener(new SmartEventHandler());
             } catch (DeviceCreationException dce)
             {
                 SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
@@ -197,7 +200,8 @@ public final class DeviceHandler
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
-    private static class DeviceEventHandler implements AdvancedDeviceEventHandler
+    private static class SmartEventHandler implements DeviceEventHandler, DoorDeviceEventHandler,
+            AccessControlDeviceEventHandler, AdvancedDeviceEventHandler
     {
         @Override
         public void deviceDisconnected()
