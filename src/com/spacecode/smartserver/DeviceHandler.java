@@ -2,12 +2,8 @@ package com.spacecode.smartserver;
 
 import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.RfidDevice;
-import com.spacecode.sdk.device.data.ConnectionStatus;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
-import com.spacecode.sdk.device.event.AccessControlDeviceEventHandler;
-import com.spacecode.sdk.device.event.AdvancedDeviceEventHandler;
-import com.spacecode.sdk.device.event.DeviceEventHandler;
-import com.spacecode.sdk.device.event.DoorDeviceEventHandler;
+import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
@@ -38,7 +34,7 @@ public final class DeviceHandler
      */
     public static boolean connectDevice()
     {
-        if(_device != null && _device.getConnectionStatus() == ConnectionStatus.CONNECTED)
+        if(_device != null)
         {
             return true;
         }
@@ -200,8 +196,8 @@ public final class DeviceHandler
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
-    private static class SmartEventHandler implements DeviceEventHandler, DoorDeviceEventHandler,
-            AccessControlDeviceEventHandler, AdvancedDeviceEventHandler
+    private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
+            AccessControlEventHandler, AuthenticationModuleEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -223,6 +219,12 @@ public final class DeviceHandler
         public void doorClosed()
         {
             SmartServer.sendAllClients(EventCode.DOOR_CLOSED);
+        }
+
+        @Override
+        public void doorOpenDelay()
+        {
+            SmartServer.sendAllClients(EventCode.DOOR_OPEN_DELAY);
         }
 
         @Override

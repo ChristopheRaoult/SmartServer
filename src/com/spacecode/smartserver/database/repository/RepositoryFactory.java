@@ -34,6 +34,26 @@ public class RepositoryFactory
             return new AccessTypeRepository(dao);
         }
 
+        else if(className.equals(AlertEntity.class.getName()))
+        {
+            return new AlertRepository(dao);
+        }
+
+        else if(className.equals(AlertHistoryEntity.class.getName()))
+        {
+            return new AlertHistoryRepository(dao);
+        }
+
+        else if(className.equals(AlertTemperatureEntity.class.getName()))
+        {
+            return new AlertTemperatureRepository(dao);
+        }
+
+        else if(className.equals(AlertTypeEntity.class.getName()))
+        {
+            return new AlertTypeRepository(dao);
+        }
+
         else if(className.equals(AuthenticationEntity.class.getName()))
         {
             return new AuthenticationRepository(dao);

@@ -107,6 +107,11 @@ public final class SmartServer
             {
                 DeviceHandler.getDevice().setLastInventory(lastInventoryFromDb);
             }
+
+            if(!AlertCenter.initialize())
+            {
+                SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
+            }
         }
 
         else

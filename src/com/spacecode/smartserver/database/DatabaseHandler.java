@@ -62,11 +62,15 @@ public class DatabaseHandler
             // a connection should not stay opened more than 10 minutes
             _connectionSource.setMaxConnectionAgeMillis(10 * 60 * 1000);
 
+            // get DAO's of following entities in order to initialize constant values if necessary
             Dao<AccessTypeEntity, Integer> daoAccessType = DaoManager.createDao(_connectionSource, AccessTypeEntity.class);
             Dao<GrantTypeEntity, Integer> daoGrantType = DaoManager.createDao(_connectionSource, GrantTypeEntity.class);
             Dao<AlertTypeEntity, Integer> daoAlertType = DaoManager.createDao(_connectionSource, AlertTypeEntity.class);
 
             // create model (if necessary)
+            TableUtils.createTableIfNotExists(_connectionSource, AlertEntity.class);
+            TableUtils.createTableIfNotExists(_connectionSource, AlertHistoryEntity.class);
+            TableUtils.createTableIfNotExists(_connectionSource, AlertTemperatureEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, AuthenticationEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, DeviceEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, FingerprintEntity.class);
@@ -75,6 +79,7 @@ public class DatabaseHandler
             TableUtils.createTableIfNotExists(_connectionSource, InventoryEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, InventoryRfidTag.class);
             TableUtils.createTableIfNotExists(_connectionSource, RfidTagEntity.class);
+            TableUtils.createTableIfNotExists(_connectionSource, SmtpServerEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, TemperatureMeasurementEntity.class);
 
             if(!daoAccessType.isTableExists())
@@ -158,6 +163,23 @@ public class DatabaseHandler
         _deviceConfiguration = result == null ? null : (DeviceEntity) result;
 
         return _deviceConfiguration;
+    }
+
+    /**
+     * @return First entity available (if any) in SmtpServer table.
+     */
+    public static SmtpServerEntity getSmtpServerConfiguration()
+    {
+        Dao<SmtpServerEntity, Integer> smtpDao = getDao(SmtpServerEntity.class);
+
+        try
+        {
+            return smtpDao.queryForFirst(smtpDao.queryBuilder().prepare());
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception while querying SMTP server configuration.", sqle);
+            return null;
+        }
     }
 
     /**

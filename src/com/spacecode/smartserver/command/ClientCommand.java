@@ -2,7 +2,6 @@ package com.spacecode.smartserver.command;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -11,8 +10,6 @@ import java.util.concurrent.Executors;
  */
 abstract class ClientCommand
 {
-    private static ExecutorService _threadPool = Executors.newFixedThreadPool(2);
-
     protected static String TRUE = "true";
     protected static String FALSE = "false";
 
@@ -34,6 +31,6 @@ abstract class ClientCommand
      */
     protected static void parallelize(Runnable runnable)
     {
-        _threadPool.submit(runnable);
+        Executors.newSingleThreadExecutor().submit(runnable);
     }
 }

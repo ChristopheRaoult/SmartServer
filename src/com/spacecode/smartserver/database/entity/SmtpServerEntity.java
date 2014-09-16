@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * SmtpServer Entity
  */
-@DatabaseTable(tableName = AlertEntity.TABLE_NAME)
+@DatabaseTable(tableName = SmtpServerEntity.TABLE_NAME)
 public final class SmtpServerEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_smtp_server";
@@ -25,7 +25,7 @@ public final class SmtpServerEntity extends Entity
     private String _address;
 
     @DatabaseField(columnName = PORT, canBeNull = false)
-    private String _port;
+    private int _port;
 
     @DatabaseField(columnName = USERNAME, canBeNull = false)
     private String _username;
@@ -41,5 +41,45 @@ public final class SmtpServerEntity extends Entity
      */
     SmtpServerEntity()
     {
+    }
+
+    /**
+     * @return SMTP Server address.
+     */
+    public String getAddress()
+    {
+        return _address;
+    }
+
+    /**
+     * @return SMTP Server portnumber.
+     */
+    public int getPort()
+    {
+        return _port;
+    }
+
+    /**
+     * @return SMTP Server username credential.
+     */
+    public String getUsername()
+    {
+        return _username;
+    }
+
+    /**
+     * @return SMTP Server password credential.
+     */
+    public String getPassword()
+    {
+        return _password;
+    }
+
+    /**
+     * @return True if SSL shall be enabled, false otherwise.
+     */
+    public boolean isSslEnabled()
+    {
+        return _sslEnabled;
     }
 }

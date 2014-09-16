@@ -21,6 +21,7 @@
     </orderEntry>
     <orderEntry type="library" name="mysql-connector-java" level="project" />
     <orderEntry type="library" name="ormlite" level="project" />
+    <orderEntry type="library" name="javax.mail" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
