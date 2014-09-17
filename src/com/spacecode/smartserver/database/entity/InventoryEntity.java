@@ -28,7 +28,7 @@ public final class InventoryEntity extends Entity
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID)
     private GrantedUserEntity _grantedUser;
 
-    @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
 
     @DatabaseField(columnName = TOTAL_ADDED, canBeNull = false)

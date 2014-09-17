@@ -21,7 +21,7 @@ public final class GrantedAccessEntity extends Entity
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
     private GrantedUserEntity _grantedUser;
 
-    @DatabaseField(foreign = true, columnName = GRANT_TYPE_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = GRANT_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private GrantTypeEntity _grantType;
 
     /**

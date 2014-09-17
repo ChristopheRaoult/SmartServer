@@ -188,4 +188,19 @@ public abstract class Repository<E extends Entity>
 
         return true;
     }
+
+    /**
+     * @return List of all entities available in the table (or null if any SQLException occurred).
+     */
+    public List<E> getAll()
+    {
+        try
+        {
+            return _dao.queryForAll();
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting all entities.", sqle);
+            return null;
+        }
+    }
 }

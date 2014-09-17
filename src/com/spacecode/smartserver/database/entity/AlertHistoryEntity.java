@@ -28,4 +28,14 @@ public final class AlertHistoryEntity extends Entity
     AlertHistoryEntity()
     {
     }
+
+    /**
+     * Default constructor.
+     * @param alert Alert just raised.
+     */
+    public AlertHistoryEntity(AlertEntity alert)
+    {
+        _alert = alert;
+        _createdAt = new Date();
+    }
 }
