@@ -20,7 +20,7 @@ import java.util.logging.Level;
  */
 public final class DeviceHandler
 {
-    private static RfidDevice _device;
+    private volatile static RfidDevice _device;
 
     /** Must not be instantiated. */
     private DeviceHandler()
@@ -32,7 +32,7 @@ public final class DeviceHandler
      * Instantiates RfidDevice.
      * @return True if instantiation succeeded, False if it failed (or if number of devices != 1).
      */
-    public static boolean connectDevice()
+    public synchronized static boolean connectDevice()
     {
         if(_device != null)
         {
@@ -71,7 +71,7 @@ public final class DeviceHandler
     /**
      * Release current device (if it has been initialized).
      */
-    public static void disconnectDevice()
+    public synchronized static void disconnectDevice()
     {
         if(_device != null)
         {

@@ -23,10 +23,11 @@ import java.util.logging.Level;
  *
  * Has to be initialized to subscribe to "alert-compliant" events.
  */
-public class AlertCenter
+public final class AlertCenter
 {
     private static Session _mailSession;
     private static SmtpServerEntity _smtpServerConfiguration;
+    private static boolean _isSmtpServerSet;
 
     /** AlertRepository */
     private static Repository<AlertEntity> _alertRepository;
@@ -48,10 +49,11 @@ public class AlertCenter
             return false;
         }
 
-        if(!initializeSmtpServer())
+        _isSmtpServerSet = initializeSmtpServer();
+
+        if(!_isSmtpServerSet)
         {
-            SmartLogger.getLogger().severe("No SMTP server is set. Can't start AlertCenter.");
-            return false;
+            SmartLogger.getLogger().severe("No SMTP server is set. AlertCenter won't send any email.");
         }
 
         if(!initializeRepositories())
@@ -151,11 +153,20 @@ public class AlertCenter
      */
     private static void sendEmail(AlertEntity alertEntity)
     {
+        if(!_isSmtpServerSet)
+        {
+            return;
+        }
+
         try
         {
-            InternetAddress[] toList = InternetAddress.parse(alertEntity.getToList());
-            InternetAddress[] ccList = InternetAddress.parse(alertEntity.getCcList());
-            InternetAddress[] bccList = InternetAddress.parse(alertEntity.getBccList());
+            String recipientsTo = alertEntity.getToList();
+            String recipientsCc = alertEntity.getCcList();
+            String recipientsBcc = alertEntity.getToList();
+
+            InternetAddress[] toList = InternetAddress.parse(recipientsTo == null ? "" : recipientsTo);
+            InternetAddress[] ccList = InternetAddress.parse(recipientsCc == null ? "" : recipientsCc);
+            InternetAddress[] bccList = InternetAddress.parse(recipientsBcc == null ? "" : recipientsBcc);
 
             MimeMessage message = new MimeMessage(_mailSession);
             message.setSubject(alertEntity.getEmailSubject());
@@ -200,6 +211,7 @@ public class AlertCenter
         {
             alertHistoryEntities.add(new AlertHistoryEntity(ae));
             sendEmail(ae);
+            SmartLogger.getLogger().info("Raising an Alert (id: "+ae.getId()+")!");
         }
 
         if(!_alertHistoryRepository.insert(alertHistoryEntities))
@@ -242,13 +254,13 @@ public class AlertCenter
         }
 
         @Override
-        public void authenticationSuccess(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationSuccess(final GrantedUser grantedUser, AccessType accessType, final boolean isMaster)
         {
             Repository<GrantedUserEntity> userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
-
             GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, grantedUser.getUsername());
 
-            if(gue == null)
+            // no matching user, or user has no "finger thief" index set.
+            if(gue == null || gue.getThiefFingerIndex() == null)
             {
                 return;
             }
@@ -256,7 +268,7 @@ public class AlertCenter
             FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastFingerIndex(isMaster);
             AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.THIEF_FINGER);
 
-            if(index == null || index.getIndex() != gue.getThiefFingerIndex() || ate == null)
+            if(index == null || ate == null || index.getIndex() != gue.getThiefFingerIndex())
             {
                 return;
             }

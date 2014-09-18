@@ -29,10 +29,10 @@ public final class AlertEntity extends Entity
     @DatabaseField(columnName = TO_LIST, canBeNull = false)
     private String _toList;
 
-    @DatabaseField(columnName = CC_LIST)
+    @DatabaseField(columnName = CC_LIST, canBeNull = false)
     private String _ccList;
 
-    @DatabaseField(columnName = BCC_LIST)
+    @DatabaseField(columnName = BCC_LIST, canBeNull = false)
     private String _bccList;
 
     @DatabaseField(columnName = EMAIL_SUBJECT, canBeNull = false)
@@ -63,7 +63,7 @@ public final class AlertEntity extends Entity
     public AlertEntity(AlertTypeEntity ate, DeviceEntity de, String to,
                        String emailSubject, String emailContent, boolean enabled)
     {
-        this(ate, de, to, null, null, emailSubject, emailContent, enabled);
+        this(ate, de, to, "", "", emailSubject, emailContent, enabled);
     }
 
     /**

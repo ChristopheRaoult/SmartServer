@@ -106,7 +106,10 @@ public final class SmartServer
             if(lastInventoryFromDb != null)
             {
                 DeviceHandler.getDevice().setLastInventory(lastInventoryFromDb);
+                SmartLogger.getLogger().info("Last inventory loaded in RfidDevice memory.");
             }
+
+            SmartLogger.getLogger().info("Start AlertCenter...");
 
             if(!AlertCenter.initialize())
             {
