@@ -1,11 +1,11 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
 import java.util.Collection;

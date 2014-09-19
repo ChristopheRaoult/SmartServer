@@ -2,8 +2,8 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.spacecode.sdk.user.AccessType;
-import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.AccessTypeEntity;
+import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
 import java.util.HashMap;

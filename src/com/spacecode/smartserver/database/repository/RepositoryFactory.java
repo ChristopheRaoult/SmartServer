@@ -99,6 +99,11 @@ public class RepositoryFactory
             return new RfidTagRepository(dao);
         }
 
+        else if(className.equals(TemperatureMeasurementEntity.class.getName()))
+        {
+            return new TemperatureMeasurementRepository(dao);
+        }
+
         return null;
     }
 }

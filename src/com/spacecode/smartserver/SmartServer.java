@@ -5,6 +5,10 @@ import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
+import com.spacecode.smartserver.helper.AlertCenter;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
+import com.spacecode.smartserver.helper.TemperatureCenter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -114,6 +118,11 @@ public final class SmartServer
             if(!AlertCenter.initialize())
             {
                 SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
+            }
+
+            if(deviceConfig.isTemperatureEnabled() && !TemperatureCenter.initialize())
+            {
+                SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
             }
         }
 

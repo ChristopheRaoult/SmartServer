@@ -1,8 +1,8 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.smartserver.DeviceHandler;
 import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;

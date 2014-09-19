@@ -11,10 +11,10 @@ import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantType;
 import com.spacecode.sdk.user.GrantedUser;
-import com.spacecode.smartserver.DeviceHandler;
-import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.*;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
 import java.text.ParseException;

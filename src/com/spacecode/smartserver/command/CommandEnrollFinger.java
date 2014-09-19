@@ -3,10 +3,10 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
-import com.spacecode.smartserver.DeviceHandler;
-import com.spacecode.smartserver.SmartLogger;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.TimeoutException;

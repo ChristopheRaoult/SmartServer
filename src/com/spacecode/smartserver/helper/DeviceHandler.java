@@ -1,4 +1,4 @@
-package com.spacecode.smartserver;
+package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.RfidDevice;
@@ -8,6 +8,7 @@ import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
 
@@ -191,13 +192,18 @@ public final class DeviceHandler
                 SmartLogger.getLogger().warning("Unable to add Slave Badge Reader.");
             }
         }
+
+        if(deviceConfig.isTemperatureEnabled())
+        {
+            _device.addTemperatureProbe("tempProbe1", 60);
+        }
     }
 
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
-            AccessControlEventHandler, AuthenticationModuleEventHandler
+            AccessControlEventHandler, AuthenticationModuleEventHandler, TemperatureEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -309,6 +315,13 @@ public final class DeviceHandler
         public void scanCancelledByDoor()
         {
             SmartLogger.getLogger().info("Scan has been cancelled because someone opened the door.");
+        }
+
+        @Override
+        public void temperatureMeasure(double value)
+        {
+            SmartServer.sendAllClients(EventCode.TEMPERATURE_MEASURE, String.valueOf(value));
+            // TODO : Create temperature handler and subscribe to this event and persist measures etc.
         }
     }
 }

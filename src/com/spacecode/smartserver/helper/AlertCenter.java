@@ -1,8 +1,9 @@
-package com.spacecode.smartserver;
+package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
+import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
@@ -225,7 +226,8 @@ public final class AlertCenter
      */
     private static class AlertEventHandler implements DeviceEventHandler,
             DoorEventHandler,
-            AccessControlEventHandler
+            AccessControlEventHandler,
+            TemperatureEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -256,6 +258,12 @@ public final class AlertCenter
         @Override
         public void authenticationSuccess(final GrantedUser grantedUser, AccessType accessType, final boolean isMaster)
         {
+            // we're only interested in fingerprint authentications for "thief finger" alert.
+            if(accessType != AccessType.FINGERPRINT)
+            {
+                return;
+            }
+
             Repository<GrantedUserEntity> userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
             GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, grantedUser.getUsername());
 
@@ -274,6 +282,12 @@ public final class AlertCenter
             }
 
             raiseAlerts(ate);
+        }
+
+        @Override
+        public void temperatureMeasure(double value)
+        {
+            // TODO: raise/check temperature alert
         }
 
         @Override

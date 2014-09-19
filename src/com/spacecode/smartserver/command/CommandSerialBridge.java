@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.smartserver.DeviceHandler;
-import com.spacecode.smartserver.SmartLogger;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.IOException;

@@ -3,6 +3,7 @@ package com.spacecode.smartserver;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.command.ClientCommandRegister;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 

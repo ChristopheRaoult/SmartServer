@@ -1,6 +1,6 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.smartserver.DeviceHandler;
+import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**

@@ -1,4 +1,4 @@
-package com.spacecode.smartserver;
+package com.spacecode.smartserver.helper;
 
 import java.io.IOException;
 import java.text.DateFormat;

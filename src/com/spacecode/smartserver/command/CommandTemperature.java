@@ -6,26 +6,23 @@ import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * Initialization command.
- * Provide basic information of current device (serial number, device type, hardware and software version).
+ * Temperature command.
+ * Provide device's last temperature (if any) or Double.MIN_VALUE.
  */
-public class CommandInitialization extends ClientCommand
+public class CommandTemperature extends ClientCommand
 {
     /**
-     * Send a message to the current context containing basic information (serial number, device type, hardware and software version).
+     * Serialize device's last inventory and send it to current context.
+     *
      * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *
      * @throws ClientCommandException
      */
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        SmartServer.sendMessage(ctx,
-                RequestCode.INITIALIZATION,
-                DeviceHandler.getDevice().getSerialNumber(),
-                DeviceHandler.getDevice().getDeviceType(),
-                DeviceHandler.getDevice().getHardwareVersion(),
-                DeviceHandler.getDevice().getSoftwareVersion()
-        );
+        SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE,
+                String.valueOf(DeviceHandler.getDevice().getCurrentTemperature()));
     }
 }

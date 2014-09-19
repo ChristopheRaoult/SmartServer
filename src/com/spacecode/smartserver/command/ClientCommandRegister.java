@@ -42,6 +42,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
         _commands.put(RequestCode.USER_BY_NAME,         new CommandUserByName());
         _commands.put(RequestCode.USERS_LIST,           new CommandUsersList());
+        _commands.put(RequestCode.TEMPERATURE,          new CommandTemperature());
     }
 
     /**

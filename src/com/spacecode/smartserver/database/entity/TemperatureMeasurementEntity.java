@@ -34,6 +34,18 @@ public final class TemperatureMeasurementEntity extends Entity
     }
 
     /**
+     * Default constructor.
+     * @param device    Device embedding the temperature probe.
+     * @param value     Measure in °C.
+     */
+    public TemperatureMeasurementEntity(DeviceEntity device, double value)
+    {
+        _device = device;
+        _value = value;
+        _createdAt = new Date();
+    }
+
+    /**
      * @return Device who took the measure.
      */
     public DeviceEntity getDevice()

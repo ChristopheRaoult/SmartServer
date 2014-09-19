@@ -15,18 +15,22 @@ public final class DeviceEntity extends Entity
     public static final String NB_BADGE_READER = "nb_badge_reader";
     public static final String FP_READER_MASTER = "fp_reader_master";
     public static final String FP_READER_SLAVE = "fp_reader_slave";
+    public static final String TEMPERATURE_ENABLED = "temperature_enabled";
 
-    @DatabaseField(unique = true, columnName = SERIAL_NUMBER)
+    @DatabaseField(unique = true, columnName = SERIAL_NUMBER, canBeNull = false)
     private String _serialNumber;
 
-    @DatabaseField(columnName = NB_BADGE_READER)
+    @DatabaseField(columnName = NB_BADGE_READER, canBeNull = false)
     private int _nbOfBadgeReader;
 
-    @DatabaseField(columnName = FP_READER_MASTER)
+    @DatabaseField(columnName = FP_READER_MASTER, canBeNull = false)
     private String _fpReaderMasterSerial;
 
-    @DatabaseField(columnName = FP_READER_SLAVE)
+    @DatabaseField(columnName = FP_READER_SLAVE, canBeNull = false)
     private String _fpReaderSlaveSerial;
+
+    @DatabaseField(columnName = TEMPERATURE_ENABLED, canBeNull = false)
+    private boolean _temperatureEnabled;
 
     /**
      * No-Arg constructor (with package visibility) for ORMLite
@@ -65,5 +69,13 @@ public final class DeviceEntity extends Entity
     public String getFpReaderSlaveSerial()
     {
         return _fpReaderSlaveSerial;
+    }
+
+    /**
+     * @return True if temperature probe is enabled, false otherwise.
+     */
+    public boolean isTemperatureEnabled()
+    {
+        return _temperatureEnabled;
     }
 }
