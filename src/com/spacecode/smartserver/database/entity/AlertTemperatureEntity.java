@@ -15,7 +15,7 @@ public final class AlertTemperatureEntity extends Entity
     public static final String TEMPERATURE_MIN = "temperature_min";
     public static final String TEMPERATURE_MAX = "temperature_max";
 
-    @DatabaseField(foreign = true, columnName = ALERT_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = ALERT_ID, canBeNull = false, foreignAutoRefresh = true)
     private AlertEntity _alert;
 
     @DatabaseField(columnName = TEMPERATURE_MIN, canBeNull = false)
@@ -29,5 +29,29 @@ public final class AlertTemperatureEntity extends Entity
      */
     AlertTemperatureEntity()
     {
+    }
+
+    /**
+     * @return Attached Alert (entity).
+     */
+    public AlertEntity getAlert()
+    {
+        return _alert;
+    }
+
+    /**
+     * @return Min. temperature threshold.
+     */
+    public double getTemperatureMin()
+    {
+        return _temperatureMin;
+    }
+
+    /**
+     * @return Max. temperature threshold.
+     */
+    public double getTemperatureMax()
+    {
+        return _temperatureMax;
     }
 }

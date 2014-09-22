@@ -190,7 +190,7 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * @return List of all entities available in the table (or null if any SQLException occurred).
+     * @return List of all entities available in the table (empty if any SQLException occurred).
      */
     public List<E> getAll()
     {
@@ -200,7 +200,31 @@ public abstract class Repository<E extends Entity>
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting all entities.", sqle);
-            return null;
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Perform an "IN" query to get all entities which match a given value (in the provided list) for a given field.
+     *
+     * @param field     Column name.
+     * @param values    Desired values.
+     *
+     * @return List of all entities matching the condition (empty if any SQLException occurred).
+     */
+    public List<E> getAllWhereFieldIn(String field, Iterable<?> values)
+    {
+        try
+        {
+            return _dao.query(_dao.queryBuilder()
+                    .where()
+                    .in(field, values)
+                    .prepare()
+            );
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
+            return new ArrayList<>();
         }
     }
 }

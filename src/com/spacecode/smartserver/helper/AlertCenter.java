@@ -31,7 +31,7 @@ public final class AlertCenter
     private static boolean _isSmtpServerSet;
 
     /** AlertRepository */
-    private static Repository<AlertEntity> _alertRepository;
+    private static AlertRepository _alertRepository;
 
     /** AlertHistoryRepository */
     private static Repository<AlertHistoryEntity> _alertHistoryRepository;
@@ -118,7 +118,7 @@ public final class AlertCenter
         Repository<AlertTypeEntity> atRepo = DatabaseHandler.getRepository(AlertTypeEntity.class);
         List<AlertTypeEntity> atList = atRepo.getAll();
 
-        if(atList == null || atList.size() == 0)
+        if(atList.size() == 0)
         {
             return false;
         }
@@ -139,7 +139,7 @@ public final class AlertCenter
      */
     private static boolean initializeRepositories()
     {
-        _alertRepository = DatabaseHandler.getRepository(AlertEntity.class);
+        _alertRepository = (AlertRepository) DatabaseHandler.getRepository(AlertEntity.class);
         _alertHistoryRepository = DatabaseHandler.getRepository(AlertHistoryEntity.class);
 
         return  _alertRepository != null &&
@@ -186,29 +186,48 @@ public final class AlertCenter
 
     /**
      * Raise all enabled alerts for the given alert type.
+     *
      * @param ate Desired AlertType.
      */
     private static void raiseAlerts(AlertTypeEntity ate)
     {
-        List<AlertEntity> thiefFingerAlerts = _alertRepository.getEntitiesBy(AlertEntity.ALERT_TYPE_ID, ate.getId());
-        Iterator<AlertEntity> it = thiefFingerAlerts.iterator();
+        List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(ate);
 
-        while(it.hasNext())
-        {
-            if(!it.next().isEnabled())
-            {
-                it.remove();
-            }
-        }
-
-        if(thiefFingerAlerts.size() == 0)
+        if(matchingAlerts.size() == 0)
         {
             return;
         }
 
         List<AlertHistoryEntity> alertHistoryEntities = new ArrayList<>();
 
-        for(AlertEntity ae : thiefFingerAlerts)
+        for(AlertEntity ae : matchingAlerts)
+        {
+            alertHistoryEntities.add(new AlertHistoryEntity(ae));
+            sendEmail(ae);
+            SmartLogger.getLogger().info("Raising an Alert (id: "+ae.getId()+")!");
+        }
+
+        if(!_alertHistoryRepository.insert(alertHistoryEntities))
+        {
+            SmartLogger.getLogger().severe("Unable to insert AlertHistory entities.");
+        }
+    }
+
+    /**
+     * Raise all alerts passed in parameter.
+     *
+     * @param matchingAlerts Enabled alerts to be raised.
+     */
+    private static void raiseAlerts(List<AlertEntity> matchingAlerts)
+    {
+        if(matchingAlerts == null || matchingAlerts.size() == 0)
+        {
+            return;
+        }
+
+        List<AlertHistoryEntity> alertHistoryEntities = new ArrayList<>();
+
+        for(AlertEntity ae : matchingAlerts)
         {
             alertHistoryEntities.add(new AlertHistoryEntity(ae));
             sendEmail(ae);
@@ -287,7 +306,54 @@ public final class AlertCenter
         @Override
         public void temperatureMeasure(double value)
         {
-            // TODO: raise/check temperature alert
+            AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.TEMPERATURE);
+
+            if(ate == null)
+            {
+                return;
+            }
+
+            // get enabled Temperature Alerts.
+            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(ate);
+
+            if(alerts.size() == 0)
+            {
+                return;
+            }
+
+            // next, take their Ids.
+            List<Integer> alertIds = new ArrayList<>();
+
+            for(AlertEntity ae : alerts)
+            {
+                alertIds.add(ae.getId());
+            }
+
+            // get the AlertTemperature entities.
+            Repository<AlertTemperatureEntity> atRepo = DatabaseHandler.getRepository(AlertTemperatureEntity.class);
+            List<AlertTemperatureEntity> atList = atRepo.getAllWhereFieldIn(AlertTemperatureEntity.ALERT_ID, alertIds);
+
+            List<AlertEntity> matchingAlerts = new ArrayList<>();
+
+            for(AlertTemperatureEntity at : atList)
+            {
+                // need to be raised: threshold triggered
+                if( value > at.getTemperatureMax() ||
+                    value < at.getTemperatureMin())
+                {
+                    matchingAlerts.add(at.getAlert());
+                }
+            }
+
+            // if temperature alert needs to be raised.
+            if(matchingAlerts.size() == 0)
+            {
+                return;
+            }
+
+            // Now we have all enabled alerts with threshold triggered (temperature too low or too high)
+            // There is only 1 Alert for 1 AlertTemperature so we don't check for double, triple, redundancy, etc.
+            raiseAlerts(matchingAlerts);
         }
 
         @Override

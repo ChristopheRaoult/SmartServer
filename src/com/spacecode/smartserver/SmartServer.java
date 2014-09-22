@@ -120,6 +120,8 @@ public final class SmartServer
                 SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
             }
 
+            SmartLogger.getLogger().info("Start TemperatureCenter...");
+
             if(deviceConfig.isTemperatureEnabled() && !TemperatureCenter.initialize())
             {
                 SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");

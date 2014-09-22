@@ -195,7 +195,7 @@ public final class DeviceHandler
 
         if(deviceConfig.isTemperatureEnabled())
         {
-            _device.addTemperatureProbe("tempProbe1", 60);
+            _device.addTemperatureProbe("tempProbe1", 60, 0.2);
         }
     }
 
