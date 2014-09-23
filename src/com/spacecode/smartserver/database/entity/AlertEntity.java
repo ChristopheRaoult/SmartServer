@@ -2,6 +2,9 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.sdk.network.alert.Alert;
+import com.spacecode.sdk.network.alert.AlertTemperature;
+import com.spacecode.smartserver.database.repository.AlertTypeRepository;
 
 /**
  * Alert Entity
@@ -52,10 +55,10 @@ public final class AlertEntity extends Entity
     }
 
     /**
-     * Build an alert without cc/bcc recipients.
+     * Build an alert without defining cc/bcc recipients.
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
      * @param de            DeviceEntity instance to be used as Device owning the alert.
-     * @param to            List of email addresses (splitted with commas) to send the alert to.
+     * @param to            List of email addresses (split with commas) to send the alert to.
      * @param emailSubject  Subject of the email to be sent.
      * @param emailContent  Content of the email to be sent.
      * @param enabled       If false, the alert will not be used by SmartServer (AlertCenter).
@@ -67,12 +70,12 @@ public final class AlertEntity extends Entity
     }
 
     /**
-     *
+     * Default constructor, full set of parameters.
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
      * @param de            DeviceEntity instance to be used as Device owning the alert.
-     * @param to            List of email addresses (splitted with commas) to send the alert to.
-     * @param cc            List of "Cc" recipients (splitted with commas).
-     * @param bcc           List of "Bcc" recipients (splitted with commas).
+     * @param to            List of email addresses (split with commas) to send the alert to.
+     * @param cc            List of "Cc" recipients (split with commas).
+     * @param bcc           List of "Bcc" recipients (split with commas).
      * @param emailSubject  Subject of the email to be sent.
      * @param emailContent  Content of the email to be sent.
      * @param enabled       If false, the alert will not be used by SmartServer (AlertCenter).
@@ -82,12 +85,36 @@ public final class AlertEntity extends Entity
     {
         _alertType = ate;
         _device = de;
-        _toList = to;
-        _ccList = cc;
-        _bccList = bcc;
-        _emailSubject = emailSubject;
-        _emailContent = emailContent;
+        _toList = to == null ? "" : to;
+        _ccList = cc == null ? "" : cc;
+        _bccList = bcc == null ? "" : bcc;
+        _emailSubject = emailSubject == null ? "" : emailSubject;
+        _emailContent = emailContent == null ? "" : emailContent;
         _enabled = enabled;
+    }
+
+    /**
+     * Build an AlertEntity from Alert [SDK] values.
+     * Also copy Id value, which is useful for methods like "createOrUpdate" (ORMLite dao).
+     *
+     * @param ate   AlertTypeEntity instance to be used as Alert Type.
+     * @param de    DeviceEntity instance to be used as Device owning the alert.
+     * @param alert Alert [SDK] instance to be used as source (recipients list, is enabled, etc).
+     */
+    public AlertEntity(AlertTypeEntity ate, DeviceEntity de, Alert alert)
+    {
+        this(ate, de, alert.getToList(), alert.getCcList(), alert.getBccList(),
+                alert.getEmailSubject(), alert.getEmailContent(), alert.isEnabled());
+
+        _id = alert.getId();
+    }
+
+    /**
+     * @return AlertTypeEntity instance.
+     */
+    public AlertTypeEntity getAlertType()
+    {
+        return _alertType;
     }
 
     /**
@@ -136,5 +163,35 @@ public final class AlertEntity extends Entity
     public boolean isEnabled()
     {
         return _enabled;
+    }
+
+    /**
+     * @param ae    AlertEntity to be "converted".
+     * @return      An equivalent "Alert" [SDK]
+     */
+    public static Alert toAlert(AlertEntity ae)
+    {
+        return new Alert(ae.getId(),
+                AlertTypeRepository.toAlertType(ae.getAlertType()),
+                ae._toList,
+                ae._ccList,
+                ae._bccList,
+                ae._emailSubject, ae._emailContent, ae._enabled);
+    }
+
+    /**
+     * @param ate   AlertTemperatureEntity to be "converted".
+     * @return      An equivalent "AlertTemperature" [SDK]
+     */
+    public static Alert toAlert(AlertTemperatureEntity ate)
+    {
+        AlertEntity ae = ate.getAlert();
+
+        return new AlertTemperature(ae.getId(),
+                ae._toList,
+                ae._ccList,
+                ae._bccList,
+                ae._emailSubject, ae._emailContent, ae._enabled,
+                ate.getTemperatureMin(), ate.getTemperatureMax());
     }
 }

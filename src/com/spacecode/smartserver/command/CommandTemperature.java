@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Temperature command.
+ *
  * Provide device's last temperature (if any) or Double.MIN_VALUE.
  */
 public class CommandTemperature extends ClientCommand

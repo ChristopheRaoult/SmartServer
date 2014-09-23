@@ -7,6 +7,9 @@ import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.table.TableUtils;
 import com.spacecode.sdk.device.data.Inventory;
+import com.spacecode.sdk.network.alert.Alert;
+import com.spacecode.sdk.network.alert.AlertTemperature;
+import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantType;
@@ -105,10 +108,10 @@ public class DatabaseHandler
             {
                 // create table and fill with constants
                 TableUtils.createTable(_connectionSource, AlertTypeEntity.class);
-                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.DEVICE_DISCONNECTED));
-                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.DOOR_DELAY));
-                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.TEMPERATURE));
-                daoAlertType.create(new AlertTypeEntity(AlertTypeEntity.THIEF_FINGER));
+                daoAlertType.create(new AlertTypeEntity(AlertType.DEVICE_DISCONNECTED.name()));
+                daoAlertType.create(new AlertTypeEntity(AlertType.DOOR_OPEN_DELAY.name()));
+                daoAlertType.create(new AlertTypeEntity(AlertType.TEMPERATURE.name()));
+                daoAlertType.create(new AlertTypeEntity(AlertType.THIEF_FINGER.name()));
             }
         } catch (SQLException sqle)
         {
@@ -497,7 +500,6 @@ public class DatabaseHandler
         GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
         return gue != null && userRepo.delete(gue);
-
     }
 
     /**
@@ -517,7 +519,6 @@ public class DatabaseHandler
         GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
 
         return gue != null && fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
-
     }
 
     /**
@@ -543,7 +544,6 @@ public class DatabaseHandler
         FingerprintEntity fpe = ((FingerprintRepository)fpRepo).getFingerprint(gue, index);
 
         return fpe != null && fpRepo.delete(fpe);
-
     }
 
     /**
@@ -611,6 +611,7 @@ public class DatabaseHandler
 
         Iterator<GrantedAccessEntity> it = gue.getGrantedAccesses().iterator();
 
+        // remove any previous permission on this device
         while(it.hasNext())
         {
             if(it.next().getDevice().getId() == getDeviceConfiguration().getId())
@@ -620,7 +621,24 @@ public class DatabaseHandler
             }
         }
 
+        // add the new permission
         return gue.getGrantedAccesses().add(gae);
+    }
+
+    /**
+     * Start the alert deletion process (AlertEntity, plus AlertTemperatureEntity if required).
+     *
+     * @param alert Alert [SDK] instance to be deleted from Database.
+     *
+     * @return      True if successful, false otherwise (unknown alert, SQLException...).
+     */
+    public static boolean deleteAlert(Alert alert)
+    {
+        Repository<AlertEntity> aRepo = getRepository(AlertEntity.class);
+
+        AlertEntity gue = aRepo.getEntityById(alert.getId());
+
+        return gue != null && aRepo.delete(gue);
     }
 
     /**
@@ -676,6 +694,74 @@ public class DatabaseHandler
         }
 
         return true;
+    }
+
+    /**
+     * Insert or Update AlertEntity (from Alert instance [SDK]) in database.
+     *
+     * @param alert Alert instance coming from SDK client.
+     *
+     * @return      True if successful, false otherwise.
+     */
+    public static boolean persistAlert(Alert alert)
+    {
+        Repository<AlertEntity> aRepo = getRepository(AlertEntity.class);
+        AlertTypeRepository aTypeRepo = (AlertTypeRepository) getRepository(AlertTypeEntity.class);
+
+        AlertTypeEntity ate = aTypeRepo.fromAlertType(alert.getType());
+
+        if(ate == null)
+        {
+            return false;
+        }
+
+        // create an AlertEntity from the given Alert. All data is copied (including Id).
+        AlertEntity newAlertEntity = new AlertEntity(ate, getDeviceConfiguration(), alert);
+
+        if(alert.getId() == 0)
+        {
+            if(!aRepo.insert(newAlertEntity))
+            {
+                // if we fail inserting the new alert
+                return false;
+            }
+        }
+
+        else
+        {
+            if(!aRepo.update(newAlertEntity))
+            {
+                // if we fail inserting the new alert
+                return false;
+            }
+        }
+
+        if(alert.getType() != AlertType.TEMPERATURE)
+        {
+            // successfully inserted/updated the alert and we don't need to insert/update an AlertTemperature...
+            return true;
+        }
+
+        // get the AlertTemperature [SDK] instance
+        AlertTemperature alertTemperature = (AlertTemperature) alert;
+
+        AlertTemperatureRepository aTempRepo =
+                (AlertTemperatureRepository) DatabaseHandler.getRepository(AlertTemperatureEntity.class);
+
+        // if the Alert is already known: update the attached AlertTemperature
+        if(alert.getId() != 0)
+        {
+            AlertTemperatureEntity atEntity = aTempRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, alert.getId());
+            atEntity.setTemperatureMin(alertTemperature.getTemperatureMin());
+            atEntity.setTemperatureMax(alertTemperature.getTemperatureMax());
+            return aTempRepo.update(atEntity);
+        }
+
+        // else create a new AlertTemperature
+        else
+        {
+            return aTempRepo.insert(new AlertTemperatureEntity(newAlertEntity, alertTemperature));
+        }
     }
 
     /**

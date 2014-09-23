@@ -32,8 +32,10 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Provide access to an instance of E (entity type) via its identifier.
+     * Look for an instance of E (entity type) via its identifier.
+     *
      * @param value Identifier key value.
+     *
      * @return      E instance or null if something went wrong (no result, sql exception).
      */
     public final E getEntityById(int value)
@@ -49,12 +51,14 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Provide access to a single instance of E (entity type) via its field/value.
-     * @param field Field filter.
+     * Look for the first instance of E (entity type) having "field" equal to "value".
+     *
+     * @param field Name of the field.
      * @param value Expected value.
-     * @return      E instance or null if something went wrong (no result, sql exception).
+     *
+     * @return      Instance of E, or null if not result (or sql exception).
      */
-    public final E getEntityBy(String field, String value)
+    public final E getEntityBy(String field, Object value)
     {
         try
         {
@@ -70,10 +74,12 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Provide access to a list of instance of E (entity type) via a field name and value.
+     * Look for a list of instances of E (entity type) via a field name and value.
+     *
      * @param field Name of the field.
-     * @param value Value expected.
-     * @return  List of E containing all matching results (could be empty).
+     * @param value Expected value.
+     *
+     * @return  List of E containing all matching results (could be empty if no results, or SQL Exception).
      */
     public final List<E> getEntitiesBy(String field, Object value)
     {
@@ -91,8 +97,56 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
+     * Look for the first instance of E (entity type) having "field" NOT equal to "value".
+     *
+     * @param field Name of the field.
+     * @param value Value not desired.
+     *
+     * @return      Instance of E, or null if not result (or sql exception).
+     */
+    public final E getEntityWhereNotEqual(String field, Object value)
+    {
+        try
+        {
+            return _dao.queryForFirst(
+                    _dao.queryBuilder().where()
+                            .ne(field, value)
+                            .prepare());
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity with criteria.", sqle);
+            return null;
+        }
+    }
+
+    /**
+     * Look for a list of instances of E (entity type) having "field" NOT equal to "value".
+     *
+     * @param field Name of the field.
+     * @param value Value not desired.
+     *
+     * @return      List of E provided by the query (could be empty if no results, or SQL Exception).
+     */
+    public final List<E> getEntitiesWhereNotEqual(String field, Object value)
+    {
+        try
+        {
+            return _dao.query(
+                    _dao.queryBuilder().where()
+                            .ne(field, value)
+                            .prepare());
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entities with criteria.", sqle);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
      * Default method to insert a new row in the repository table.
+     *
      * @param newEntity New entity to be inserted in the table (as a new row).
+     *
      * @return          True if successful, false otherwise (SQLException).
      */
     public boolean insert(E newEntity)
@@ -132,7 +186,9 @@ public abstract class Repository<E extends Entity>
     /**
      * Default method to update an entity in the repository table.
      * Update is made according to entity's Id.
+     *
      * @param entity    Entity to be updated in the table.
+     *
      * @return          True if successful, false otherwise (SQLException).
      */
     public boolean update(E entity)
@@ -152,7 +208,9 @@ public abstract class Repository<E extends Entity>
     /**
      * Default method to delete an entity in the repository table.
      * Deletion is made according to entity's Id.
+     *
      * @param entity    Entity to be removed from the table.
+     *
      * @return          True if successful, false otherwise (SQLException).
      */
     public boolean delete(E entity)
@@ -172,7 +230,9 @@ public abstract class Repository<E extends Entity>
     /**
      * Default method to delete a collection of entities in the repository table.
      * Deletion is made according to entity's Id.
+     *
      * @param entities  Collection to be removed from the table.
+     *
      * @return          True if successful, false otherwise (SQLException).
      */
     public boolean delete(Collection<E> entities)
@@ -192,7 +252,7 @@ public abstract class Repository<E extends Entity>
     /**
      * @return List of all entities available in the table (empty if any SQLException occurred).
      */
-    public List<E> getAll()
+    public final List<E> getAll()
     {
         try
         {
@@ -205,20 +265,44 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Perform an "IN" query to get all entities which match a given value (in the provided list) for a given field.
+     * Perform a "IN" query to get all entities which match a given values (provided list).
      *
      * @param field     Column name.
      * @param values    Desired values.
      *
      * @return List of all entities matching the condition (empty if any SQLException occurred).
      */
-    public List<E> getAllWhereFieldIn(String field, Iterable<?> values)
+    public final  List<E> getAllWhereFieldIn(String field, Iterable<?> values)
     {
         try
         {
             return _dao.query(_dao.queryBuilder()
                     .where()
                     .in(field, values)
+                    .prepare()
+            );
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Perform a "NOT IN" query to get all entities which don't match given values (provided list).
+     *
+     * @param field     Column name.
+     * @param values    Desired values.
+     *
+     * @return List of all entities returned by NOT IN query (empty if any SQLException occurred).
+     */
+    public final List<E> getAllWhereFieldNotIn(String field, Iterable<?> values)
+    {
+        try
+        {
+            return _dao.query(_dao.queryBuilder()
+                    .where()
+                    .notIn(field, values)
                     .prepare()
             );
         } catch (SQLException sqle)

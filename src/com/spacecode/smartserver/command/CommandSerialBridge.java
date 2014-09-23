@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 /**
  * SerialBridge command.
+ *
  * /drivers/usb/gadget/composite.c has been modified to raise an uevent when the USB OTG of ARM Board is plugged/unplugged.
  * udev rules have been created to run a shell script which send this SerialBridge command.
  * The intent is to get the server to sleep while it's running the serial port forwarding.
@@ -23,8 +24,10 @@ public class CommandSerialBridge extends ClientCommand
 
     /**
      * According to parameter ("ON"/"OFF"), enable or disable Serial Port forwarding ("Serial Bridge").
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
+     *
+     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param parameters    String array containing parameters (if any) provided by the client.
+     *
      * @throws ClientCommandException
      */
     @Override

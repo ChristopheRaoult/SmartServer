@@ -21,7 +21,7 @@ public class CommandAddUser extends ClientCommand
     @Override
     public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // waiting for only 1 parameter: serialized rantedUser
+        // waiting for only 1 parameter: serialized GrantedUser
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);

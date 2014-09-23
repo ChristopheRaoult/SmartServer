@@ -8,7 +8,7 @@ import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AddUser command.
+ * UpdateBadge command.
  */
 public class CommandUpdateBadge extends ClientCommand
 {

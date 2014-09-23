@@ -25,11 +25,14 @@ public final class ClientCommandRegister extends ClientCommand
      */
     public ClientCommandRegister()
     {
+        _commands.put(RequestCode.ADD_ALERT,            new CommandAddAlert());
         _commands.put(RequestCode.ADD_USER,             new CommandAddUser());
+        _commands.put(RequestCode.ALERTS_LIST,          new CommandAlertsList());
         _commands.put(RequestCode.DISCONNECT,           new CommandDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CommandEnrollFinger());
         _commands.put(RequestCode.INITIALIZATION,       new CommandInitialization());
         _commands.put(RequestCode.LAST_INVENTORY,       new CommandLastInventory());
+        _commands.put(RequestCode.REMOVE_ALERT,         new CommandRemoveAlert());
         _commands.put(RequestCode.REMOVE_FINGERPRINT,   new CommandRemoveFingerprint());
         _commands.put(RequestCode.REMOVE_USER,          new CommandRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,          new CommandRewriteUid());
@@ -39,6 +42,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.START_LIGHTING,       new CommandStartLighting());
         _commands.put(RequestCode.STOP_LIGHTING,        new CommandStoptLighting());
         _commands.put(RequestCode.UPDATE_PERMISSION,    new CommandUpdatePermission());
+        _commands.put(RequestCode.UPDATE_ALERT,         new CommandUpdateAlert());
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
         _commands.put(RequestCode.USER_BY_NAME,         new CommandUserByName());
         _commands.put(RequestCode.USERS_LIST,           new CommandUsersList());

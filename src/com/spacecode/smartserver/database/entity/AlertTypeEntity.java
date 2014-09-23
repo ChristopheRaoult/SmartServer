@@ -13,12 +13,6 @@ public final class AlertTypeEntity extends Entity
 
     public static final String TYPE = "type";
 
-    // alert types
-    public static final String DEVICE_DISCONNECTED = "DEVICE DISCONNECTED";
-    public static final String DOOR_DELAY = "DOOR DELAY";
-    public static final String TEMPERATURE = "TEMPERATURE";
-    public static final String THIEF_FINGER = "THIEF FINGER";
-
     @DatabaseField(columnName = TYPE, canBeNull = false)
     private String _type;
 

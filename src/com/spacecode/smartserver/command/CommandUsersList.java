@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * AddUser command.
+ * UsersList command.
  */
 public class CommandUsersList extends ClientCommand
 {
@@ -23,20 +23,16 @@ public class CommandUsersList extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        List<String> serializedUsers = new ArrayList<>();
-
-        for(GrantedUser user : DeviceHandler.getDevice().getUsersService().getUsersList())
-        {
-            serializedUsers.add(user.serialize());
-        }
-
         List<String> responsePackets = new ArrayList<>();
 
         // add the request code first
         responsePackets.add(RequestCode.USERS_LIST);
 
         // then all the serialized users
-        responsePackets.addAll(serializedUsers);
+        for(GrantedUser user : DeviceHandler.getDevice().getUsersService().getUsersList())
+        {
+            responsePackets.add(user.serialize());
+        }
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
     }

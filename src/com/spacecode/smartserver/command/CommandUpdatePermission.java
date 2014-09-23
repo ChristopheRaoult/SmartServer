@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.logging.Level;
 
 /**
- * Update Permission command.
+ * UpdatePermission command.
  */
 public class CommandUpdatePermission extends ClientCommand
 {

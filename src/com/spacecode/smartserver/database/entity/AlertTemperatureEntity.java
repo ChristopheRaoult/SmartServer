@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.sdk.network.alert.AlertTemperature;
 
 /**
  * AlertTemperature Entity
@@ -31,6 +32,13 @@ public final class AlertTemperatureEntity extends Entity
     {
     }
 
+    public AlertTemperatureEntity(AlertEntity newAlertEntity, AlertTemperature at)
+    {
+        _temperatureMin = at.getTemperatureMin();
+        _temperatureMax = at.getTemperatureMax();
+        _alert = newAlertEntity;
+    }
+
     /**
      * @return Attached Alert (entity).
      */
@@ -53,5 +61,23 @@ public final class AlertTemperatureEntity extends Entity
     public double getTemperatureMax()
     {
         return _temperatureMax;
+    }
+
+    /**
+     * Allow updating the min. temperature threshold.
+     * @param temperatureMin New min. value.
+     */
+    public void setTemperatureMin(double temperatureMin)
+    {
+        _temperatureMin = temperatureMin;
+    }
+
+    /**
+     * Allow updating the max. temperature threshold.
+     * @param temperatureMax New max. value.
+     */
+    public void setTemperatureMax(double temperatureMax)
+    {
+        _temperatureMax = temperatureMax;
     }
 }

@@ -4,6 +4,7 @@ import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
+import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
@@ -11,18 +12,23 @@ import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
 import com.spacecode.smartserver.database.repository.AlertRepository;
+import com.spacecode.smartserver.database.repository.AlertTypeRepository;
 import com.spacecode.smartserver.database.repository.Repository;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 
 /**
  * Handle Alerts raising/reporting and Emails sending (if any SMTP server is set).
  *
  * Has to be initialized to subscribe to "alert-compliant" events.
+ *
+ * TODO: (not done yet) Query only alerts with DeviceEntity = DatabaseHandler.getDeviceConfiguration()
  */
 public final class AlertCenter
 {
@@ -30,14 +36,9 @@ public final class AlertCenter
     private static SmtpServerEntity _smtpServerConfiguration;
     private static boolean _isSmtpServerSet;
 
-    /** AlertRepository */
     private static AlertRepository _alertRepository;
-
-    /** AlertHistoryRepository */
     private static Repository<AlertHistoryEntity> _alertHistoryRepository;
-
-    /** list of all alert type entities, in order to keep them at hand */
-    private static Map<String, AlertTypeEntity> _alertTypeToEntities;
+    private static AlertTypeRepository _alertTypeRepository;
 
     /**
      * Initialize subscriptions to device events. Will allow handling specific alerts, if required.
@@ -60,12 +61,6 @@ public final class AlertCenter
         if(!initializeRepositories())
         {
             SmartLogger.getLogger().severe("Could not initialize Repositories. Can't start AlertCenter.");
-            return false;
-        }
-
-        if(!initializeAlertTypeEntities())
-        {
-            SmartLogger.getLogger().severe("Could not get alert types. Can't start AlertCenter.");
             return false;
         }
 
@@ -110,30 +105,6 @@ public final class AlertCenter
     }
 
     /**
-     * Fill the list of known alert types.
-     * @return  true if succeeded, false otherwise.
-     */
-    private static boolean initializeAlertTypeEntities()
-    {
-        Repository<AlertTypeEntity> atRepo = DatabaseHandler.getRepository(AlertTypeEntity.class);
-        List<AlertTypeEntity> atList = atRepo.getAll();
-
-        if(atList.size() == 0)
-        {
-            return false;
-        }
-
-        _alertTypeToEntities = new HashMap<>();
-
-        for(AlertTypeEntity ate : atList)
-        {
-            _alertTypeToEntities.put(ate.getType(), ate);
-        }
-
-        return true;
-    }
-
-    /**
      * Get the Alert Repository to keep it at hand.
      * @return  true if succeeded, false otherwise.
      */
@@ -141,11 +112,14 @@ public final class AlertCenter
     {
         _alertRepository = (AlertRepository) DatabaseHandler.getRepository(AlertEntity.class);
         _alertHistoryRepository = DatabaseHandler.getRepository(AlertHistoryEntity.class);
+        _alertTypeRepository = (AlertTypeRepository) DatabaseHandler.getRepository(AlertTypeEntity.class);
 
         return  _alertRepository != null &&
                 _alertRepository instanceof AlertRepository &&
                 _alertHistoryRepository != null &&
-                _alertHistoryRepository instanceof AlertHistoryRepository;
+                _alertHistoryRepository instanceof AlertHistoryRepository &&
+                _alertTypeRepository != null &&
+                _alertTypeRepository instanceof AlertTypeRepository;
     }
 
     /**
@@ -163,7 +137,7 @@ public final class AlertCenter
         {
             String recipientsTo = alertEntity.getToList();
             String recipientsCc = alertEntity.getCcList();
-            String recipientsBcc = alertEntity.getToList();
+            String recipientsBcc = alertEntity.getBccList();
 
             InternetAddress[] toList = InternetAddress.parse(recipientsTo == null ? "" : recipientsTo);
             InternetAddress[] ccList = InternetAddress.parse(recipientsCc == null ? "" : recipientsCc);
@@ -251,7 +225,7 @@ public final class AlertCenter
         @Override
         public void deviceDisconnected()
         {
-            AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.DEVICE_DISCONNECTED);
+            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.DEVICE_DISCONNECTED);
 
             if(ate == null)
             {
@@ -264,7 +238,7 @@ public final class AlertCenter
         @Override
         public void doorOpenDelay()
         {
-            AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.DOOR_DELAY);
+            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.DOOR_OPEN_DELAY);
 
             if(ate == null)
             {
@@ -293,7 +267,7 @@ public final class AlertCenter
             }
 
             FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastFingerIndex(isMaster);
-            AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.THIEF_FINGER);
+            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.THIEF_FINGER);
 
             if(index == null || ate == null || index.getIndex() != gue.getThiefFingerIndex())
             {
@@ -306,7 +280,7 @@ public final class AlertCenter
         @Override
         public void temperatureMeasure(double value)
         {
-            AlertTypeEntity ate = _alertTypeToEntities.get(AlertTypeEntity.TEMPERATURE);
+            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.TEMPERATURE);
 
             if(ate == null)
             {

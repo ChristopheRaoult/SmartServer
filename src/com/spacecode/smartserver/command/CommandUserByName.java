@@ -7,7 +7,7 @@ import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AddUser command.
+ * UserByName command.
  */
 public class CommandUserByName extends ClientCommand
 {
