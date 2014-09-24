@@ -16,6 +16,11 @@ public class TemperatureCenter
 {
     private static double _lastValue = Double.MIN_VALUE;
 
+    /** Must not be instantiated */
+    private TemperatureCenter()
+    {
+    }
+
     /**
      * Check that device has been initialized. If it has, add a new listener for Temperature event.
      * @return True if subscribing to the temperature event succeeded. False otherwise.

@@ -10,6 +10,7 @@ import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
+import com.spacecode.sdk.network.alert.SmtpServer;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantType;
@@ -149,43 +150,6 @@ public class DatabaseHandler
     }
 
     /**
-     * Look for a configuration for the current device.
-     *
-     * @return Instance of DeviceEntity class.
-     */
-    public static DeviceEntity getDeviceConfiguration()
-    {
-        if(_deviceConfiguration != null)
-        {
-            return _deviceConfiguration;
-        }
-
-        Repository deviceRepository = getRepository(DeviceEntity.class);
-
-        Object result = deviceRepository.getEntityBy(DeviceEntity.SERIAL_NUMBER, DeviceHandler.getDevice().getSerialNumber());
-        _deviceConfiguration = result == null ? null : (DeviceEntity) result;
-
-        return _deviceConfiguration;
-    }
-
-    /**
-     * @return First entity available (if any) in SmtpServer table.
-     */
-    public static SmtpServerEntity getSmtpServerConfiguration()
-    {
-        Dao<SmtpServerEntity, Integer> smtpDao = getDao(SmtpServerEntity.class);
-
-        try
-        {
-            return smtpDao.queryForFirst(smtpDao.queryBuilder().prepare());
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception while querying SMTP server configuration.", sqle);
-            return null;
-        }
-    }
-
-    /**
      * Provide an easy access to DAO's.
      *
      * @param entityClass   Class instance of the Entity class to be used.
@@ -234,6 +198,35 @@ public class DatabaseHandler
         }
 
         return _classNameToRepository.get(className);
+    }
+
+    /**
+     * Look for a configuration for the current device.
+     *
+     * @return Instance of DeviceEntity class.
+     */
+    public static DeviceEntity getDeviceConfiguration()
+    {
+        if(_deviceConfiguration != null)
+        {
+            return _deviceConfiguration;
+        }
+
+        Repository deviceRepository = getRepository(DeviceEntity.class);
+
+        Object result = deviceRepository.getEntityBy(DeviceEntity.SERIAL_NUMBER, DeviceHandler.getDevice().getSerialNumber());
+        _deviceConfiguration = result == null ? null : (DeviceEntity) result;
+
+        return _deviceConfiguration;
+    }
+
+    /**
+     * @return First SmtpServer set for the current device if any. Result is null otherwise.
+     */
+    public static SmtpServerEntity getSmtpServerConfiguration()
+    {
+        return getRepository(SmtpServerEntity.class)
+                .getEntityBy(SmtpServerEntity.DEVICE_ID, getDeviceConfiguration().getId());
     }
 
     /**
@@ -761,6 +754,38 @@ public class DatabaseHandler
         else
         {
             return aTempRepo.insert(new AlertTemperatureEntity(newAlertEntity, alertTemperature));
+        }
+    }
+
+    /**
+     * Persist new SMTP server information for the current device.
+     *
+     * @param address       Server address.
+     * @param port          Server TCP port number.
+     * @param username      Username to connect to the SMTP server.
+     * @param password      Password to connect to the SMTP server.
+     * @param sslEnabled    If true, will use SSL for authentication.
+     *
+     * @return              True if operation succeeded, false otherwise.
+     */
+    public static boolean persistSmtpServer(String address, int port, String username,
+                                            String password, boolean sslEnabled)
+    {
+        Repository<SmtpServerEntity> ssRepo = getRepository(SmtpServerEntity.class);
+
+        SmtpServerEntity currentSse = getSmtpServerConfiguration();
+
+        if(currentSse == null)
+        {
+            return ssRepo.insert(new SmtpServerEntity(address, port, username,
+                    password, sslEnabled));
+        }
+
+        else
+        {
+            currentSse.updateFrom(new SmtpServer(address, port, username,
+                    password, sslEnabled));
+            return ssRepo.update(currentSse);
         }
     }
 

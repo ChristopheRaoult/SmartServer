@@ -32,6 +32,13 @@ public final class AlertTemperatureEntity extends Entity
     {
     }
 
+    /**
+     * Default constructor.
+     *
+     * @param newAlertEntity    AlertEntity (contains general information) attached to this
+     *                          temperature alert.
+     * @param at                AlertTemperature [SDK] instance to take values from.
+     */
     public AlertTemperatureEntity(AlertEntity newAlertEntity, AlertTemperature at)
     {
         _temperatureMin = at.getTemperatureMin();

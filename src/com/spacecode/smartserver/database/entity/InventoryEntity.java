@@ -50,6 +50,14 @@ public final class InventoryEntity extends Entity
     {
     }
 
+    /**
+     * Default constructor.
+     *
+     * @param inventory Inventory [SDK] instance to take values from.
+     * @param device    DeviceEntity attached to this inventory.
+     * @param gue       GrantedUserEntity (if any) attached to this inventory.
+     * @param ate       AcessTypeEntity (Manual, Fingerprint, Badge...) attached to this inventory.
+     */
     public InventoryEntity(Inventory inventory, DeviceEntity device, GrantedUserEntity gue, AccessTypeEntity ate)
     {
         _device = device;

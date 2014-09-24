@@ -40,6 +40,11 @@ public final class AlertCenter
     private static Repository<AlertHistoryEntity> _alertHistoryRepository;
     private static AlertTypeRepository _alertTypeRepository;
 
+    /** Must not be instantiated */
+    private AlertCenter()
+    {
+    }
+
     /**
      * Initialize subscriptions to device events. Will allow handling specific alerts, if required.
      * @return  True if operation is successful. False otherwise (device null / not instantiated).
@@ -167,7 +172,7 @@ public final class AlertCenter
     {
         List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(ate);
 
-        if(matchingAlerts.size() == 0)
+        if(matchingAlerts.isEmpty())
         {
             return;
         }
@@ -194,7 +199,7 @@ public final class AlertCenter
      */
     private static void raiseAlerts(List<AlertEntity> matchingAlerts)
     {
-        if(matchingAlerts == null || matchingAlerts.size() == 0)
+        if(matchingAlerts == null || matchingAlerts.isEmpty())
         {
             return;
         }
@@ -290,7 +295,7 @@ public final class AlertCenter
             // get enabled Temperature Alerts.
             List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(ate);
 
-            if(alerts.size() == 0)
+            if(alerts.isEmpty())
             {
                 return;
             }
@@ -320,7 +325,7 @@ public final class AlertCenter
             }
 
             // if temperature alert needs to be raised.
-            if(matchingAlerts.size() == 0)
+            if(matchingAlerts.isEmpty())
             {
                 return;
             }

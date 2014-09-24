@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.sdk.network.alert.SmtpServer;
 
 /**
  * SmtpServer Entity
@@ -44,6 +45,32 @@ public final class SmtpServerEntity extends Entity
     }
 
     /**
+     * Default constructor.
+     *
+     * @param address       SMTP server address.
+     * @param port          SMTP server TCP port.
+     * @param username      Username to access the SMTP server.
+     * @param password      Password to access the SMTP server.
+     * @param sslEnabled    True if SSL protocol should be used for authentication.
+     */
+    public SmtpServerEntity(String address, int port, String username, String password, boolean sslEnabled)
+    {
+        _address = address;
+        _port = port;
+        _username = username;
+        _password = password;
+        _sslEnabled = sslEnabled;
+    }
+
+    /**
+     * @return DeviceEntity attached to this SmtpServerEntity.
+     */
+    public DeviceEntity getDevice()
+    {
+        return _device;
+    }
+
+    /**
      * @return SMTP Server address.
      */
     public String getAddress()
@@ -81,5 +108,18 @@ public final class SmtpServerEntity extends Entity
     public boolean isSslEnabled()
     {
         return _sslEnabled;
+    }
+
+    /**
+     * Copy all values from an SmtpServer [SDK] instance.
+     * @param smtpServer SmtpServer to take values from.
+     */
+    public void updateFrom(SmtpServer smtpServer)
+    {
+        _address = smtpServer.getAddress();
+        _port = smtpServer.getPort();
+        _username = smtpServer.getUsername();
+        _password = smtpServer.getPassword();
+        _sslEnabled = smtpServer.isSslEnabled();
     }
 }

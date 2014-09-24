@@ -9,6 +9,7 @@ import com.spacecode.smartserver.database.entity.AlertTypeEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -61,7 +62,8 @@ public class AlertRepository extends Repository<AlertEntity>
      *
      * @param ate   AlertType entity instance (only used to get Id of the type).
      *
-     * @return      List of AlertEntity matching the two conditions (type and enabled).
+     * @return      List of AlertEntity matching the conditions.
+     *              Could be empty (no result, or SQL Exception).
      */
     public List<AlertEntity> getEnabledAlerts(AlertTypeEntity ate)
     {
@@ -78,7 +80,7 @@ public class AlertRepository extends Repository<AlertEntity>
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to get enabled alerts id.", sqle);
-            return null;
+            return new ArrayList<>();
         }
     }
 }

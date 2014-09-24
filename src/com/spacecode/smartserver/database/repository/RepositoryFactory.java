@@ -99,6 +99,11 @@ public class RepositoryFactory
             return new RfidTagRepository(dao);
         }
 
+        else if(className.equals(SmtpServerEntity.class.getName()))
+        {
+            return new SmtpServerRepository(dao);
+        }
+
         else if(className.equals(TemperatureMeasurementEntity.class.getName()))
         {
             return new TemperatureMeasurementRepository(dao);
