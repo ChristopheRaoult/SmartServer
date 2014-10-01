@@ -321,7 +321,6 @@ public final class DeviceHandler
         public void temperatureMeasure(double value)
         {
             SmartServer.sendAllClients(EventCode.TEMPERATURE_MEASURE, String.valueOf(value));
-            // TODO : Create temperature handler and subscribe to this event and persist measures etc.
         }
     }
 }

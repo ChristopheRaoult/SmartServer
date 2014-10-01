@@ -53,6 +53,7 @@ public final class ClientCommandRegister extends ClientCommand
 
     /**
      * Allow dynamic (new) command registering.
+     *
      * @param commandName       Command name. Should correspond to a RequestCode.
      * @param commandInstance   Command instance (implementing ClientCommand) which should be executed.
      */
@@ -76,8 +77,10 @@ public final class ClientCommandRegister extends ClientCommand
     /**
      * Looks for a ClientCommand corresponding to the given request and execute it with given parameters.
      * Index 0 of the given string array contains the request. Other values (if any) contains the parameters sent by the client.
+     *
      * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *
      * @throws ClientCommandException   Occurs if no command has been found for the given request code.
      */
     @Override

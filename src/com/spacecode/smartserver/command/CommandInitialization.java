@@ -13,8 +13,10 @@ public class CommandInitialization extends ClientCommand
 {
     /**
      * Send a message to the current context containing basic information (serial number, device type, hardware and software version).
+     *
      * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *
      * @throws ClientCommandException
      */
     @Override
