@@ -8,7 +8,7 @@ import java.util.MissingResourceException;
 import java.util.logging.*;
 
 /**
- * Wrapper for default Logger
+ * Thin internal wrapper for default Logger.
  */
 public final class SmartLogger extends Logger
 {

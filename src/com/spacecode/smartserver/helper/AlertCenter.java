@@ -27,8 +27,6 @@ import java.util.logging.Level;
  * Handle Alerts raising/reporting and Emails sending (if any SMTP server is set).
  *
  * Has to be initialized to subscribe to "alert-compliant" events.
- *
- * TODO: (not done yet) Query only alerts with DeviceEntity = DatabaseHandler.getDeviceConfiguration()
  */
 public final class AlertCenter
 {
@@ -170,7 +168,7 @@ public final class AlertCenter
      */
     private static void raiseAlerts(AlertTypeEntity ate)
     {
-        List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(ate);
+        List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(ate, DatabaseHandler.getDeviceConfiguration());
 
         if(matchingAlerts.isEmpty())
         {
@@ -293,7 +291,7 @@ public final class AlertCenter
             }
 
             // get enabled Temperature Alerts.
-            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(ate);
+            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(ate, DatabaseHandler.getDeviceConfiguration());
 
             if(alerts.isEmpty())
             {

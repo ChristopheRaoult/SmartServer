@@ -91,7 +91,6 @@ public final class ClientCommandRegister extends ClientCommand
         }
 
         // TODO: make sure a request can't be handled twice in a row (ex: double adduser request)
-        // TODO: Parallelize-me! (But still catch ClientCommandException)
         cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
     }
 }

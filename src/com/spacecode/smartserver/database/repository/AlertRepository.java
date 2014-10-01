@@ -6,6 +6,7 @@ import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
 import com.spacecode.smartserver.database.entity.AlertTypeEntity;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
@@ -62,17 +63,26 @@ public class AlertRepository extends Repository<AlertEntity>
      *
      * @param ate   AlertType entity instance (only used to get Id of the type).
      *
+     * @param dc    Device instance, attached to the queried Alerts.
+     *
      * @return      List of AlertEntity matching the conditions.
      *              Could be empty (no result, or SQL Exception).
      */
-    public List<AlertEntity> getEnabledAlerts(AlertTypeEntity ate)
+    public List<AlertEntity> getEnabledAlerts(AlertTypeEntity ate, DeviceEntity dc)
     {
+        if(ate == null || dc == null)
+        {
+            return new ArrayList<>();
+        }
+
         try
         {
             return _dao.query(
                     _dao.queryBuilder()
                             .where()
                             .eq(AlertEntity.ALERT_TYPE_ID, ate.getId())
+                            .and()
+                            .eq(AlertEntity.DEVICE_ID, dc.getId())
                             .and()
                             .eq(AlertEntity.ENABLED, true)
                             .prepare()

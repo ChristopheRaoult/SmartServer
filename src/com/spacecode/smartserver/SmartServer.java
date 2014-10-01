@@ -29,7 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Main server class, using Netty framework.
+ * SmartServer "Main" class.
+ * Relies on Netty to start an Asynchronous TCP server.
  */
 public final class SmartServer
 {
@@ -40,6 +41,7 @@ public final class SmartServer
 
     /** List of active channels (between SmartServer and clients). */
     private static final ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
     private static Channel _channel;
 
     /** Must not be instantiated. */
@@ -54,7 +56,12 @@ public final class SmartServer
      * <ul>
      *     <li>Try to initialize/connect to Database</li>
      *     <li>Try to initialize/connect to Device/li>
+     *     <li>Load granted users/li>
+     *     <li>Load last inventory*</li>
+     *     <li>Start the Alert center*</li>
+     *     <li>Start the Temperature center*</li>
      * </ul>
+     * *: Not a critical operation.
      * 3 - Start the asynchronous Server.
      */
     public static void main(String[] args) throws IOException, SQLException
@@ -160,7 +167,7 @@ public final class SmartServer
 
     /**
      * Entry point of SmartServer.
-     * Instantiate the (netty) ServerBootstrap and configure the server channel.
+     * Instantiate the (netty) ServerBootstrap, the SmartServerHandler, and configure the server channel.
      */
     private static void start(int port)
     {
@@ -214,6 +221,7 @@ public final class SmartServer
 
     /**
      * Called by ServerHandler when a new connection is made with a client.
+     *
      * @param newChannel Channel instance linking the new client to the server.
      */
     public static void addChannel(Channel newChannel)
@@ -223,8 +231,11 @@ public final class SmartServer
 
     /**
      * Send the given message using the given channel context. Add the END_OF_MESSAGE character at the end of the message.
+     *
      * @param ctx       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
+     *
      * @param packets   Message to be sent to the client.
+     *
      * @return          A ChannelFuture instance, given by writeAndFlush method of ctx.
      */
     public static ChannelFuture sendMessage(ChannelHandlerContext ctx, String... packets)
@@ -243,7 +254,9 @@ public final class SmartServer
     /**
      * Send the given message to all connected clients.
      * Also used to notify Device events.
+     *
      * @param packets Message to be delivered to all clients.
+     *
      * @return ChannelGroupFuture instance provided by ChannelGroup write() method.
      */
     public static ChannelGroupFuture sendAllClients(String... packets)

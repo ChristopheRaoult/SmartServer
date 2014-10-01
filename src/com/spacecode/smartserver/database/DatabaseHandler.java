@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 /**
- * ORMLite DB Wrapper
+ * ORMLite DB Wrapper. Handle common interactions with Database.
  */
 public class DatabaseHandler
 {

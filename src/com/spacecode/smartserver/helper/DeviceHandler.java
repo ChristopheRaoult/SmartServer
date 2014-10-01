@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Handle RfidDevice connection, instantiation, disconnection.
- * Provide access to the device.
+ * Handle RfidDevice connection, instantiation, disconnection, and events.
  */
 public final class DeviceHandler
 {
@@ -31,6 +30,7 @@ public final class DeviceHandler
     /**
      * Looks for available SpaceCode devices. Only 1 can be used and only 1 must be present.
      * Instantiates RfidDevice.
+     *
      * @return True if instantiation succeeded, False if it failed (or if number of devices != 1).
      */
     public synchronized static boolean connectDevice()

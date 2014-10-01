@@ -19,6 +19,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
 
     /**
      * Called when a new connection (with a client) is created.
+     *
      * @param ctx ChannelHandlerContext instance corresponding to the channel created between SmartServer and the new Client.
      */
     @Override
@@ -30,6 +31,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
 
     /**
      * Called when a message is received from a client.
+     *
      * @param ctx       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
      * @param request   Client message (which is a "Request": a command, with potential parameters).
      */
@@ -56,6 +58,7 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
 
     /**
      * Called when an exception has been caught by Netty communication abstraction layer.
+     *
      * @param ctx   ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
      * @param cause Throwable instance of the raised Exception.
      */
