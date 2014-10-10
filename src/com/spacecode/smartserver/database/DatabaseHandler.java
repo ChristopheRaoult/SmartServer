@@ -34,7 +34,7 @@ public class DatabaseHandler
 {
     // TODO: values to be read from a local .conf file (just like a real *nix system service)
     private static final String DB_HOST             = "localhost:3306";
-    private static final String DB_NAME             = "test";
+    private static final String DB_NAME             = "smartserver";
     private static final String DB_USER             = "root";
     private static final String DB_PASSWORD         = "";
     private static final String CONNECTION_STRING   = "jdbc:mysql://"+DB_HOST+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD;
@@ -335,7 +335,7 @@ public class DatabaseHandler
      */
     public static Inventory getLastStoredInventory()
     {
-        Dao daoUser = getDao(InventoryEntity.class);
+        Dao daoInventory = getDao(InventoryEntity.class);
 
         // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present, 4: total tags removed
         // 5: tag uid, 6: tag movement, 7: inventory creation date
@@ -370,7 +370,7 @@ public class DatabaseHandler
         try
         {
             // one line per tag movement in the inventory (if any)
-            GenericRawResults results = daoUser.queryRaw(sb.toString());
+            GenericRawResults results = daoInventory.queryRaw(sb.toString());
 
             List<String> tagsAdded = new ArrayList<>();
             List<String> tagsPresent = new ArrayList<>();
@@ -381,6 +381,12 @@ public class DatabaseHandler
             // fill the inventory instance with results from Raw SQL query
             for (String[] result : (Iterable<String[]>) results)
             {
+                // if it's a no-tag scan, there will be no line with a tag-movement
+                if(result[6] == null)
+                {
+                    continue;
+                }
+
                 switch(result[6])
                 {
                     case "1":

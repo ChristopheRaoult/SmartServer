@@ -59,6 +59,8 @@ public class CommandSerialBridge extends ClientCommand
 
                 // execute command for port forwarding
                 _portForwardingProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwStartCmd ).start();
+
+                SmartLogger.getLogger().severe("Running Port Forwarding command.");
             } catch (IOException ioe)
             {
                 SmartLogger.getLogger().log(Level.SEVERE, "Unable to run Port Forwarding command.", ioe);
@@ -84,6 +86,8 @@ public class CommandSerialBridge extends ClientCommand
                 killingSocatProcess.waitFor();
 
                 _portForwardingProcess = null;
+
+                SmartLogger.getLogger().severe("Stopped Port Forwarding command. Reconnecting Device...");
 
                 // reconnect to local Device
                 DeviceHandler.connectDevice();

@@ -51,18 +51,18 @@ public final class SmartServer
 
     /**
      * Entry point:
-     * 1 - Initialize a shutdown hook to free Device and Database.
-     * 2 - Following critical operations: (application stop if one operation of the list fails)
+     * <p>1 - Initialize a shutdown hook to free Device and Database.</p>
+     * <p>2 - Following critical operations: (application stop if one operation of the list fails)
      * <ul>
      *     <li>Try to initialize/connect to Database</li>
-     *     <li>Try to initialize/connect to Device/li>
-     *     <li>Load granted users/li>
+     *     <li>Try to initialize/connect to Device</li>
+     *     <li>Load granted users</li>
      *     <li>Load last inventory*</li>
      *     <li>Start the Alert center*</li>
      *     <li>Start the Temperature center*</li>
      * </ul>
-     * *: Not a critical operation.
-     * 3 - Start the asynchronous Server.
+     * *: Not a critical operation.</p>
+     * <p>3 - Start the asynchronous Server.</p>
      */
     public static void main(String[] args) throws IOException, SQLException
     {
