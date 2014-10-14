@@ -269,7 +269,7 @@ public final class AlertCenter
                 return;
             }
 
-            FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastFingerIndex(isMaster);
+            FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastVerifiedFingerIndex(isMaster);
             AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.THIEF_FINGER);
 
             if(index == null || ate == null || index.getIndex() != gue.getThiefFingerIndex())
