@@ -4,6 +4,7 @@ import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.command.ClientCommandException;
 import com.spacecode.smartserver.command.ClientCommandRegister;
 import com.spacecode.smartserver.helper.SmartLogger;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -13,6 +14,7 @@ import java.util.logging.Level;
  * Handle new connections and messages from clients.
  * Handle any exception caught by Netty.
  */
+@ChannelHandler.Sharable
 public final class SmartServerHandler extends SimpleChannelInboundHandler<String>
 {
     private static final ClientCommandRegister COMMAND_REGISTER = new ClientCommandRegister();
@@ -25,20 +27,26 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
     @Override
     public void channelActive(final ChannelHandlerContext ctx)
     {
-        SmartServer.addChannel(ctx.channel());
+        SmartServer.addClientChannel(ctx.channel(), ctx.handler());
         SmartLogger.getLogger().info("Connection from " + ctx.channel().remoteAddress());
     }
 
     /**
      * Called when a message is received from a client.
      *
-     * @param ctx       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
-     * @param request   Client message (which is a "Request": a command, with potential parameters).
+     * @param ctx   ChannelHandlerContext instance corresponding to the channel existing between
+     *              SmartServer and the new Client.
+     * @param msg   Client message (which is a "Request": a command, with potential parameters).
      */
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String request)
+    protected void channelRead0(ChannelHandlerContext ctx, String msg)
     {
-        if(request == null || request.trim().isEmpty())
+        handleTextRequest(ctx, msg);
+    }
+
+    private void handleTextRequest(ChannelHandlerContext ctx, String request)
+    {
+        if(request.trim().isEmpty())
         {
             return;
         }
@@ -59,7 +67,8 @@ public final class SmartServerHandler extends SimpleChannelInboundHandler<String
     /**
      * Called when an exception has been caught by Netty communication abstraction layer.
      *
-     * @param ctx   ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
+     * @param ctx   ChannelHandlerContext instance corresponding to the channel existing between
+     *              SmartServer and the new Client.
      * @param cause Throwable instance of the raised Exception.
      */
     @Override

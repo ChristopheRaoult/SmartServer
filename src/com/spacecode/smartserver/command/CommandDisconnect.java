@@ -1,8 +1,5 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.smartserver.SmartServer;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -19,7 +16,6 @@ public class CommandDisconnect extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        ChannelFuture f = SmartServer.sendMessage(ctx, "Bye");
-        f.addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().close();
     }
 }

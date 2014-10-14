@@ -19,6 +19,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -30,19 +33,26 @@ import java.util.logging.Logger;
 
 /**
  * SmartServer "Main" class.
- * Relies on Netty to start an Asynchronous TCP server.
+ * Relies on Netty to start:
+ * <ul>
+ *     <li>Asynchronous TCP/IP server</li>
+ *     <li>WebSocket server</li>
+ * </ul>
  */
 public final class SmartServer
 {
-    private static final int TCP_PORT = 8080;
-
     private static final EventLoopGroup BOSS_GROUP = new NioEventLoopGroup();
     private static final EventLoopGroup WORKER_GROUP = new NioEventLoopGroup();
 
-    /** List of active channels (between SmartServer and clients). */
-    private static final ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private static final ChannelGroup TCP_IP_CHAN_GROUP = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private static final ChannelGroup WS_CHAN_GROUP = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private static final int TCP_IP_PORT = 8080;
+    private static final ChannelHandler TCP_IP_HANDLER = new SmartServerHandler();
+    private static final int WS_PORT = 8081;
+    private static final ChannelHandler WS_HANDLER = new WebSocketHandler();
 
     private static Channel _channel;
+    private static Channel _wsChannel;
 
     /** Must not be instantiated. */
     private SmartServer()
@@ -140,7 +150,7 @@ public final class SmartServer
             SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
         }
 
-        start(TCP_PORT);
+        start();
     }
 
     /**
@@ -167,14 +177,14 @@ public final class SmartServer
 
     /**
      * Entry point of SmartServer.
-     * Instantiate the (netty) ServerBootstrap, the SmartServerHandler, and configure the server channel.
+     * Instantiate ServerBootstrap, SmartServerHandler, and configure the server channel.
      */
-    private static void start(int port)
+    private static void start()
     {
         try
         {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(BOSS_GROUP, WORKER_GROUP)
+            ServerBootstrap tcpIpBootStrap = new ServerBootstrap();
+            tcpIpBootStrap.group(BOSS_GROUP, WORKER_GROUP)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>()
                     {
@@ -182,18 +192,39 @@ public final class SmartServer
                         public void initChannel(SocketChannel ch)
                         {
                             // Define character EOT (0x04) as an end-of-frame character.
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(8192, Unpooled.wrappedBuffer(new byte[] {MessageHandler.END_OF_MESSAGE})));
+                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(8192,
+                                    Unpooled.wrappedBuffer(new byte[] {MessageHandler.END_OF_MESSAGE})));
+
                             // Allow sending/receiving string instead of byte buffers.
                             ch.pipeline().addLast(new StringDecoder(), new StringEncoder());
+
                             // Add a SmartServerHandler instance to the channel pipeline.
-                            ch.pipeline().addLast(new SmartServerHandler());
+                            ch.pipeline().addLast(TCP_IP_HANDLER);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
-            _channel = b.bind(port).sync().channel();
+            _channel = tcpIpBootStrap.bind(TCP_IP_PORT).sync().channel();
+
+            ServerBootstrap wsBootStrap = new ServerBootstrap();
+            wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>()
+                    {
+                        @Override
+                        public void initChannel(SocketChannel ch)
+                        {
+                            ch.pipeline().addLast(new HttpServerCodec());
+                            ch.pipeline().addLast(new HttpObjectAggregator(65536));
+                            ch.pipeline().addLast(WS_HANDLER);
+                        }
+                    });
+
+             _wsChannel = wsBootStrap.bind(WS_PORT).sync().channel();
+
+            // wait until the main channel (TCP/IP) is closed
             _channel.closeFuture().sync();
         } catch (InterruptedException ie)
         {
@@ -215,24 +246,38 @@ public final class SmartServer
             _channel.close();
         }
 
+        if(_wsChannel != null)
+        {
+            _wsChannel.close();
+        }
+
         WORKER_GROUP.shutdownGracefully();
         BOSS_GROUP.shutdownGracefully();
     }
 
     /**
-     * Called by ServerHandler when a new connection is made with a client.
+     * Called by ServerHandler/WebSocketHandler when a new connection is made with a client.
      *
      * @param newChannel Channel instance linking the new client to the server.
      */
-    public static void addChannel(Channel newChannel)
+    public static void addClientChannel(Channel newChannel, ChannelHandler handler)
     {
-        CHANNEL_GROUP.add(newChannel);
+        if(handler == WS_HANDLER)
+        {
+            WS_CHAN_GROUP.add(newChannel);
+        }
+
+        else if (handler == TCP_IP_HANDLER)
+        {
+            TCP_IP_CHAN_GROUP.add(newChannel);
+        }
     }
 
     /**
      * Send the given message using the given channel context. Add the END_OF_MESSAGE character at the end of the message.
      *
-     * @param ctx       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the new Client.
+     * @param ctx       ChannelHandlerContext instance corresponding to the channel existing between
+     *                  SmartServer and the new Client.
      *
      * @param packets   Message to be sent to the client.
      *
@@ -245,6 +290,11 @@ public final class SmartServer
         if(message == null)
         {
             return null;
+        }
+
+        if(ctx.handler() == WS_HANDLER)
+        {
+            ctx.writeAndFlush(new TextWebSocketFrame(message));
         }
 
         return ctx.writeAndFlush(message);
@@ -268,8 +318,12 @@ public final class SmartServer
             return null;
         }
 
-        ChannelGroupFuture result = CHANNEL_GROUP.write(message);
-        CHANNEL_GROUP.flush();
+        ChannelGroupFuture result = TCP_IP_CHAN_GROUP.write(message);
+        WS_CHAN_GROUP.write(new TextWebSocketFrame(message));
+
+        TCP_IP_CHAN_GROUP.flush();
+        WS_CHAN_GROUP.flush();
+
         return result;
     }
 }
