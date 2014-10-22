@@ -90,7 +90,8 @@ public final class AlertCenter
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.host", sse.getAddress());
         props.put("mail.smtp.auth", "true");
-        props.put("mail.debug", "true");
+        // enable/disable logging of JavaMail library
+        props.put("mail.debug", "false");
         props.put("mail.smtp.port", sse.getPort());
         props.put("mail.smtp.socketFactory.port", sse.getPort());
         props.put("mail.smtp.starttls.enable", sse.isSslEnabled());

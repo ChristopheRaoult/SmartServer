@@ -76,6 +76,8 @@ public final class SmartServer
      */
     public static void main(String[] args) throws IOException, SQLException
     {
+        Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.SEVERE);
+
         SmartLogger.initialize();
         initializeShutdownHook();
 
@@ -137,11 +139,14 @@ public final class SmartServer
                 SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
             }
 
-            SmartLogger.getLogger().info("Start TemperatureCenter...");
-
-            if(deviceConfig.isTemperatureEnabled() && !TemperatureCenter.initialize())
+            if(deviceConfig.isTemperatureEnabled())
             {
-                SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
+                SmartLogger.getLogger().info("Start TemperatureCenter...");
+
+                if(!TemperatureCenter.initialize())
+                {
+                    SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
+                }
             }
         }
 

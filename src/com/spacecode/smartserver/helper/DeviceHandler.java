@@ -22,6 +22,9 @@ public final class DeviceHandler
 {
     private volatile static RfidDevice _device;
 
+    // allows the CommandSerialBridge to set the current state of device (usb / ethernet).
+    private static boolean SERIAL_PORT_FORWARDING = false;
+
     /** Must not be instantiated. */
     private DeviceHandler()
     {
@@ -101,7 +104,7 @@ public final class DeviceHandler
                 Thread.sleep(3000);
             } catch (InterruptedException ie)
             {
-                SmartLogger.getLogger().log(Level.INFO, "Interrupted while trying to reconnect Device.", ie);
+                SmartLogger.getLogger().log(Level.WARNING, "Interrupted while trying to reconnect Device.", ie);
             }
         }
 
@@ -200,6 +203,24 @@ public final class DeviceHandler
     }
 
     /**
+     * WARNING: Should only be called by CommandSerialBridge when Serial Bridge is enabled/disabled.
+     *
+     * @param state True if serial port is being forwarded through host USB-OTG. False otherwise.
+     */
+    public static void setForwardingSerialPort(boolean state)
+    {
+        SERIAL_PORT_FORWARDING = state;
+    }
+
+    /**
+     * @return True if serial port is being forwarded through host USB-OTG. False otherwise.
+     */
+    public static boolean isForwardingSerialPort()
+    {
+        return SERIAL_PORT_FORWARDING;
+    }
+
+    /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
@@ -209,10 +230,13 @@ public final class DeviceHandler
         public void deviceDisconnected()
         {
             SmartServer.sendAllClients(EventCode.DEVICE_DISCONNECTED);
+            _device = null;
 
-            // TODO: device is manually disconnected if serial bridge gets enabled. DO NOT try to reconnectDevice is that case..
-            // TODO: Find a way to detect if it's a disconnection because of Serial Bridge command (do nothing) or not (do reconnect)
-            // => reconnectDevice()
+            // if the device is in ethernet mode, try to reconnect it
+            if(!SERIAL_PORT_FORWARDING)
+            {
+                reconnectDevice();
+            }
         }
 
         @Override

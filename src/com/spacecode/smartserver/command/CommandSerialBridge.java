@@ -54,7 +54,10 @@ public class CommandSerialBridge extends ClientCommand
 
             try
             {
-                // release the device serial port
+                // tell the device handler that serial port is hooked, then it doesn't try to reconnect device
+                DeviceHandler.setForwardingSerialPort(true);
+
+                // disconnect the device, release the serial port
                 DeviceHandler.disconnectDevice();
 
                 // execute command for port forwarding
@@ -80,6 +83,7 @@ public class CommandSerialBridge extends ClientCommand
             // stop the process (port forwarding)
             // NOTE: calling destroy() on Process instance does not stop "socat"...
             Process killingSocatProcess = null;
+
             try
             {
                 killingSocatProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwEndCmd).start();
@@ -91,6 +95,7 @@ public class CommandSerialBridge extends ClientCommand
 
                 // reconnect to local Device
                 DeviceHandler.connectDevice();
+                DeviceHandler.setForwardingSerialPort(false);
             } catch (IOException | InterruptedException e)
             {
                 SmartLogger.getLogger().log(Level.SEVERE, "Unable to stop Port Forwarding command.", e);
