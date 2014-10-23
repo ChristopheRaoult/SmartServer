@@ -32,6 +32,12 @@ public class CommandUpdatePermission extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
+            return;
+        }
+
         String username = parameters[0];
         String newPermission = parameters[1];
         GrantType grantType;

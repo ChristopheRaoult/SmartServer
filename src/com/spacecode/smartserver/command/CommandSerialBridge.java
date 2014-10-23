@@ -80,13 +80,11 @@ public class CommandSerialBridge extends ClientCommand
                 return;
             }
 
-            // stop the process (port forwarding)
-            // NOTE: calling destroy() on Process instance does not stop "socat"...
-            Process killingSocatProcess = null;
-
             try
             {
-                killingSocatProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwEndCmd).start();
+                // stop the process (port forwarding)
+                // NOTE: calling destroy() on Process instance does not stop "socat"...
+                Process killingSocatProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwEndCmd).start();
                 killingSocatProcess.waitFor();
 
                 _portForwardingProcess = null;

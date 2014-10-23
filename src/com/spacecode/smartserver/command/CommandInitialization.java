@@ -22,6 +22,11 @@ public class CommandInitialization extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        if(DeviceHandler.getDevice() == null)
+        {
+            return;
+        }
+
         SmartServer.sendMessage(ctx,
                 RequestCode.INITIALIZATION,
                 DeviceHandler.getDevice().getSerialNumber(),

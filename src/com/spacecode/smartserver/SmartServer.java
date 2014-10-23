@@ -109,7 +109,7 @@ public final class SmartServer
             }
 
             // Use the configuration to connect/load modules.
-            // TODO: do something if any failure (see directly in method)
+            // TODO: do something if any failure
             DeviceHandler.connectModules();
 
             // Load users from DB into UsersService.

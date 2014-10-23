@@ -27,6 +27,12 @@ public class CommandRewriteUid extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUIDResult.ERROR));
+            return;
+        }
+
         byte result = DeviceHandler.getDevice().rewriteUID(parameters[0], parameters[1]);
         SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(result));
     }

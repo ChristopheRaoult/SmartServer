@@ -23,6 +23,12 @@ public class CommandUsersList extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.USERS_LIST);
+            return;
+        }
+
         List<String> responsePackets = new ArrayList<>();
 
         // add the request code first

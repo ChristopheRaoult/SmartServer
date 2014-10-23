@@ -2,6 +2,7 @@ package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
+import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.database.repository.Repository;
@@ -14,7 +15,7 @@ import com.spacecode.smartserver.database.repository.Repository;
  */
 public class TemperatureCenter
 {
-    private static double _lastValue = Double.MIN_VALUE;
+    private static double _lastValue = TemperatureProbe.ERROR_VALUE;
 
     /** Must not be instantiated */
     private TemperatureCenter()

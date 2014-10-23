@@ -28,6 +28,12 @@ public class CommandSetThiefFinger extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
+            return;
+        }
+
         String username = parameters[0];
         Integer fingerIndex;
 
