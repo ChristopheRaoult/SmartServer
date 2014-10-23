@@ -45,7 +45,7 @@ public final class SmartLogger extends Logger
         try
         {
             ConsoleHandler consoleHandler = new ConsoleHandler();
-            FileHandler fileHandler = new FileHandler("./smartserver.log");
+            FileHandler fileHandler = new FileHandler("./smartserver.log", true);
 
             ShortFormatter formatter = new ShortFormatter();
 

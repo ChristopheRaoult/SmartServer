@@ -5,6 +5,7 @@ import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -36,11 +37,13 @@ public class CommandUpdateBadge extends ClientCommand
         if(user == null)
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
+            SmartLogger.getLogger().info("Unable to update badger: user not found.");
             return;
         }
 
         if(!DatabaseHandler.persistBadgeNumber(username, badgeNumber))
         {
+            SmartLogger.getLogger().info("Unable to update badger: persist operation failed.");
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }

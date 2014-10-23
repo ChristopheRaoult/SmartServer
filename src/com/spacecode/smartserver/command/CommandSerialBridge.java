@@ -69,7 +69,7 @@ public class CommandSerialBridge extends ClientCommand
                 SmartLogger.getLogger().log(Level.SEVERE, "Unable to run Port Forwarding command.", ioe);
 
                 // reconnect to local Device
-                DeviceHandler.connectDevice();
+                DeviceHandler.reconnectDevice();
             }
         }
 
@@ -94,7 +94,7 @@ public class CommandSerialBridge extends ClientCommand
                 SmartLogger.getLogger().severe("Stopped Port Forwarding command. Reconnecting Device...");
 
                 // reconnect to local Device
-                DeviceHandler.connectDevice();
+                DeviceHandler.reconnectDevice();
                 DeviceHandler.setForwardingSerialPort(false);
             } catch (IOException | InterruptedException e)
             {

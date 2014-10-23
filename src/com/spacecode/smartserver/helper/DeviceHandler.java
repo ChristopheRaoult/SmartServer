@@ -97,6 +97,12 @@ public final class DeviceHandler
         while(!deviceConnected && tryStep < 5)
         {
             deviceConnected = connectDevice();
+
+            if(deviceConnected)
+            {
+                connectModules();
+            }
+
             ++tryStep;
 
             try
@@ -120,15 +126,22 @@ public final class DeviceHandler
     }
 
     /**
-     * Connect the modules (master/slave fingerprint readers, badge readers) using DeviceEntity information.
+     * Connect the modules (fingerprint / badge readers, temperature probe).
      * TODO: Retry many times if any module couldn't be initialized/connected
-     *
-     * @param deviceConfig  DeviceEntity instance to be read to get information about modules.
      */
-    public static void connectModules(DeviceEntity deviceConfig)
+    public static void connectModules()
     {
-        if(_device == null || deviceConfig == null)
+        if(_device == null)
         {
+            SmartLogger.getLogger().info("Unable to connect modules [0x0001]");
+            return;
+        }
+
+        DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
+
+        if(deviceConfig == null)
+        {
+            SmartLogger.getLogger().info("Unable to connect modules [0x0002]");
             return;
         }
 

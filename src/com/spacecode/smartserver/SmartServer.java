@@ -92,7 +92,7 @@ public final class SmartServer
 
         SmartLogger.getLogger().info("Database initialized.");
 
-        SmartLogger.getLogger().info("Connecting to local device...");
+        SmartLogger.getLogger().info("Connecting the local device...");
 
         if(DeviceHandler.connectDevice())
         {
@@ -104,13 +104,13 @@ public final class SmartServer
             // No configuration: stop SmartServer.
             if(deviceConfig == null)
             {
-                SmartLogger.getLogger().severe("Device not configured. SmartServer won't start. Please create a Device Configuration.");
+                SmartLogger.getLogger().severe("Device not configured. SmartServer won't start..");
                 return;
             }
 
             // Use the configuration to connect/load modules.
             // TODO: do something if any failure (see directly in method)
-            DeviceHandler.connectModules(deviceConfig);
+            DeviceHandler.connectModules();
 
             // Load users from DB into UsersService.
             SmartLogger.getLogger().info("Loading users...");
@@ -152,6 +152,7 @@ public final class SmartServer
 
         else
         {
+            // we still start SmartServer, as NOT finding a device could be
             SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
         }
 
