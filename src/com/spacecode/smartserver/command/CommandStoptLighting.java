@@ -17,6 +17,11 @@ public class CommandStoptLighting extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        if(DeviceHandler.getDevice() == null)
+        {
+            return;
+        }
+
         DeviceHandler.getDevice().stopLightingTagsLed();
     }
 }

@@ -28,6 +28,12 @@ public class CommandAddUser extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
+            return;
+        }
+
         GrantedUser newUser = GrantedUser.deserialize(parameters[0]);
 
         if(newUser == null || newUser.getUsername() == null || "".equals(newUser.getUsername().trim()))

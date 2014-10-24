@@ -30,6 +30,12 @@ public class CommandStartLighting extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING);
+            return;
+        }
+
         // create a new editable ArrayList from given tags (in parameters). Tags successfully lighted will be removed from the list.
         List<String> tagsList = new ArrayList<>(Arrays.asList(parameters));
         DeviceHandler.getDevice().startLightingTagsLed(tagsList);

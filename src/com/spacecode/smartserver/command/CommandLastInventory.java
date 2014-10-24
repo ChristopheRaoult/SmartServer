@@ -22,6 +22,11 @@ public class CommandLastInventory extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        if(DeviceHandler.getDevice() == null)
+        {
+            return;
+        }
+
         SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY, DeviceHandler.getDevice().getLastInventory().serialize());
     }
 }
