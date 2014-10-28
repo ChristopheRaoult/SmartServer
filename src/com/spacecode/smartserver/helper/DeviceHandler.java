@@ -12,6 +12,8 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -237,7 +239,7 @@ public final class DeviceHandler
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
-            AccessControlEventHandler, AuthenticationModuleEventHandler, TemperatureEventHandler
+            AccessControlEventHandler, AuthenticationModuleEventHandler, TemperatureEventHandler, LedEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -358,6 +360,23 @@ public final class DeviceHandler
         public void temperatureMeasure(double value)
         {
             SmartServer.sendAllClients(EventCode.TEMPERATURE_MEASURE, String.valueOf(value));
+        }
+
+        @Override
+        public void lightingStarted(List<String> tagsLeft)
+        {
+            List<String> responsePackets = new ArrayList<>();
+
+            responsePackets.add(EventCode.LIGHTING_STARTED);
+            responsePackets.addAll(tagsLeft);
+
+            SmartServer.sendAllClients(responsePackets.toArray(new String[0]));
+        }
+
+        @Override
+        public void lightingStopped()
+        {
+            SmartServer.sendAllClients(EventCode.LIGHTING_STOPPED);
         }
     }
 }

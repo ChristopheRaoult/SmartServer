@@ -42,7 +42,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.SERIAL_BRIDGE,        new CommandSerialBridge());
         _commands.put(RequestCode.SMTP_SERVER,          new CommandSmtpServer());
         _commands.put(RequestCode.START_LIGHTING,       new CommandStartLighting());
-        _commands.put(RequestCode.STOP_LIGHTING,        new CommandStoptLighting());
+        _commands.put(RequestCode.STOP_LIGHTING,        new CommandStopLighting());
         _commands.put(RequestCode.UPDATE_PERMISSION,    new CommandUpdatePermission());
         _commands.put(RequestCode.UPDATE_ALERT,         new CommandUpdateAlert());
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());

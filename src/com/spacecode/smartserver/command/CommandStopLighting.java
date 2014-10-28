@@ -1,0 +1,37 @@
+package com.spacecode.smartserver.command;
+
+import com.spacecode.sdk.device.data.DeviceStatus;
+import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * StopLighting command.
+ */
+public class CommandStopLighting extends ClientCommand
+{
+    /**
+     * Send StopLighting command to the current Device. True or false returned to client.
+     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param parameters    String array containing parameters (if any) provided by the client.
+     * @throws ClientCommandException
+     */
+    @Override
+    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    {
+        if(DeviceHandler.getDevice() == null)
+        {
+            return;
+        }
+
+        if(DeviceHandler.getDevice().getStatus() != DeviceStatus.LED_ON)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
+            return;
+        }
+
+        boolean result = DeviceHandler.getDevice().stopLightingTagsLed();
+        SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, result ? TRUE : FALSE);
+    }
+}
