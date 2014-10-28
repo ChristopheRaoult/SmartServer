@@ -12,10 +12,10 @@ import io.netty.channel.ChannelHandlerContext;
 public class CommandInitialization extends ClientCommand
 {
     /**
-     * Send a message to the current context containing basic information (serial number, device type, hardware and software version).
+     * Send a message to the current context containing basic information (serial number, device type, hardware version, software version, Device Status).
      *
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
+     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param parameters    String array containing parameters (if any) provided by the client.
      *
      * @throws ClientCommandException
      */
@@ -30,9 +30,10 @@ public class CommandInitialization extends ClientCommand
         SmartServer.sendMessage(ctx,
                 RequestCode.INITIALIZATION,
                 DeviceHandler.getDevice().getSerialNumber(),
-                DeviceHandler.getDevice().getDeviceType(),
+                DeviceHandler.getDevice().getDeviceType().name(),
                 DeviceHandler.getDevice().getHardwareVersion(),
-                DeviceHandler.getDevice().getSoftwareVersion()
+                DeviceHandler.getDevice().getSoftwareVersion(),
+                DeviceHandler.getDevice().getStatus().name()
         );
     }
 }
