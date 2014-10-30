@@ -198,7 +198,7 @@ public final class SmartServer
                         public void initChannel(SocketChannel ch)
                         {
                             // Define character EOT (0x04) as an end-of-frame character.
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(8192,
+                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(32768,
                                     Unpooled.wrappedBuffer(new byte[] {MessageHandler.END_OF_MESSAGE})));
 
                             // Allow sending/receiving string instead of byte buffers.

@@ -7,11 +7,11 @@ import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * Temperature command.
+ * "TemperatureCurrent" command.
  *
  * Provide device's last temperature (if any) or TemperatureProbe.ERROR_VALUE.
  */
-public class CommandTemperature extends ClientCommand
+public class CommandTempCurrent extends ClientCommand
 {
     /**
      * Serialize device's last inventory and send it to current context.
@@ -26,11 +26,11 @@ public class CommandTemperature extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE, String.valueOf(TemperatureProbe.ERROR_VALUE));
+            SmartServer.sendMessage(ctx, RequestCode.TEMP_CURRENT, String.valueOf(TemperatureProbe.ERROR_VALUE));
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE,
+        SmartServer.sendMessage(ctx, RequestCode.TEMP_CURRENT,
                 String.valueOf(DeviceHandler.getDevice().getCurrentTemperature()));
     }
 }
