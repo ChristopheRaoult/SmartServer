@@ -66,8 +66,6 @@ public class CommandInventoryRange extends ClientCommand
 
         for(Inventory inventory : inventories)
         {
-            // add TIMESTAMP in seconds and serialized inventory
-            responsePackets.add(String.valueOf(inventory.getCreationDate().getTime()/1000));
             responsePackets.add(inventory.serialize());
         }
 
