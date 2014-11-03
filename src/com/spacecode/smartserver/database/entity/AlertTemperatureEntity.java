@@ -46,25 +46,19 @@ public final class AlertTemperatureEntity extends Entity
         _alert = newAlertEntity;
     }
 
-    /**
-     * @return Attached Alert (entity).
-     */
+    /** @return Attached Alert (entity). */
     public AlertEntity getAlert()
     {
         return _alert;
     }
 
-    /**
-     * @return Min. temperature threshold.
-     */
+    /** @return Min. temperature threshold. */
     public double getTemperatureMin()
     {
         return _temperatureMin;
     }
 
-    /**
-     * @return Max. temperature threshold.
-     */
+    /** @return Max. temperature threshold. */
     public double getTemperatureMax()
     {
         return _temperatureMax;

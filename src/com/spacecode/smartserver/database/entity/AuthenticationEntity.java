@@ -51,33 +51,25 @@ public final class AuthenticationEntity extends Entity
         _createdAt = new Date();
     }
 
-    /**
-     * @return DeviceEntity instance.
-     */
+    /** @return DeviceEntity instance. */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
-    /**
-     * @return GrantedUserEntity instance.
-     */
+    /** @return GrantedUserEntity instance. */
     public GrantedUserEntity getGrantedUser()
     {
         return _grantedUser;
     }
 
-    /**
-     * @return AccessTypeEntity instance.
-     */
+    /** @return AccessTypeEntity instance. */
     public AccessTypeEntity getAccessType()
     {
         return _accessType;
     }
 
-    /**
-     * @return Date the authentication was persisted.
-     */
+    /** @return Date the authentication was persisted. */
     public Date getCreatedAt()
     {
         return new Date(_createdAt.getTime());

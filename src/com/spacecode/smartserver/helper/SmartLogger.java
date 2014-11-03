@@ -62,9 +62,7 @@ public final class SmartLogger extends Logger
         }
     }
 
-    /**
-     * @return Singleton reference.
-     */
+    /** @return Singleton reference. */
     public static SmartLogger getLogger()
     {
         return LOGGER;

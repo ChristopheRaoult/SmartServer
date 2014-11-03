@@ -39,41 +39,31 @@ public final class DeviceEntity extends Entity
     {
     }
 
-    /**
-     * @return Device's serial number.
-     */
+    /** @return Device's serial number. */
     public String getSerialNumber()
     {
         return _serialNumber;
     }
 
-    /**
-     * @return Number of Badge Readers to be connected.
-     */
+    /** @return Number of Badge Readers to be connected. */
     public int getNbOfBadgeReader()
     {
         return _nbOfBadgeReader;
     }
 
-    /**
-     * @return Serial Number of the Master Fingerprint Reader.
-     */
+    /** @return Serial Number of the Master Fingerprint Reader. */
     public String getFpReaderMasterSerial()
     {
         return _fpReaderMasterSerial;
     }
 
-    /**
-     * @return Serial Number of the Slave Fingerprint Reader.
-     */
+    /** @return Serial Number of the Slave Fingerprint Reader. */
     public String getFpReaderSlaveSerial()
     {
         return _fpReaderSlaveSerial;
     }
 
-    /**
-     * @return True if temperature probe is enabled, false otherwise.
-     */
+    /** @return True if temperature probe is enabled, false otherwise. */
     public boolean isTemperatureEnabled()
     {
         return _temperatureEnabled;

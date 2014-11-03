@@ -20,7 +20,7 @@ public final class InventoryRfidTag extends Entity
     @DatabaseField(foreign = true, columnName = INVENTORY_ID, canBeNull = false)
     private InventoryEntity _inventory;
 
-    @DatabaseField(foreign = true, columnName = RFID_TAG_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = RFID_TAG_ID, canBeNull = false, foreignAutoRefresh = true)
     private RfidTagEntity _rfidTag;
 
     @DatabaseField(columnName = MOVEMENT, canBeNull = false)
@@ -65,33 +65,25 @@ public final class InventoryRfidTag extends Entity
         _shelveNumber = shelveNumber;
     }
 
-    /**
-     * @return Related Inventory.
-     */
+    /** @return Related Inventory. */
     public InventoryEntity getInventory()
     {
         return _inventory;
     }
 
-    /**
-     * @return Related Tag.
-     */
+    /** @return Related Tag. */
     public RfidTagEntity getRfidTag()
     {
         return _rfidTag;
     }
 
-    /**
-     * @return Return tag status in the inventory. Added (1), Present (0) or Removed (-1).
-     */
+    /** @return Return tag status in the inventory. Added (1), Present (0) or Removed (-1). */
     public int getMovement()
     {
         return _movement;
     }
 
-    /**
-     * @return Number of the shelve where the tag was scanned (if the device has many compartments).
-     */
+    /** @return Number of the shelve where the tag was scanned (if the device has many compartments). */
     public int getShelveNumber()
     {
         return _shelveNumber;

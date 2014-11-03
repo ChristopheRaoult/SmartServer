@@ -72,17 +72,13 @@ public final class GrantedUserEntity extends Entity
         this(newUser.getUsername(), newUser.getBadgeNumber());
     }
 
-    /**
-     * @return Username.
-     */
+    /** @return Username. */
     public String getUsername()
     {
         return _username;
     }
 
-    /**
-     * @return Badge Number
-     */
+    /** @return Badge Number */
     public String getBadgeNumber()
     {
         return _badgeNumber;
@@ -98,17 +94,13 @@ public final class GrantedUserEntity extends Entity
         _badgeNumber = badgeNumber;
     }
 
-    /**
-     * @return Creation Date
-     */
+    /** @return Creation Date */
     public Date getCreatedAt()
     {
         return new Date(_createdAt.getTime());
     }
 
-    /**
-     * @return "Thief finger" index (finger used in case of robbery/mugging).
-     */
+    /** @return "Thief finger" index (finger used in case of robbery/mugging). */
     public Integer getThiefFingerIndex()
     {
         return _thiefFingerIndex;
@@ -124,17 +116,13 @@ public final class GrantedUserEntity extends Entity
         _thiefFingerIndex = thiefFingerIndex;
     }
 
-    /**
-     * @return FingerprintEntity collection (ForeignCollection).
-     */
+    /** @return FingerprintEntity collection (ForeignCollection). */
     public ForeignCollection<FingerprintEntity> getFingerprints()
     {
         return _fingerprints;
     }
 
-    /**
-     * @return GrantedAccessEntity collection (ForeignCollection).
-     */
+    /** @return GrantedAccessEntity collection (ForeignCollection). */
     public ForeignCollection<GrantedAccessEntity> getGrantedAccesses()
     {
         return _grantedAccesses;

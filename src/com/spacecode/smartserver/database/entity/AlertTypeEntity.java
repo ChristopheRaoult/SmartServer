@@ -32,9 +32,7 @@ public final class AlertTypeEntity extends Entity
         _type = alertType;
     }
 
-    /**
-     * @return String value of the alert type.
-     */
+    /** @return String value of the alert type. */
     public String getType()
     {
         return _type;

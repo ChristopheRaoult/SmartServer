@@ -32,9 +32,7 @@ public final class RfidTagEntity extends Entity
         _uid = uid;
     }
 
-    /**
-     * @return RFID Tag Unique Identifier.
-     */
+    /** @return RFID Tag Unique Identifier. */
     public String getUid()
     {
         return _uid;

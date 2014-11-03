@@ -45,25 +45,19 @@ public final class FingerprintEntity extends Entity
         _template = template;
     }
 
-    /**
-     * @return GrantedUserEntity attached to this fingerprint.
-     */
+    /** @return GrantedUserEntity attached to this fingerprint. */
     public GrantedUserEntity getGrantedUser()
     {
         return _grantedUser;
     }
 
-    /**
-     * @return FingerIndex's index value (0 to 9, see FingerIndex enum).
-     */
+    /** @return FingerIndex's index value (0 to 9, see FingerIndex enum). */
     public int getFingerIndex()
     {
         return _fingerIndex;
     }
 
-    /**
-     * @return Base64 encoded fingerprint template.
-     */
+    /** @return Base64 encoded fingerprint template. */
     public String getTemplate()
     {
         return _template;

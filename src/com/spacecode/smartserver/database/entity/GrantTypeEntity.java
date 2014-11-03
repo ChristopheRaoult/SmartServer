@@ -32,9 +32,7 @@ public final class GrantTypeEntity extends Entity
         _type = userGrant;
     }
 
-    /**
-     * @return String value of the grant type.
-     */
+    /** @return String value of the grant type. */
     public String getType()
     {
         return _type;

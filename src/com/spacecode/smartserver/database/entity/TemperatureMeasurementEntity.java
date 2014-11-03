@@ -45,25 +45,19 @@ public final class TemperatureMeasurementEntity extends Entity
         _createdAt = new Date();
     }
 
-    /**
-     * @return Device who took the measure.
-     */
+    /** @return Device who took the measure. */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
-    /**
-     * @return Temperature measure value.
-     */
+    /** @return Temperature measure value. */
     public double getValue()
     {
         return _value;
     }
 
-    /**
-     * @return Creation date of the measurement.
-     */
+    /** @return Creation date of the measurement. */
     public Date getCreatedAt()
     {
         return new Date(_createdAt.getTime());

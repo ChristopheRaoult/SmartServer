@@ -23,9 +23,7 @@ public abstract class Repository<E extends Entity>
         _dao = dao;
     }
 
-    /**
-     * @return Dao instance currently used by this repository.
-     */
+    /** @return Dao instance currently used by this repository. */
     public final Dao<E, Integer> getDao()
     {
         return _dao;
@@ -249,9 +247,7 @@ public abstract class Repository<E extends Entity>
         return true;
     }
 
-    /**
-     * @return List of all entities available in the table (empty if any SQLException occurred).
-     */
+    /** @return List of all entities available in the table (empty if any SQLException occurred). */
     public final List<E> getAll()
     {
         try

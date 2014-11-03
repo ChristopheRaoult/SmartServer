@@ -12,9 +12,7 @@ public abstract class Entity
     @DatabaseField(columnName = ID, generatedId = true)
     protected int _id;
 
-    /**
-     * @return Id of the entity.
-     */
+    /** @return Id of the entity. */
     public int getId()
     {
         return _id;

@@ -109,57 +109,43 @@ public final class AlertEntity extends Entity
         _id = alert.getId();
     }
 
-    /**
-     * @return AlertTypeEntity instance.
-     */
+    /** @return AlertTypeEntity instance. */
     public AlertTypeEntity getAlertType()
     {
         return _alertType;
     }
 
-    /**
-     * @return Email (to be sent) subject.
-     */
+    /** @return Email (to be sent) subject. */
     public String getEmailSubject()
     {
         return _emailSubject;
     }
 
-    /**
-     * @return Email (to be sent) content.
-     */
+    /** @return Email (to be sent) content. */
     public String getEmailContent()
     {
         return _emailContent;
     }
 
-    /**
-     * @return List of "TO" recipients, splitted by commas.
-     */
+    /** @return List of "TO" recipients, splitted by commas. */
     public String getToList()
     {
         return _toList;
     }
 
-    /**
-     * @return List of "CC" recipients, splitted by commas (warning: may be null).
-     */
+    /** @return List of "CC" recipients, splitted by commas (warning: may be null). */
     public String getCcList()
     {
         return _ccList;
     }
 
-    /**
-     * @return List of "BCC" recipients, splitted by commas (warning: may be null).
-     */
+    /** @return List of "BCC" recipients, splitted by commas (warning: may be null). */
     public String getBccList()
     {
         return _bccList;
     }
 
-    /**
-     * @return True if alert is set as "Enabled", false otherwise.
-     */
+    /** @return True if alert is set as "Enabled", false otherwise. */
     public boolean isEnabled()
     {
         return _enabled;

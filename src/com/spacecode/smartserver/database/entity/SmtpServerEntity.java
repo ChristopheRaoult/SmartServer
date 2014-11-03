@@ -62,49 +62,37 @@ public final class SmtpServerEntity extends Entity
         _sslEnabled = sslEnabled;
     }
 
-    /**
-     * @return DeviceEntity attached to this SmtpServerEntity.
-     */
+    /** @return DeviceEntity attached to this SmtpServerEntity. */
     public DeviceEntity getDevice()
     {
         return _device;
     }
 
-    /**
-     * @return SMTP Server address.
-     */
+    /** @return SMTP Server address. */
     public String getAddress()
     {
         return _address;
     }
 
-    /**
-     * @return SMTP Server portnumber.
-     */
+    /** @return SMTP Server portnumber. */
     public int getPort()
     {
         return _port;
     }
 
-    /**
-     * @return SMTP Server username credential.
-     */
+    /** @return SMTP Server username credential. */
     public String getUsername()
     {
         return _username;
     }
 
-    /**
-     * @return SMTP Server password credential.
-     */
+    /** @return SMTP Server password credential. */
     public String getPassword()
     {
         return _password;
     }
 
-    /**
-     * @return True if SSL shall be enabled, false otherwise.
-     */
+    /** @return True if SSL shall be enabled, false otherwise. */
     public boolean isSslEnabled()
     {
         return _sslEnabled;
