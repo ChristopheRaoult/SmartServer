@@ -174,6 +174,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
         {
             queryResult = _dao.query(
                     _dao.queryBuilder()
+                            .orderBy(InventoryEntity.CREATED_AT, true)
                             .where()
                             .eq(InventoryEntity.DEVICE_ID, DatabaseHandler.getDeviceConfiguration().getId())
                             .and()
