@@ -119,7 +119,9 @@ public final class DeviceHandler
         return deviceConnected;
     }
 
-    /** @return Currently used RFIDDevice instance (null if not initialized). */
+    /**
+     * @return Currently used RFIDDevice instance (null if not initialized).
+     */
     public static RfidDevice getDevice()
     {
         return _device;
@@ -225,7 +227,9 @@ public final class DeviceHandler
         SERIAL_PORT_FORWARDING = state;
     }
 
-    /** @return True if serial port is being forwarded through host USB-OTG. False otherwise. */
+    /**
+     * @return True if serial port is being forwarded through host USB-OTG. False otherwise.
+     */
     public static boolean isForwardingSerialPort()
     {
         return SERIAL_PORT_FORWARDING;
