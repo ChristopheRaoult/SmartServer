@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
@@ -31,6 +32,8 @@ public class TemperatureMeasurementRepository extends Repository<TemperatureMeas
 
             return _dao.query(qb
                     .where()
+                    .eq(TemperatureMeasurementEntity.DEVICE_ID, DatabaseHandler.getDeviceConfiguration().getId())
+                    .and()
                     .between(TemperatureMeasurementEntity.CREATED_AT, from, to)
                     .prepare()
             );
