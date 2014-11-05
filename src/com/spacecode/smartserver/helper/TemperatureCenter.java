@@ -45,7 +45,7 @@ public class TemperatureCenter
             // keep only one decimal place (ie 4.57 => 4.6 // 4.22 => 4.2)
             double roundedValue = (double) Math.round(value * 10) / 10;
 
-            if(_lastValue == roundedValue)
+            if(Math.abs(_lastValue - roundedValue) < 0.01)
             {
                 return;
             }

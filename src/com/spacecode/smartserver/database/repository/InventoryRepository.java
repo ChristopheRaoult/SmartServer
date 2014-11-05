@@ -209,6 +209,10 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
                     case -1:
                         tagsRemoved.add(irtEntity.getRfidTag().getUid());
+                        break;
+
+                    default:
+                        break;
                 }
             }
 

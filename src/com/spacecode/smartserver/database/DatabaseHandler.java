@@ -611,6 +611,12 @@ public class DatabaseHandler
         }
 
         // get the AlertTemperature [SDK] instance
+        if(!(alert instanceof  AlertTemperature))
+        {
+            SmartLogger.getLogger().severe("Trying to persist an Alert as an AlertTemperature whereas it is not.");
+            return false;
+        }
+
         AlertTemperature alertTemperature = (AlertTemperature) alert;
 
         AlertTemperatureRepository aTempRepo =
