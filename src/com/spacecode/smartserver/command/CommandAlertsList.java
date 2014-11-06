@@ -29,13 +29,13 @@ public class CommandAlertsList extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        AlertTypeEntity ateTemp =
+        AlertTypeEntity alertTypeTemperature =
                 ((AlertTypeRepository) DatabaseHandler.getRepository(AlertTypeEntity.class))
                         .fromAlertType(AlertType.TEMPERATURE);
 
         List<String> responsePackets = new ArrayList<>();
 
-        if(ateTemp == null)
+        if(alertTypeTemperature == null)
         {
             SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
             SmartLogger.getLogger().severe("Unable to get AlertTypeEntity Temperature from DB.");
@@ -45,7 +45,7 @@ public class CommandAlertsList extends ClientCommand
         // first, get the simple alerts (made with only an AlertEntity instance)
         List<AlertEntity> simpleAlertsFromDb =
                 DatabaseHandler.getRepository(AlertEntity.class)
-                        .getEntitiesWhereNotEqual(AlertEntity.ALERT_TYPE_ID, ateTemp.getId());
+                        .getEntitiesWhereNotEqual(AlertEntity.ALERT_TYPE_ID, alertTypeTemperature.getId());
         // then get all AlertTemperature ~
         List<AlertTemperatureEntity> alertsTemperatureFromDb =
                 DatabaseHandler.getRepository(AlertTemperatureEntity.class).getAll();

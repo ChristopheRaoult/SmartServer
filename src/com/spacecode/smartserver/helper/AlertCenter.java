@@ -4,7 +4,6 @@ import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
-import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
