@@ -4,10 +4,13 @@ import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
+import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
+import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
 import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
@@ -18,9 +21,7 @@ import com.spacecode.smartserver.database.repository.Repository;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -122,8 +123,7 @@ public final class AlertCenter
                 _alertRepository instanceof AlertRepository &&
                 _alertHistoryRepository != null &&
                 _alertHistoryRepository instanceof AlertHistoryRepository &&
-                _alertTypeRepository != null &&
-                _alertTypeRepository instanceof AlertTypeRepository;
+                _alertTypeRepository != null;
     }
 
     /**
@@ -163,40 +163,11 @@ public final class AlertCenter
     }
 
     /**
-     * Raise all enabled alerts for the given alert type.
+     * Record a new AlertHistory and send an email for each alert in the list.
      *
-     * @param ate Desired AlertType.
+     * @param matchingAlerts Enabled alerts to be recorded and sent.
      */
-    private static void raiseAlerts(AlertTypeEntity ate)
-    {
-        List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(ate, DatabaseHandler.getDeviceConfiguration());
-
-        if(matchingAlerts.isEmpty())
-        {
-            return;
-        }
-
-        List<AlertHistoryEntity> alertHistoryEntities = new ArrayList<>();
-
-        for(AlertEntity ae : matchingAlerts)
-        {
-            alertHistoryEntities.add(new AlertHistoryEntity(ae));
-            sendEmail(ae);
-            SmartLogger.getLogger().info("Raising an Alert (id: "+ae.getId()+")!");
-        }
-
-        if(!_alertHistoryRepository.insert(alertHistoryEntities))
-        {
-            SmartLogger.getLogger().severe("Unable to insert AlertHistory entities.");
-        }
-    }
-
-    /**
-     * Raise all alerts passed in parameter.
-     *
-     * @param matchingAlerts Enabled alerts to be raised.
-     */
-    private static void raiseAlerts(List<AlertEntity> matchingAlerts)
+    private static void recordAndSend(Collection<AlertEntity> matchingAlerts)
     {
         if(matchingAlerts == null || matchingAlerts.isEmpty())
         {
@@ -229,27 +200,43 @@ public final class AlertCenter
         @Override
         public void deviceDisconnected()
         {
-            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.DEVICE_DISCONNECTED);
+            AlertTypeEntity alertTypeDisconnected = _alertTypeRepository.fromAlertType(AlertType.DEVICE_DISCONNECTED);
 
-            if(ate == null)
+            if(alertTypeDisconnected == null)
             {
                 return;
             }
 
-            raiseAlerts(ate);
+            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeDisconnected, DatabaseHandler.getDeviceConfiguration());
+
+            // notify alerts (event)
+            List<Entity> notifiableAlerts = new ArrayList<>();
+            notifiableAlerts.addAll(matchingAlerts);
+            notifyAlertEvent(notifiableAlerts);
+
+            // save history in DB and send email
+            recordAndSend(matchingAlerts);
         }
 
         @Override
         public void doorOpenDelay()
         {
-            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.DOOR_OPEN_DELAY);
+            AlertTypeEntity alertTypeDoorDelay = _alertTypeRepository.fromAlertType(AlertType.DOOR_OPEN_DELAY);
 
-            if(ate == null)
+            if(alertTypeDoorDelay == null)
             {
                 return;
             }
 
-            raiseAlerts(ate);
+            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DatabaseHandler.getDeviceConfiguration());
+
+            // notify alerts (event)
+            List<Entity> notifiableAlerts = new ArrayList<>();
+            notifiableAlerts.addAll(matchingAlerts);
+            notifyAlertEvent(notifiableAlerts);
+
+            // save history in DB and send email
+            recordAndSend(matchingAlerts);
         }
 
         @Override
@@ -270,36 +257,45 @@ public final class AlertCenter
                 return;
             }
 
+            // get the FingerIndex value of the last fingerprint scanned
             FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastVerifiedFingerIndex(isMaster);
-            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.THIEF_FINGER);
+            AlertTypeEntity alertTypeThiefFinger = _alertTypeRepository.fromAlertType(AlertType.THIEF_FINGER);
 
-            if(index == null || ate == null || index.getIndex() != gue.getThiefFingerIndex())
+            if(index == null || alertTypeThiefFinger == null || index.getIndex() != gue.getThiefFingerIndex())
             {
                 return;
             }
 
-            raiseAlerts(ate);
+            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DatabaseHandler.getDeviceConfiguration());
+
+            // notify alerts (event)
+            List<Entity> notifiableAlerts = new ArrayList<>();
+            notifiableAlerts.addAll(matchingAlerts);
+            notifyAlertEvent(notifiableAlerts);
+
+            // save history in DB and send email
+            recordAndSend(matchingAlerts);
         }
 
         @Override
         public void temperatureMeasure(double value)
         {
-            AlertTypeEntity ate = _alertTypeRepository.fromAlertType(AlertType.TEMPERATURE);
+            AlertTypeEntity alertTypeTemperature = _alertTypeRepository.fromAlertType(AlertType.TEMPERATURE);
 
-            if(ate == null)
+            if(alertTypeTemperature == null)
             {
                 return;
             }
 
-            // get enabled Temperature Alerts.
-            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(ate, DatabaseHandler.getDeviceConfiguration());
+            // get enabled Temperature Alerts
+            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature, DatabaseHandler.getDeviceConfiguration());
 
             if(alerts.isEmpty())
             {
                 return;
             }
 
-            // next, take their Ids.
+            // next, take their Ids
             List<Integer> alertIds = new ArrayList<>();
 
             for(AlertEntity ae : alerts)
@@ -307,31 +303,55 @@ public final class AlertCenter
                 alertIds.add(ae.getId());
             }
 
-            // get the AlertTemperature entities.
+            // get the attached AlertTemperature entities
             Repository<AlertTemperatureEntity> atRepo = DatabaseHandler.getRepository(AlertTemperatureEntity.class);
             List<AlertTemperatureEntity> atList = atRepo.getAllWhereFieldIn(AlertTemperatureEntity.ALERT_ID, alertIds);
 
-            List<AlertEntity> matchingAlerts = new ArrayList<>();
+            Map<Entity, AlertEntity> matchingAlerts = new HashMap<>();
 
             for(AlertTemperatureEntity at : atList)
             {
-                // need to be raised: threshold triggered
+                // if threshold triggered: need to be raised
                 if( value > at.getTemperatureMax() ||
                     value < at.getTemperatureMin())
                 {
-                    matchingAlerts.add(at.getAlert());
+                    matchingAlerts.put(at, at.getAlert());
                 }
             }
 
-            // if temperature alert needs to be raised.
+            // if temperature alert needs to be raised
             if(matchingAlerts.isEmpty())
             {
                 return;
             }
 
+            // notify alerts (event)
+            notifyAlertEvent(matchingAlerts.keySet());
+
             // Now we have all enabled alerts with threshold triggered (temperature too low or too high)
-            // There is only 1 Alert for 1 AlertTemperature so we don't check for double, triple, redundancy, etc.
-            raiseAlerts(matchingAlerts);
+            // There is only 1 Alert (entity) for 1 AlertTemperature (entity): do not check for redundancy or 1-n relationship issues
+            recordAndSend(matchingAlerts.values());
+        }
+
+        /**
+         * Send an Alert event to all listening clients for each alert in the list.
+         *
+         * @param alertEntities Alert to be notified.
+         */
+        private void notifyAlertEvent(Collection<Entity> alertEntities)
+        {
+            for(Entity alertEntity : alertEntities)
+            {
+                if(alertEntity instanceof AlertEntity)
+                {
+                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertEntity) alertEntity).serialize());
+                }
+
+                else if(alertEntity instanceof AlertTemperatureEntity)
+                {
+                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertTemperatureEntity) alertEntity).serialize());
+                }
+            }
         }
 
         @Override
