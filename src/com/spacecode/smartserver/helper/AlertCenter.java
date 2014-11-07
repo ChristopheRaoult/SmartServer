@@ -4,6 +4,7 @@ import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
+import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.AccessType;
@@ -33,6 +34,7 @@ public final class AlertCenter
     private static Session _mailSession;
     private static SmtpServerEntity _smtpServerConfiguration;
     private static boolean _isSmtpServerSet;
+    private static String _lastAuthenticatedUsername;
 
     private static AlertRepository _alertRepository;
     private static Repository<AlertHistoryEntity> _alertHistoryRepository;
@@ -211,7 +213,7 @@ public final class AlertCenter
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
             notifiableAlerts.addAll(matchingAlerts);
-            notifyAlertEvent(notifiableAlerts);
+            notifyAlertEvent(notifiableAlerts, "");
 
             // save history in DB and send email
             recordAndSend(matchingAlerts);
@@ -232,7 +234,7 @@ public final class AlertCenter
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
             notifiableAlerts.addAll(matchingAlerts);
-            notifyAlertEvent(notifiableAlerts);
+            notifyAlertEvent(notifiableAlerts, _lastAuthenticatedUsername);
 
             // save history in DB and send email
             recordAndSend(matchingAlerts);
@@ -241,6 +243,8 @@ public final class AlertCenter
         @Override
         public void authenticationSuccess(final GrantedUser grantedUser, AccessType accessType, final boolean isMaster)
         {
+            _lastAuthenticatedUsername = grantedUser.getUsername();
+
             // we're only interested in fingerprint authentications for "thief finger" alert.
             if(accessType != AccessType.FINGERPRINT)
             {
@@ -270,7 +274,7 @@ public final class AlertCenter
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
             notifiableAlerts.addAll(matchingAlerts);
-            notifyAlertEvent(notifiableAlerts);
+            notifyAlertEvent(notifiableAlerts, _lastAuthenticatedUsername);
 
             // save history in DB and send email
             recordAndSend(matchingAlerts);
@@ -279,6 +283,11 @@ public final class AlertCenter
         @Override
         public void temperatureMeasure(double value)
         {
+            if(value == TemperatureProbe.ERROR_VALUE)
+            {
+                return;
+            }
+
             AlertTypeEntity alertTypeTemperature = _alertTypeRepository.fromAlertType(AlertType.TEMPERATURE);
 
             if(alertTypeTemperature == null)
@@ -325,7 +334,7 @@ public final class AlertCenter
             }
 
             // notify alerts (event)
-            notifyAlertEvent(matchingAlerts.keySet());
+            notifyAlertEvent(matchingAlerts.keySet(), String.valueOf(value));
 
             // Now we have all enabled alerts with threshold triggered (temperature too low or too high)
             // There is only 1 Alert (entity) for 1 AlertTemperature (entity): do not check for redundancy or 1-n relationship issues
@@ -337,18 +346,18 @@ public final class AlertCenter
          *
          * @param alertEntities Alert to be notified.
          */
-        private void notifyAlertEvent(Collection<Entity> alertEntities)
+        private void notifyAlertEvent(Collection<Entity> alertEntities, String additionalData)
         {
             for(Entity alertEntity : alertEntities)
             {
                 if(alertEntity instanceof AlertEntity)
                 {
-                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertEntity) alertEntity).serialize());
+                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertEntity) alertEntity).serialize(), additionalData);
                 }
 
                 else if(alertEntity instanceof AlertTemperatureEntity)
                 {
-                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertTemperatureEntity) alertEntity).serialize());
+                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertTemperatureEntity) alertEntity).serialize(), additionalData);
                 }
             }
         }
