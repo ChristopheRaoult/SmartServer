@@ -13,7 +13,7 @@ public class CommandStopLighting extends ClientCommand
 {
     /**
      * Send StopLighting command to the current Device. True or false returned to client.
-     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx           Channel between SmartServer and the client.
      * @param parameters    String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */

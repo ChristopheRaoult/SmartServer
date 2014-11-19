@@ -22,7 +22,7 @@ public class CommandAlertsList extends ClientCommand
 {
     /**
      * Request to get the alerts list. Send the list of Alerts as serialized alerts (strings).
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */

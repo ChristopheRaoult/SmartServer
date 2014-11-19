@@ -16,7 +16,7 @@ public class CommandUsersList extends ClientCommand
 {
     /**
      * Request to get the granted users list. Send the list of GrantedUsers as serialized users (strings).
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */

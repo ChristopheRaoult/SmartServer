@@ -4,14 +4,14 @@ import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * Scan command.
+ * StopScan command.
  */
-public class CommandScan extends ClientCommand
+public class CommandStopScan extends ClientCommand
 {
     /**
-     * Request a scan on current device. No data is sent/returned. Device events are handled by events handler.
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
+     * Request the device to stop its scan. No data is sent/returned. Device events are handled by events handler.
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */
     @Override
@@ -22,6 +22,6 @@ public class CommandScan extends ClientCommand
             return;
         }
 
-        DeviceHandler.getDevice().requestScan();
+        DeviceHandler.getDevice().stopScan();
     }
 }

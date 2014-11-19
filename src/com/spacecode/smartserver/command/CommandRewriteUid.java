@@ -13,7 +13,7 @@ public class CommandRewriteUid extends ClientCommand
 {
     /**
      * Get the two parameters provided by Client (old Uid, new Uid), try to rewrite it and send the RewriteUIDResult code to the context.
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */

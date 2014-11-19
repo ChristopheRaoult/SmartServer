@@ -15,7 +15,7 @@ public class CommandAddAlert extends ClientCommand
 {
     /**
      * Request to add a new Alert to database. Send (string) "true" if succeed, "false" otherwise.
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
      */

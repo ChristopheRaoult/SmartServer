@@ -16,7 +16,7 @@ public class CommandSetSmtpServer extends ClientCommand
     /**
      * Request to set/update SMTP server configuration for current device. Return true (if operation succeeded) or false (if failure).
      *
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      *
      * @throws ClientCommandException   Invalid number of parameters received.

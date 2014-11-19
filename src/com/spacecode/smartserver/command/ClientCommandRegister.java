@@ -32,6 +32,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.ENROLL_FINGER,        new CommandEnrollFinger());
         _commands.put(RequestCode.INITIALIZATION,       new CommandInitialization());
         _commands.put(RequestCode.INVENTORY_RANGE,      new CommandInventoryRange());
+        _commands.put(RequestCode.LAST_ALERT,           new CommandLastAlert());
         _commands.put(RequestCode.LAST_INVENTORY,       new CommandLastInventory());
         _commands.put(RequestCode.REMOVE_ALERT,         new CommandRemoveAlert());
         _commands.put(RequestCode.REMOVE_FINGERPRINT,   new CommandRemoveFingerprint());
@@ -44,6 +45,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.SMTP_SERVER,          new CommandSmtpServer());
         _commands.put(RequestCode.START_LIGHTING,       new CommandStartLighting());
         _commands.put(RequestCode.STOP_LIGHTING,        new CommandStopLighting());
+        _commands.put(RequestCode.STOP_SCAN,            new CommandStopLighting());
         _commands.put(RequestCode.UPDATE_PERMISSION,    new CommandUpdatePermission());
         _commands.put(RequestCode.UPDATE_ALERT,         new CommandUpdateAlert());
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
@@ -78,9 +80,9 @@ public final class ClientCommandRegister extends ClientCommand
 
     /**
      * Looks for a ClientCommand corresponding to the given request and execute it with given parameters.
-     * Index 0 of the given string array contains the request. Other values (if any) contains the parameters sent by the client.
+     * First entry of the "parameters" array contains the RequestCode. Others (if any) are extra parameters.
      *
-     * @param ctx                       ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      *
      * @throws ClientCommandException   Occurs if no command has been found for the given request code.
@@ -95,7 +97,7 @@ public final class ClientCommandRegister extends ClientCommand
             throw new ClientCommandException("Unknown Command: " + parameters[0]);
         }
 
-        // TODO: make sure a request can't be handled twice in a row (ex: double adduser request)
+        // TODO: prevent a request being handled twice in a row (ex: double adduser). => Add a delay between same req.
         cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
     }
 }

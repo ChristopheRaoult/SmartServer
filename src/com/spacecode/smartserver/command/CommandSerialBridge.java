@@ -25,7 +25,7 @@ public class CommandSerialBridge extends ClientCommand
     /**
      * According to parameter ("ON"/"OFF"), enable or disable Serial Port forwarding ("Serial Bridge").
      *
-     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx           Channel between SmartServer and the client.
      * @param parameters    String array containing parameters (if any) provided by the client.
      *
      * @throws ClientCommandException

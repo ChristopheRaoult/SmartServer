@@ -18,7 +18,7 @@ public class CommandStartLighting extends ClientCommand
      * Build a list of String with provided tags UID's and start lighting order.
      * Send to the context, as a result, the list of tags UID's that could not be lighted.
      *
-     * @param ctx           ChannelHandlerContext instance corresponding to the channel existing between SmartServer and the client.
+     * @param ctx           Channel between SmartServer and the client.
      * @param parameters    String array containing parameters (if any) provided by the client.
      *
      * @throws ClientCommandException
