@@ -16,7 +16,7 @@ public final class AlertHistoryEntity extends Entity
     public static final String ALERT_ID = "alert_id";
     public static final String CREATED_AT = "created_at";
 
-    @DatabaseField(foreign = true, columnName = ALERT_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = ALERT_ID, canBeNull = false, foreignAutoRefresh = true)
     private AlertEntity _alert;
 
     @DatabaseField(columnName = CREATED_AT, canBeNull = false)
@@ -37,5 +37,11 @@ public final class AlertHistoryEntity extends Entity
     {
         _alert = alert;
         _createdAt = new Date();
+    }
+
+    /** @return Attached entity. */
+    public AlertEntity getAlert()
+    {
+        return _alert;
     }
 }

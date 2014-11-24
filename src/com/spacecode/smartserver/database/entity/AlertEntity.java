@@ -153,6 +153,7 @@ public final class AlertEntity extends Entity
 
     /**
      * @param ae    AlertEntity to be "converted".
+     *
      * @return      An equivalent "Alert" [SDK]
      */
     public static Alert toAlert(AlertEntity ae)
@@ -167,6 +168,7 @@ public final class AlertEntity extends Entity
 
     /**
      * @param ate   AlertTemperatureEntity to be "converted".
+     *
      * @return      An equivalent "AlertTemperature" [SDK]
      */
     public static Alert toAlert(AlertTemperatureEntity ate)

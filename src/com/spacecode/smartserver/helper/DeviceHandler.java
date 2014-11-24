@@ -213,7 +213,11 @@ public final class DeviceHandler
 
         if(deviceConfig.isTemperatureEnabled())
         {
-            _device.addTemperatureProbe("tempProbe1", 60, 0.2);
+            // TODO: Stuck on this point if VirtualHub cannot be contacted or the probe is unavailable
+            if(!_device.addTemperatureProbe("tempProbe1", 60, 0.2))
+            {
+                SmartLogger.getLogger().info("Unable to add the Temperature probe.");
+            }
         }
     }
 

@@ -307,4 +307,29 @@ public abstract class Repository<E extends Entity>
             return new ArrayList<>();
         }
     }
+
+    /**
+     * Sort the table by ORDER 'field' DESC and take the first result.
+     * Not as efficient as a MAX operator (if the table is big) but OrmLite doesn't propose "MAX".
+     *
+     * @param field Field to be used for sorting.
+     *
+     * @return Entity with the biggest value for the given field.
+     */
+    public E getEntityByMax(String field)
+    {
+        try
+        {
+            return _dao.queryForFirst(_dao.queryBuilder()
+                    // order DESC
+                    .orderBy(field, false)
+                    .limit(1L)
+                    .prepare()
+            );
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
+            return null;
+        }
+    }
 }
