@@ -28,6 +28,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.ADD_ALERT,            new CommandAddAlert());
         _commands.put(RequestCode.ADD_USER,             new CommandAddUser());
         _commands.put(RequestCode.ALERTS_LIST,          new CommandAlertsList());
+        _commands.put(RequestCode.ALERT_REPORTS,        new CommandAlertReports());
         _commands.put(RequestCode.DISCONNECT,           new CommandDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CommandEnrollFinger());
         _commands.put(RequestCode.INITIALIZATION,       new CommandInitialization());

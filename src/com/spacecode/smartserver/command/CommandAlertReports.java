@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
-import com.spacecode.smartserver.database.repository.TemperatureMeasurementRepository;
+import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
+import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -14,11 +14,12 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * "TemperatureRange" command.
+ * "AlertReports" command.
  *
- * Provide temperature measurements over a given period (start/end date provided), if any.
+ * Provide reports (if any) for alert raised during a certain period (start/end date provided).
+ * Sends Alert IDs instead of sending serialized alerts, in order to minimize risk to exceed the TCP frame size.
  */
-public class CommandTempRange extends ClientCommand
+public class CommandAlertReports extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
@@ -32,7 +33,7 @@ public class CommandTempRange extends ClientCommand
         // waiting for 2 parameters: start date, end date.
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -46,27 +47,30 @@ public class CommandTempRange extends ClientCommand
         } catch(NumberFormatException nfe)
         {
             SmartLogger.getLogger().log(Level.WARNING, "Invalid timestamp sent by client for TemperatureRange.", nfe);
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
             return;
         }
 
         if(timestampEnd <= timestampStart)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
             return;
         }
 
-        TemperatureMeasurementRepository repo = (TemperatureMeasurementRepository) DatabaseHandler.getRepository(TemperatureMeasurementEntity.class);
-        List<TemperatureMeasurementEntity> entities = repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd));
+        Repository<AlertHistoryEntity> repo = DatabaseHandler.getRepository(AlertHistoryEntity.class);
+        List<AlertHistoryEntity> entities = repo.getEntitiesWhereBetween(AlertHistoryEntity.CREATED_AT,
+                new Date(timestampStart),
+                new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
-        responsePackets.add(RequestCode.TEMP_RANGE);
+        responsePackets.add(RequestCode.ALERT_REPORTS);
 
-        for(TemperatureMeasurementEntity entity : entities)
+        for(AlertHistoryEntity entity : entities)
         {
-            // add TIMESTAMP in seconds and temperature measurement value
+            // add: [alert id, timestamp (seconds), extra data]
+            responsePackets.add(String.valueOf(entity.getAlert().getId()));
             responsePackets.add(String.valueOf(entity.getCreatedAt().getTime()/1000));
-            responsePackets.add(String.valueOf(entity.getValue()));
+            responsePackets.add("".equals(entity.getExtraData()) ? " " : entity.getExtraData());
         }
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));

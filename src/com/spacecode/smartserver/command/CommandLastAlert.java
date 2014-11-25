@@ -30,11 +30,11 @@ public class CommandLastAlert extends ClientCommand
         Repository<AlertTemperatureEntity> alertTempRepo =
                 DatabaseHandler.getRepository(AlertTemperatureEntity.class);
 
-        AlertHistoryEntity ent = histoRepo.getEntityByMax(AlertHistoryEntity.CREATED_AT);
+        AlertHistoryEntity alertHisto = histoRepo.getEntityByMax(AlertHistoryEntity.CREATED_AT);
 
-        if(ent != null)
+        if(alertHisto != null)
         {
-            AlertEntity lastAlert = ent.getAlert();
+            AlertEntity lastAlert = alertHisto.getAlert();
 
             if(lastAlert == null)
             {
@@ -42,16 +42,27 @@ public class CommandLastAlert extends ClientCommand
                 return;
             }
 
+            // is the alert an AlertTemperature? let's seek a matching one
             AlertTemperatureEntity ate =
                     alertTempRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, lastAlert.getId());
 
             if(ate != null)
             {
-                SmartServer.sendMessage(ctx, RequestCode.LAST_ALERT, AlertEntity.toAlert(ate).serialize());
+                // send the alert as an AlertTemperature [by passing an AlertTemperatureEntity]
+                SmartServer.sendMessage(ctx,
+                        RequestCode.LAST_ALERT,
+                        AlertEntity.toAlert(ate).serialize(),
+                        String.valueOf(alertHisto.getCreatedAt().getTime()/1000),
+                        alertHisto.getExtraData());
                 return;
             }
 
-            SmartServer.sendMessage(ctx, RequestCode.LAST_ALERT, AlertEntity.toAlert(lastAlert).serialize());
+            // send the alert as an Alert
+            SmartServer.sendMessage(ctx,
+                    RequestCode.LAST_ALERT,
+                    AlertEntity.toAlert(lastAlert).serialize(),
+                    String.valueOf(alertHisto.getCreatedAt().getTime()/1000),
+                    alertHisto.getExtraData());
             return;
         }
 

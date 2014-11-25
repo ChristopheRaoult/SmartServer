@@ -166,9 +166,10 @@ public final class AlertCenter
     /**
      * Record a new AlertHistory and send an email for each alert in the list.
      *
-     * @param matchingAlerts Enabled alerts to be recorded and sent.
+     * @param matchingAlerts    Enabled alerts to be recorded and sent.
+     * @param extraData         Additional data provided with the alert report (Username, Temperature...).
      */
-    private static void recordAndSend(Collection<AlertEntity> matchingAlerts)
+    private static void recordAndSend(Collection<AlertEntity> matchingAlerts, String extraData)
     {
         if(matchingAlerts == null || matchingAlerts.isEmpty())
         {
@@ -179,7 +180,7 @@ public final class AlertCenter
 
         for(AlertEntity ae : matchingAlerts)
         {
-            alertHistoryEntities.add(new AlertHistoryEntity(ae));
+            alertHistoryEntities.add(new AlertHistoryEntity(ae, extraData));
             sendEmail(ae);
             SmartLogger.getLogger().info("Raising an Alert (id: "+ae.getId()+")!");
         }
@@ -216,7 +217,7 @@ public final class AlertCenter
             notifyAlertEvent(notifiableAlerts, "");
 
             // save history in DB and send email
-            recordAndSend(matchingAlerts);
+            recordAndSend(matchingAlerts, "");
         }
 
         @Override
@@ -237,7 +238,7 @@ public final class AlertCenter
             notifyAlertEvent(notifiableAlerts, _lastAuthenticatedUsername);
 
             // save history in DB and send email
-            recordAndSend(matchingAlerts);
+            recordAndSend(matchingAlerts, _lastAuthenticatedUsername);
         }
 
         @Override
@@ -277,7 +278,7 @@ public final class AlertCenter
             notifyAlertEvent(notifiableAlerts, _lastAuthenticatedUsername);
 
             // save history in DB and send email
-            recordAndSend(matchingAlerts);
+            recordAndSend(matchingAlerts, _lastAuthenticatedUsername);
         }
 
         @Override
@@ -333,12 +334,14 @@ public final class AlertCenter
                 return;
             }
 
+            String extraData = String.valueOf(value);
+
             // notify alerts (event)
-            notifyAlertEvent(matchingAlerts.keySet(), String.valueOf(value));
+            notifyAlertEvent(matchingAlerts.keySet(), extraData);
 
             // Now we have all enabled alerts with threshold triggered (temperature too low or too high)
             // There is only 1 Alert (entity) for 1 AlertTemperature (entity): do not check for redundancy or 1-n relationship issues
-            recordAndSend(matchingAlerts.values());
+            recordAndSend(matchingAlerts.values(), extraData);
         }
 
         /**

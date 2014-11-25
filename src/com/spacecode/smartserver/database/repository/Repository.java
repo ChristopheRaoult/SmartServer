@@ -303,7 +303,7 @@ public abstract class Repository<E extends Entity>
             );
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'NOT IN'.", sqle);
             return new ArrayList<>();
         }
     }
@@ -328,7 +328,32 @@ public abstract class Repository<E extends Entity>
             );
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'MAX'.", sqle);
+            return null;
+        }
+    }
+
+    /**
+     * Allow getting entities with a field between two values.
+     *
+     * @param field     Name of the sorting field.
+     * @param value1    Minimum value.
+     * @param value2    Maximum value.
+     *
+     * @return List of all entities matching the Between query (or null if any exception occurred).
+     */
+    public List<E> getEntitiesWhereBetween(String field, Object value1, Object value2)
+    {
+        try
+        {
+            return _dao.query(_dao.queryBuilder()
+                    .where()
+                    .between(field, value1, value2)
+                    .prepare()
+            );
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while using Where->Between.", sqle);
             return null;
         }
     }
