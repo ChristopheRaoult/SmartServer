@@ -11,10 +11,10 @@ import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.alert.SmtpServer;
-import com.spacecode.sdk.user.AccessType;
-import com.spacecode.sdk.user.FingerIndex;
-import com.spacecode.sdk.user.GrantType;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.data.AccessType;
+import com.spacecode.sdk.user.data.FingerIndex;
+import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.database.repository.*;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -329,7 +329,7 @@ public class DatabaseHandler
      */
     public static Inventory getLastStoredInventory()
     {
-        return ((InventoryRepository) getRepository(InventoryEntity.class)).getLastInventory();
+        return ((InventoryRepository) getRepository(InventoryEntity.class)).getLastInventory(_deviceConfiguration);
     }
 
     /**

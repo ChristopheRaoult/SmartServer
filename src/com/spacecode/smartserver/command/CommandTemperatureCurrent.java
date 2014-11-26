@@ -11,7 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * Provide device's last temperature (if any) or TemperatureProbe.ERROR_VALUE.
  */
-public class CommandTempCurrent extends ClientCommand
+public class CommandTemperatureCurrent extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
@@ -24,11 +24,12 @@ public class CommandTempCurrent extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_CURRENT, String.valueOf(TemperatureProbe.ERROR_VALUE));
+            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_CURRENT,
+                    String.valueOf(TemperatureProbe.ERROR_VALUE));
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.TEMP_CURRENT,
+        SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_CURRENT,
                 String.valueOf(DeviceHandler.getDevice().getCurrentTemperature()));
     }
 }

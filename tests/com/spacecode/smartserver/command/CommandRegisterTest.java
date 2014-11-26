@@ -2,9 +2,7 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -26,9 +24,6 @@ public class CommandRegisterTest
         _commandRegister = new ClientCommandRegister();
     }
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testAddCommand()
     {
@@ -46,10 +41,9 @@ public class CommandRegisterTest
         assertEquals(registerSize+1, _commandRegister._commands.size());
     }
 
-    @Test
+    @Test(expected = ClientCommandException.class)
     public void testExecuteUnknownRule() throws ClientCommandException
     {
-        exception.expect(ClientCommandException.class);
         String[] params = new String[] { "not_existing_rule" };
 
         _commandRegister.execute(null, params);

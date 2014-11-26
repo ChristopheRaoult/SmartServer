@@ -7,9 +7,9 @@ import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
-import com.spacecode.sdk.user.AccessType;
-import com.spacecode.sdk.user.FingerIndex;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.data.AccessType;
+import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.*;
@@ -159,7 +159,8 @@ public final class AlertCenter
             Transport.send(message);
         } catch (MessagingException me)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while sending an alert email. Id: "+alertEntity.getId(), me);
+            SmartLogger.getLogger().log(Level.SEVERE,
+                    "Exception occurred while sending an alert email. Id: "+alertEntity.getId(), me);
         }
     }
 
@@ -209,7 +210,8 @@ public final class AlertCenter
                 return;
             }
 
-            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeDisconnected, DatabaseHandler.getDeviceConfiguration());
+            List<AlertEntity> matchingAlerts =
+                    _alertRepository.getEnabledAlerts(alertTypeDisconnected, DatabaseHandler.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -230,7 +232,8 @@ public final class AlertCenter
                 return;
             }
 
-            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DatabaseHandler.getDeviceConfiguration());
+            List<AlertEntity> matchingAlerts =
+                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DatabaseHandler.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -242,7 +245,8 @@ public final class AlertCenter
         }
 
         @Override
-        public void authenticationSuccess(final GrantedUser grantedUser, AccessType accessType, final boolean isMaster)
+        public void authenticationSuccess(final GrantedUser grantedUser,
+                                          AccessType accessType, final boolean isMaster)
         {
             _lastAuthenticatedUsername = grantedUser.getUsername();
 
@@ -270,7 +274,8 @@ public final class AlertCenter
                 return;
             }
 
-            List<AlertEntity> matchingAlerts = _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DatabaseHandler.getDeviceConfiguration());
+            List<AlertEntity> matchingAlerts =
+                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DatabaseHandler.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -297,7 +302,8 @@ public final class AlertCenter
             }
 
             // get enabled Temperature Alerts
-            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature, DatabaseHandler.getDeviceConfiguration());
+            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature,
+                    DatabaseHandler.getDeviceConfiguration());
 
             if(alerts.isEmpty())
             {
@@ -340,7 +346,7 @@ public final class AlertCenter
             notifyAlertEvent(matchingAlerts.keySet(), extraData);
 
             // Now we have all enabled alerts with threshold triggered (temperature too low or too high)
-            // There is only 1 Alert (entity) for 1 AlertTemperature (entity): do not check for redundancy or 1-n relationship issues
+            // 1 Alert (entity) for 1 AlertTemperature (entity): no check for redundancy or 1-n relationship issues
             recordAndSend(matchingAlerts.values(), extraData);
         }
 
@@ -355,12 +361,14 @@ public final class AlertCenter
             {
                 if(alertEntity instanceof AlertEntity)
                 {
-                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertEntity) alertEntity).serialize(), additionalData);
+                    SmartServer.sendAllClients(EventCode.ALERT,
+                            AlertEntity.toAlert((AlertEntity) alertEntity).serialize(), additionalData);
                 }
 
                 else if(alertEntity instanceof AlertTemperatureEntity)
                 {
-                    SmartServer.sendAllClients(EventCode.ALERT, AlertEntity.toAlert((AlertTemperatureEntity) alertEntity).serialize(), additionalData);
+                    SmartServer.sendAllClients(EventCode.ALERT,
+                            AlertEntity.toAlert((AlertTemperatureEntity) alertEntity).serialize(), additionalData);
                 }
             }
         }

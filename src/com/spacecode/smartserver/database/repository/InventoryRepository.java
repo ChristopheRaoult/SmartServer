@@ -3,7 +3,7 @@ package com.spacecode.smartserver.database.repository;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.spacecode.sdk.device.data.Inventory;
-import com.spacecode.sdk.user.AccessType;
+import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -31,7 +31,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
      *
      * @return An Inventory (SDK) instance or null if anything went wrong.
      */
-    public Inventory getLastInventory()
+    public Inventory getLastInventory(DeviceEntity de)
     {
         // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present,
         // 4: total tags removed, 5: tag uid, 6: tag movement, 7: inventory creation date
@@ -59,7 +59,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
         sb.append("WHERE inv.").append(InventoryEntity.CREATED_AT)
                 .append(" = (SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
                 .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(") ");
-        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID).append(" = ").append(DatabaseHandler.getDeviceConfiguration().getId());
+        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID).append(" = ").append(de.getId());
 
         Inventory lastInventoryFromDb = new Inventory();
 
@@ -159,13 +159,16 @@ public class InventoryRepository extends Repository<InventoryEntity>
         return lastInventoryFromDb;
     }
 
-
     /**
-     * Perform RAW SQL query to get the last inventory and create an Inventory (SDK) instance from its data.
+     * Get the list of InventoryEntity created during a certain period and convert it to a list of Inventory.
      *
-     * @return An Inventory (SDK) instance or null if anything went wrong.
+     * @param from  Period start date.
+     * @param to    Period end date.
+     * @param de    Device to look inventories for.
+     *
+     * @return List of Inventory made during the given period (empty if no result or error).
      */
-    public List<Inventory> getInventories(Date from, Date to)
+    public List<Inventory> getInventories(Date from, Date to, DeviceEntity de)
     {
         List<InventoryEntity> queryResult;
         List<Inventory> result = new ArrayList<>();
@@ -176,7 +179,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
                     _dao.queryBuilder()
                             .orderBy(InventoryEntity.CREATED_AT, true)
                             .where()
-                            .eq(InventoryEntity.DEVICE_ID, DatabaseHandler.getDeviceConfiguration().getId())
+                            .eq(InventoryEntity.DEVICE_ID, de.getId())
                             .and()
                             .between(InventoryEntity.CREATED_AT, from, to)
                             .prepare());

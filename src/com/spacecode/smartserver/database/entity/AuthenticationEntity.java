@@ -21,10 +21,10 @@ public final class AuthenticationEntity extends Entity
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
 
-    @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false, foreignAutoRefresh = true)
     private GrantedUserEntity _grantedUser;
 
-    @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
 
     @DatabaseField(columnName = CREATED_AT)

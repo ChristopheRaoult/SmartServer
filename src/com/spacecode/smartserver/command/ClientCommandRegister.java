@@ -29,10 +29,11 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.ADD_USER,             new CommandAddUser());
         _commands.put(RequestCode.ALERTS_LIST,          new CommandAlertsList());
         _commands.put(RequestCode.ALERT_REPORTS,        new CommandAlertReports());
+        _commands.put(RequestCode.AUTHENTICATIONS_LIST, new CommandAuthenticationsList());
         _commands.put(RequestCode.DISCONNECT,           new CommandDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CommandEnrollFinger());
         _commands.put(RequestCode.INITIALIZATION,       new CommandInitialization());
-        _commands.put(RequestCode.INVENTORY_RANGE,      new CommandInventoryRange());
+        _commands.put(RequestCode.INVENTORIES_LIST,     new CommandInventoriesList());
         _commands.put(RequestCode.LAST_ALERT,           new CommandLastAlert());
         _commands.put(RequestCode.LAST_INVENTORY,       new CommandLastInventory());
         _commands.put(RequestCode.REMOVE_ALERT,         new CommandRemoveAlert());
@@ -52,8 +53,8 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
         _commands.put(RequestCode.USER_BY_NAME,         new CommandUserByName());
         _commands.put(RequestCode.USERS_LIST,           new CommandUsersList());
-        _commands.put(RequestCode.TEMP_CURRENT,         new CommandTempCurrent());
-        _commands.put(RequestCode.TEMP_RANGE,           new CommandTempRange());
+        _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CommandTemperatureCurrent());
+        _commands.put(RequestCode.TEMPERATURE_LIST,     new CommandTemperatureList());
     }
 
     /**

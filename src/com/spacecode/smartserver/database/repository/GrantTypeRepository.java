@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.spacecode.sdk.user.GrantType;
+import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 

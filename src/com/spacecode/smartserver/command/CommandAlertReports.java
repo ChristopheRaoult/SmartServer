@@ -4,7 +4,7 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
-import com.spacecode.smartserver.database.repository.Repository;
+import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -46,7 +46,8 @@ public class CommandAlertReports extends ClientCommand
             timestampEnd    = Long.parseLong(parameters[1]);
         } catch(NumberFormatException nfe)
         {
-            SmartLogger.getLogger().log(Level.WARNING, "Invalid timestamp sent by client for TemperatureRange.", nfe);
+            SmartLogger.getLogger().log(Level.WARNING,
+                    "Invalid timestamp sent by client for AlertReports.", nfe);
             SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
             return;
         }
@@ -57,10 +58,12 @@ public class CommandAlertReports extends ClientCommand
             return;
         }
 
-        Repository<AlertHistoryEntity> repo = DatabaseHandler.getRepository(AlertHistoryEntity.class);
-        List<AlertHistoryEntity> entities = repo.getEntitiesWhereBetween(AlertHistoryEntity.CREATED_AT,
-                new Date(timestampStart),
-                new Date(timestampEnd));
+        AlertHistoryRepository repo =
+                (AlertHistoryRepository) DatabaseHandler.getRepository(AlertHistoryEntity.class);
+
+        List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),
+                new Date(timestampEnd),
+                DatabaseHandler.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.ALERT_REPORTS);

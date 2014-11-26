@@ -1,10 +1,11 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
-import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
-import com.spacecode.smartserver.database.repository.TemperatureMeasurementRepository;
+import com.spacecode.smartserver.database.entity.InventoryEntity;
+import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -14,11 +15,11 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * "TemperatureRange" command.
+ * InventoriesList command.
  *
- * Provide temperature measurements over a given period (start/end date provided), if any.
+ * Provide inventories over a given period (start/end date provided), if any.
  */
-public class CommandTempRange extends ClientCommand
+public class CommandInventoriesList extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
@@ -32,7 +33,7 @@ public class CommandTempRange extends ClientCommand
         // waiting for 2 parameters: start date, end date.
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -45,28 +46,29 @@ public class CommandTempRange extends ClientCommand
             timestampEnd    = Long.parseLong(parameters[1]);
         } catch(NumberFormatException nfe)
         {
-            SmartLogger.getLogger().log(Level.WARNING, "Invalid timestamp sent by client for TemperatureRange.", nfe);
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartLogger.getLogger().log(Level.WARNING,
+                    "Invalid timestamp sent by client for Inventories.", nfe);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             return;
         }
 
         if(timestampEnd <= timestampStart)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMP_RANGE);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             return;
         }
 
-        TemperatureMeasurementRepository repo = (TemperatureMeasurementRepository) DatabaseHandler.getRepository(TemperatureMeasurementEntity.class);
-        List<TemperatureMeasurementEntity> entities = repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd));
+        InventoryRepository repo = (InventoryRepository) DatabaseHandler.getRepository(InventoryEntity.class);
+
+        List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd),
+                DatabaseHandler.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
-        responsePackets.add(RequestCode.TEMP_RANGE);
+        responsePackets.add(RequestCode.INVENTORIES_LIST);
 
-        for(TemperatureMeasurementEntity entity : entities)
+        for(Inventory inventory : inventories)
         {
-            // add TIMESTAMP in seconds and temperature measurement value
-            responsePackets.add(String.valueOf(entity.getCreatedAt().getTime()/1000));
-            responsePackets.add(String.valueOf(entity.getValue()));
+            responsePackets.add(inventory.serialize());
         }
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
