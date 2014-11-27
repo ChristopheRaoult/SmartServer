@@ -70,6 +70,7 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
             alertQb.where().eq(AlertEntity.DEVICE_ID, de.getId());
 
             return _dao.query(_dao.queryBuilder()
+                            .orderBy(AlertHistoryEntity.CREATED_AT, true)
                             .join(alertQb)
                             .where()
                             .between(AlertHistoryEntity.CREATED_AT, startDate, endDate)
@@ -77,7 +78,7 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
             );
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while using Where->Between.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting Alerts history.", sqle);
             return new ArrayList<>();
         }
     }

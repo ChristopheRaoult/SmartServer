@@ -40,6 +40,7 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
             qb.orderBy(AuthenticationEntity.CREATED_AT, true);
 
             return _dao.query(qb
+                            .orderBy(AuthenticationEntity.CREATED_AT, true)
                             .where()
                             .eq(AuthenticationEntity.DEVICE_ID, de.getId())
                             .and()
