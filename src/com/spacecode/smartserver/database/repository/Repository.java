@@ -112,7 +112,7 @@ public abstract class Repository<E extends Entity>
                             .prepare());
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity with criteria.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity where field not equal.", sqle);
             return null;
         }
     }

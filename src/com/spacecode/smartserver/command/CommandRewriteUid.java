@@ -1,6 +1,6 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.device.data.RewriteUIDResult;
+import com.spacecode.sdk.device.data.RewriteUidResult;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -23,13 +23,13 @@ public class CommandRewriteUid extends ClientCommand
         // waiting for two parameters: old UID and new UID of the tag to be rewritten
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUIDResult.ERROR));
+            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUidResult.ERROR));
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUIDResult.ERROR));
+            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(RewriteUidResult.ERROR));
             return;
         }
 

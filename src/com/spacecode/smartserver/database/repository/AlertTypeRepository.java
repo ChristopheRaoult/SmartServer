@@ -44,7 +44,7 @@ public class AlertTypeRepository extends Repository<AlertTypeEntity>
                 TYPE_TO_ENTITY.put(alertType.name(), ate);
             } catch (SQLException sqle)
             {
-                SmartLogger.getLogger().log(Level.SEVERE, "Unable to get AlertType from database.", sqle);
+                SmartLogger.getLogger().log(Level.SEVERE, "Unable to get AlertType "+alertType.name()+" from database.", sqle);
                 return null;
             }
         }

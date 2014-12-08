@@ -77,7 +77,7 @@ public final class SmartServer
     public static void main(String[] args) throws IOException, SQLException
     {
         // SDK use Global logger. Only display its SEVERE logs.
-        Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.SEVERE);
+        // Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.SEVERE);
 
         SmartLogger.initialize();
         initializeShutdownHook();
