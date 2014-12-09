@@ -757,9 +757,9 @@ public class DatabaseHandler
 
             GrantedUserEntity gue = null;
 
-            if(_inventory.getInitiatingUserName() != null && !"".equals(_inventory.getInitiatingUserName().trim()))
+            if(_inventory.getUsername() != null && !"".equals(_inventory.getUsername().trim()))
             {
-                gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, _inventory.getInitiatingUserName());
+                gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, _inventory.getUsername());
             }
 
             AccessTypeEntity ate = ((AccessTypeRepository) accessTypeRepo).fromAccessType(_inventory.getAccessType());

@@ -243,7 +243,7 @@ public final class DeviceHandler
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
-            AccessControlEventHandler, AuthenticationModuleEventHandler, TemperatureEventHandler, LedEventHandler
+            AccessControlEventHandler, AccessModuleEventHandler, TemperatureEventHandler, LedEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -375,12 +375,6 @@ public final class DeviceHandler
             responsePackets.addAll(tagsLeft);
 
             SmartServer.sendAllClients(responsePackets.toArray(new String[0]));
-        }
-
-        @Override
-        public void lightingStopped()
-        {
-            SmartServer.sendAllClients(EventCode.LIGHTING_STOPPED);
         }
     }
 }
