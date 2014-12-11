@@ -12,6 +12,7 @@ import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.alert.SmtpServer;
 import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.UsersService;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.sdk.user.data.GrantType;
@@ -216,7 +217,7 @@ public class DatabaseHandler
         return _deviceConfiguration;
     }
 
-    /** @return First SmtpServer set for the current device if any. Result is null otherwise. */
+    /** @return SmtpServer set for the current device, if any, null otherwise. */
     public static SmtpServerEntity getSmtpServerConfiguration()
     {
         return getRepository(SmtpServerEntity.class)
@@ -262,6 +263,7 @@ public class DatabaseHandler
                 .append(deviceConfig.getId());
 
         Map<String, GrantedUser> usernameToUser = new HashMap<>();
+        UsersService usersService = DeviceHandler.getDevice().getUsersService();
 
         try
         {
@@ -279,12 +281,13 @@ public class DatabaseHandler
                 {
                     user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
                     usernameToUser.put(result[0], user);
+
+                    usersService.addUser(user);
                 }
 
                 // if there isn't any fingerprint [finger_index is null], go on
                 if (result[3] == null)
                 {
-                    // user should not be null at this stage, but test anyway
                     continue;
                 }
 
@@ -296,7 +299,7 @@ public class DatabaseHandler
                 if (fingerIndex != null)
                 {
                     // add this new fingerprint template to the user
-                    user.setFingerprintTemplate(fingerIndex, result[4]);
+                    usersService.updateFingerprintTemplate(user.getUsername(), fingerIndex, result[4]);
                 }
             }
 
@@ -312,7 +315,6 @@ public class DatabaseHandler
             return false;
         }
 
-        DeviceHandler.getDevice().getUsersService().addUsers(usernameToUser.values());
         return true;
     }
 

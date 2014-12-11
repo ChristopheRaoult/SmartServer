@@ -33,7 +33,7 @@ public class CommandRewriteUid extends ClientCommand
             return;
         }
 
-        byte result = DeviceHandler.getDevice().rewriteUID(parameters[0], parameters[1]);
+        byte result = DeviceHandler.getDevice().rewriteUid(parameters[0], parameters[1]);
         SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, String.valueOf(result));
     }
 }

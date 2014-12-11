@@ -174,7 +174,7 @@ public final class DeviceHandler
                 // 1 reader
                 else
                 {
-                    if(FingerprintReader.connectFingerprintReaders() != 1)
+                    if(FingerprintReader.connectFingerprintReader() != 1)
                     {
                         SmartLogger.getLogger().warning("Couldn't initialize the fingerprint reader.");
                     }

@@ -82,7 +82,7 @@ public class CommandEnrollFinger extends ClientCommand
 
                 if (!DatabaseHandler.persistFingerprint(username, fingerIndex.getIndex(), fpTpl))
                 {
-                    gu.setFingerprintTemplate(fingerIndex, null);
+                    DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
                     SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
                     return;
                 }

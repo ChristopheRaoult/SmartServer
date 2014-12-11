@@ -74,6 +74,6 @@ public class CommandTemperatureList extends ClientCommand
             responsePackets.add(String.valueOf(entity.getValue()));
         }
 
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
     }
 }

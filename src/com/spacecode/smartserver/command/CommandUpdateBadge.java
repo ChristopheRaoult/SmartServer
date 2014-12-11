@@ -54,7 +54,7 @@ public class CommandUpdateBadge extends ClientCommand
             return;
         }
 
-        user.setBadgeNumber(badgeNumber);
+        DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber);
         SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, TRUE);
     }
 }

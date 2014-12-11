@@ -60,6 +60,7 @@ public class CommandRemoveFingerprint extends ClientCommand
 
         if(user == null)
         {
+            // user could not be found
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
         }
@@ -71,7 +72,7 @@ public class CommandRemoveFingerprint extends ClientCommand
             return;
         }
 
-        user.setFingerprintTemplate(fingerIndex, null);
+        DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
         SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, TRUE);
     }
 }

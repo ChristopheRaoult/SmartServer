@@ -54,9 +54,10 @@ public class CommandUpdatePermission extends ClientCommand
 
         GrantedUser user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
 
-        // grantType can't be null with "valueOf" (enum) but anyway
+        // grantType can't be null with "valueOf" (enum), but anyway
         if(user == null || grantType == null)
         {
+            // user could not be found or grantType was invalid
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
         }
@@ -67,7 +68,8 @@ public class CommandUpdatePermission extends ClientCommand
             return;
         }
 
-        user.setPermission(grantType);
+        DeviceHandler.getDevice().getUsersService().updatePermission(username, grantType);
+
         SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, TRUE);
     }
 }
