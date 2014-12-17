@@ -254,6 +254,8 @@ public final class DeviceHandler
             // if the device is in ethernet mode, try to reconnect it
             if(!SERIAL_PORT_FORWARDING)
             {
+                SmartLogger.getLogger().info("Reconnecting Device...");
+                // TODO: reload the last inventory from DB
                 reconnectDevice();
             }
         }
