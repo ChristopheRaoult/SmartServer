@@ -4,15 +4,15 @@ import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 
 import java.util.Date;
 
 /**
  * GrantedUser Entity
  */
-@DatabaseTable(tableName = GrantedUserEntity.TABLE_NAME)
-public final class GrantedUserEntity extends Entity
+@DatabaseTable(tableName = UserEntity.TABLE_NAME)
+public final class UserEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_granted_user";
 
@@ -42,7 +42,7 @@ public final class GrantedUserEntity extends Entity
     /**
      * No-Arg constructor (with package visibility) for ORMLite
      */
-    GrantedUserEntity()
+    UserEntity()
     {
     }
 
@@ -52,7 +52,7 @@ public final class GrantedUserEntity extends Entity
      * @param username      Username.
      * @param badgeNumber   Badge number.
      */
-    public GrantedUserEntity(String username, String badgeNumber)
+    public UserEntity(String username, String badgeNumber)
     {
         _username = username;
         _badgeNumber = badgeNumber;
@@ -67,7 +67,7 @@ public final class GrantedUserEntity extends Entity
      *
      * @param newUser   GrantedUser (SDK) instance to get information from.
      */
-    public GrantedUserEntity(GrantedUser newUser)
+    public UserEntity(User newUser)
     {
         this(newUser.getUsername(), newUser.getBadgeNumber());
     }

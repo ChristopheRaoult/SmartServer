@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
@@ -77,7 +77,7 @@ public class CommandEnrollFinger extends ClientCommand
                 }
 
                 // persist the enrolled template in db
-                GrantedUser gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+                User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
                 String fpTpl = gu.getFingerprintTemplate(fingerIndex);
 
                 if (!DatabaseHandler.persistFingerprint(username, fingerIndex.getIndex(), fpTpl))

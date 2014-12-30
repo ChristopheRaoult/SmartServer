@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,7 +35,7 @@ public class CommandUsersList extends ClientCommand
         responsePackets.add(RequestCode.USERS_LIST);
 
         // then all the serialized users
-        for(GrantedUser user : DeviceHandler.getDevice().getUsersService().getUsersList())
+        for(User user : DeviceHandler.getDevice().getUsersService().getUsersList())
         {
             responsePackets.add(user.serialize());
         }

@@ -2,7 +2,7 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
-import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
      * @param index Finger index of the fingerprint.
      * @return      FingerprintEntity instance (if any), null otherwise (none or SQLException).
      */
-    public FingerprintEntity getFingerprint(GrantedUserEntity gue, int index)
+    public FingerprintEntity getFingerprint(UserEntity gue, int index)
     {
         try
         {

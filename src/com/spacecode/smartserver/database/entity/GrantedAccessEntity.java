@@ -19,7 +19,7 @@ public final class GrantedAccessEntity extends Entity
     private DeviceEntity _device;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
-    private GrantedUserEntity _grantedUser;
+    private UserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = GRANT_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private GrantTypeEntity _grantType;
@@ -33,11 +33,11 @@ public final class GrantedAccessEntity extends Entity
 
     /**
      * Default constructor.
-     * @param grantedUser   GrantedUserEntity instance to be set as user.
+     * @param grantedUser   UserEntity instance to be set as user.
      * @param device        DeviceEntity to be set as device.
      * @param grantType     GrantTypeEntity to be set as grant type.
      */
-    public GrantedAccessEntity(GrantedUserEntity grantedUser,
+    public GrantedAccessEntity(UserEntity grantedUser,
                                DeviceEntity device,
                                GrantTypeEntity grantType)
     {
@@ -46,8 +46,8 @@ public final class GrantedAccessEntity extends Entity
         _grantType = grantType;
     }
 
-    /** @return GrantedUserEntity instance (attached user). */
-    public GrantedUserEntity getGrantedUser()
+    /** @return UserEntity instance (attached user). */
+    public UserEntity getGrantedUser()
     {
         return _grantedUser;
     }

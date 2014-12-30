@@ -74,7 +74,7 @@ public class RepositoryFactory
             return new GrantedAccessRepository(dao);
         }
 
-        else if(className.equals(GrantedUserEntity.class.getName()))
+        else if(className.equals(UserEntity.class.getName()))
         {
             return new GrantedUserRepository(dao);
         }

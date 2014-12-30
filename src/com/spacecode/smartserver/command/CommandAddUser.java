@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -36,7 +36,7 @@ public class CommandAddUser extends ClientCommand
             return;
         }
 
-        GrantedUser newUser = GrantedUser.deserialize(parameters[0]);
+        User newUser = User.deserialize(parameters[0]);
 
         if(newUser == null || newUser.getUsername() == null || "".equals(newUser.getUsername().trim()))
         {

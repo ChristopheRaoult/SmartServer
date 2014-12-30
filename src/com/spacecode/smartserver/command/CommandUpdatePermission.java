@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
@@ -52,7 +52,7 @@ public class CommandUpdatePermission extends ClientCommand
             return;
         }
 
-        GrantedUser user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
 
         // grantType can't be null with "valueOf" (enum), but anyway
         if(user == null || grantType == null)

@@ -7,7 +7,7 @@ import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
@@ -245,7 +245,7 @@ public final class AlertCenter
         }
 
         @Override
-        public void authenticationSuccess(final GrantedUser grantedUser,
+        public void authenticationSuccess(final User grantedUser,
                                           AccessType accessType, final boolean isMaster)
         {
             _lastAuthenticatedUsername = grantedUser.getUsername();
@@ -256,8 +256,8 @@ public final class AlertCenter
                 return;
             }
 
-            Repository<GrantedUserEntity> userRepo = DatabaseHandler.getRepository(GrantedUserEntity.class);
-            GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, grantedUser.getUsername());
+            Repository<UserEntity> userRepo = DatabaseHandler.getRepository(UserEntity.class);
+            UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
             // no matching user, or user has no "finger thief" index set.
             if(gue == null || gue.getThiefFingerIndex() == null)
@@ -392,7 +392,7 @@ public final class AlertCenter
         }
 
         @Override
-        public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationFailure(User grantedUser, AccessType accessType, boolean isMaster)
         {
             // not required
         }

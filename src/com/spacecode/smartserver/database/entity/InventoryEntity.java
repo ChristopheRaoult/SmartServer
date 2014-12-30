@@ -28,7 +28,7 @@ public final class InventoryEntity extends Entity
     private DeviceEntity _device;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, foreignAutoRefresh = true)
-    private GrantedUserEntity _grantedUser;
+    private UserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
@@ -60,10 +60,10 @@ public final class InventoryEntity extends Entity
      *
      * @param inventory Inventory [SDK] instance to take values from.
      * @param device    DeviceEntity attached to this inventory.
-     * @param gue       GrantedUserEntity (if any) attached to this inventory.
+     * @param gue       UserEntity (if any) attached to this inventory.
      * @param ate       AcessTypeEntity (Manual, Fingerprint, Badge...) attached to this inventory.
      */
-    public InventoryEntity(Inventory inventory, DeviceEntity device, GrantedUserEntity gue, AccessTypeEntity ate)
+    public InventoryEntity(Inventory inventory, DeviceEntity device, UserEntity gue, AccessTypeEntity ate)
     {
         _device = device;
         _grantedUser = gue;
@@ -83,7 +83,7 @@ public final class InventoryEntity extends Entity
     }
 
     /** @return User which started this inventory by authenticating (or null if manual scan). */
-    public GrantedUserEntity getGrantedUser()
+    public UserEntity getGrantedUser()
     {
         return _grantedUser;
     }

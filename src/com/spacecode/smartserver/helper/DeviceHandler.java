@@ -1,12 +1,12 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.device.DeviceCreationException;
-import com.spacecode.sdk.device.RfidDevice;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
@@ -22,7 +22,7 @@ import java.util.logging.Level;
  */
 public final class DeviceHandler
 {
-    private volatile static RfidDevice _device;
+    private volatile static Device _device;
 
     // allows the CommandSerialBridge to set the current state of device (usb / ethernet).
     private static boolean SERIAL_PORT_FORWARDING = false;
@@ -45,7 +45,7 @@ public final class DeviceHandler
             return true;
         }
 
-        Map<String, PluggedDeviceInformation> pluggedDevices = RfidDevice.getPluggedDevicesInformation();
+        Map<String, PluggedDeviceInformation> pluggedDevices = Device.getPluggedDevicesInformation();
 
         if(pluggedDevices.isEmpty() || pluggedDevices.size() > 1)
         {
@@ -59,7 +59,7 @@ public final class DeviceHandler
 
             try
             {
-                _device = new RfidDevice(null, deviceInfo.getSerialPort());
+                _device = new Device(null, deviceInfo.getSerialPort());
                 _device.addListener(new SmartEventHandler());
             } catch (DeviceCreationException dce)
             {
@@ -122,7 +122,7 @@ public final class DeviceHandler
     /**
      * @return Currently used RFIDDevice instance (null if not initialized).
      */
-    public static RfidDevice getDevice()
+    public static Device getDevice()
     {
         return _device;
     }
@@ -311,7 +311,7 @@ public final class DeviceHandler
         }
 
         @Override
-        public void authenticationSuccess(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationSuccess(User grantedUser, AccessType accessType, boolean isMaster)
         {
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
@@ -320,7 +320,7 @@ public final class DeviceHandler
         }
 
         @Override
-        public void authenticationFailure(GrantedUser grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationFailure(User grantedUser, AccessType accessType, boolean isMaster)
         {
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));

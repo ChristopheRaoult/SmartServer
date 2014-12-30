@@ -1,7 +1,6 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -22,8 +21,8 @@ public class CommandUpdateBadge extends ClientCommand
     @Override
     public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // waiting for 2 parameters: username and new badge number.
-        if(parameters.length != 2)
+        // waiting for 2 parameters: username and badge number. Badge number is optional (none = empty badge number)
+        if(parameters.length < 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
@@ -36,25 +35,24 @@ public class CommandUpdateBadge extends ClientCommand
         }
 
         String username = parameters[0];
-        String badgeNumber = parameters[1];
-
-        GrantedUser user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
-
-        if(user == null)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
-            SmartLogger.getLogger().info("Unable to update badger: user not found.");
-            return;
-        }
+        String badgeNumber = parameters.length > 1 ? parameters[1] : "";
 
         if(!DatabaseHandler.persistBadgeNumber(username, badgeNumber))
         {
-            SmartLogger.getLogger().info("Unable to update badger: persist operation failed.");
+            SmartLogger.getLogger().warning("Unable to update badge number: DB operation failed.");
+            SmartLogger.getLogger().warning("Make sure that the user "+username+" exists.");
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }
 
-        DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber);
+        if(!DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber))
+        {
+            SmartLogger.getLogger().warning("Unable to update badge number: Users Service failed.");
+            SmartLogger.getLogger().warning("Make sure that the user "+username+" exists.");
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
+            return;
+        }
+
         SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, TRUE);
     }
 }

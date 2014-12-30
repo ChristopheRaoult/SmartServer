@@ -17,7 +17,7 @@ public final class FingerprintEntity extends Entity
     public static final String TEMPLATE = "template";
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
-    private GrantedUserEntity _grantedUser;
+    private UserEntity _grantedUser;
 
     @DatabaseField(columnName = FINGER_INDEX, canBeNull = false)
     private int _fingerIndex;
@@ -38,15 +38,15 @@ public final class FingerprintEntity extends Entity
      * @param index     FingerIndex's index value.
      * @param template  Base64 encoded fingerprint template.
      */
-    public FingerprintEntity(GrantedUserEntity user, int index, String template)
+    public FingerprintEntity(UserEntity user, int index, String template)
     {
         _grantedUser = user;
         _fingerIndex = index;
         _template = template;
     }
 
-    /** @return GrantedUserEntity attached to this fingerprint. */
-    public GrantedUserEntity getGrantedUser()
+    /** @return UserEntity attached to this fingerprint. */
+    public UserEntity getGrantedUser()
     {
         return _grantedUser;
     }

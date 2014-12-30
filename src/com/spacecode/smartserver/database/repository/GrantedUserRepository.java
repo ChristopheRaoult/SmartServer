@@ -4,7 +4,7 @@ import com.j256.ormlite.dao.Dao;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
-import com.spacecode.smartserver.database.entity.GrantedUserEntity;
+import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
@@ -12,31 +12,31 @@ import java.util.Collection;
 import java.util.logging.Level;
 
 /**
- * GrantedUserEntity Repository
+ * UserEntity Repository
  */
-public class GrantedUserRepository extends Repository<GrantedUserEntity>
+public class GrantedUserRepository extends Repository<UserEntity>
 {
     /**
      * Default constructor.
-     * @param dao   Dao (GrantedUserEntity, Integer) to be used by the Repository.
+     * @param dao   Dao (UserEntity, Integer) to be used by the Repository.
      */
-    public GrantedUserRepository(Dao<GrantedUserEntity, Integer> dao)
+    public GrantedUserRepository(Dao<UserEntity, Integer> dao)
     {
         super(dao);
     }
 
     /**
-     * Allow looking for a GrantedUserEntity by its username.
+     * Allow looking for a UserEntity by its username.
      * @param username  Desired user's name.
-     * @return          GrantedUserEntity instance, or null if any error occurs (SQLException, user not found...).
+     * @return          UserEntity instance, or null if any error occurs (SQLException, user not found...).
      */
-    public GrantedUserEntity getByUsername(String username)
+    public UserEntity getByUsername(String username)
     {
         try
         {
             return _dao.queryForFirst(
                     _dao.queryBuilder().where()
-                            .eq(GrantedUserEntity.USERNAME, username)
+                            .eq(UserEntity.USERNAME, username)
                             .prepare());
         } catch (SQLException sqle)
         {
@@ -51,7 +51,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
      * @return          True if successful, false otherwise (SQLException).
      */
     @Override
-    public boolean delete(GrantedUserEntity entity)
+    public boolean delete(UserEntity entity)
     {
         try
         {
@@ -79,9 +79,9 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
      * @return          True if successfully removed all users, false otherwise (SQLException).
      */
     @Override
-    public boolean delete(Collection<GrantedUserEntity> entities)
+    public boolean delete(Collection<UserEntity> entities)
     {
-        for(GrantedUserEntity user : entities)
+        for(UserEntity user : entities)
         {
             if(!delete(user))
             {
@@ -102,7 +102,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
      */
     public boolean updateBadge(String username, String badgeNumber)
     {
-        GrantedUserEntity gue = getByUsername(username);
+        UserEntity gue = getByUsername(username);
 
         if(gue == null)
         {
@@ -130,7 +130,7 @@ public class GrantedUserRepository extends Repository<GrantedUserEntity>
      */
     public boolean updateThiefFingerIndex(String username, Integer fingerIndex)
     {
-        GrantedUserEntity gue = getByUsername(username);
+        UserEntity gue = getByUsername(username);
 
         if(gue == null)
         {

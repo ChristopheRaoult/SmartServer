@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DatabaseHandler;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -45,7 +45,7 @@ public class CommandSetThiefFinger extends ClientCommand
             fingerIndex = null;
         }
 
-        GrantedUser user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
 
         if(user == null)
         {

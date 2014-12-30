@@ -127,7 +127,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
             if(lastRow[0] != null)
             {
                 int userId = Integer.parseInt(lastRow[0]);
-                GrantedUserEntity gue = DatabaseHandler.getRepository(GrantedUserEntity.class).getEntityById(userId);
+                UserEntity gue = DatabaseHandler.getRepository(UserEntity.class).getEntityById(userId);
 
                 if(gue != null)
                 {

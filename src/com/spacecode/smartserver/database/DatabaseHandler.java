@@ -11,7 +11,7 @@ import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.alert.SmtpServer;
-import com.spacecode.sdk.user.GrantedUser;
+import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.UsersService;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.FingerIndex;
@@ -78,7 +78,7 @@ public class DatabaseHandler
             TableUtils.createTableIfNotExists(_connectionSource, DeviceEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, FingerprintEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, GrantedAccessEntity.class);
-            TableUtils.createTableIfNotExists(_connectionSource, GrantedUserEntity.class);
+            TableUtils.createTableIfNotExists(_connectionSource, UserEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, InventoryEntity.class);
             TableUtils.createTableIfNotExists(_connectionSource, InventoryRfidTag.class);
             TableUtils.createTableIfNotExists(_connectionSource, RfidTagEntity.class);
@@ -238,21 +238,21 @@ public class DatabaseHandler
             return false;
         }
 
-        Dao daoUser = getDao(GrantedUserEntity.class);
+        Dao daoUser = getDao(UserEntity.class);
 
         // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
         String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
 
         // raw query to get all users with their access type (on this device) and their fingerprints
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
-        sb.append("FROM ").append(GrantedUserEntity.TABLE_NAME).append(" gue ");
+        sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");
         // join all fingerprints
         sb.append("LEFT JOIN ").append(FingerprintEntity.TABLE_NAME).append(" fpe ");
-        sb.append("ON gue.").append(GrantedUserEntity.ID).append(" = ");
+        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
         sb.append("fpe.").append(FingerprintEntity.GRANTED_USER_ID).append(" ");
         // join all granted accesses
         sb.append("LEFT JOIN ").append(GrantedAccessEntity.TABLE_NAME).append(" gae ");
-        sb.append("ON gue.").append(GrantedUserEntity.ID).append(" = ");
+        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
         sb.append("gae.").append(GrantedAccessEntity.GRANTED_USER_ID).append(" ");
         // join grant types to granted accesses
         sb.append("LEFT JOIN ").append(GrantTypeEntity.TABLE_NAME).append(" gte ");
@@ -262,7 +262,7 @@ public class DatabaseHandler
         sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
                 .append(deviceConfig.getId());
 
-        Map<String, GrantedUser> usernameToUser = new HashMap<>();
+        Map<String, User> usernameToUser = new HashMap<>();
         UsersService usersService = DeviceHandler.getDevice().getUsersService();
 
         try
@@ -274,12 +274,12 @@ public class DatabaseHandler
             // fill the users hashmap with results from Raw SQL query
             for (String[] result : (Iterable<String[]>) results)
             {
-                GrantedUser user = usernameToUser.get(result[0]);
+                User user = usernameToUser.get(result[0]);
 
                 // first, add the user if it's not known yet
                 if (user == null)
                 {
-                    user = new GrantedUser(result[0], GrantType.valueOf(result[2]), result[1]);
+                    user = new User(result[0], GrantType.valueOf(result[2]), result[1]);
                     usernameToUser.put(result[0], user);
 
                     usersService.addUser(user);
@@ -336,13 +336,13 @@ public class DatabaseHandler
 
     /**
      * Process the data persistence:
-     * GrantedUserEntity, Fingerprint(s), GrantedAccessEntity.
+     * UserEntity, Fingerprint(s), GrantedAccessEntity.
      *
      * @param newUser   Instance of GrantedUser (SDK) to be added to database.
      *
      * @return          True if success, false otherwise (username already used, SQLException, etc).
      */
-    public static boolean persistUser(final GrantedUser newUser)
+    public static boolean persistUser(final User newUser)
     {
         try
         {
@@ -365,9 +365,9 @@ public class DatabaseHandler
      */
     public static boolean deleteUser(String username)
     {
-        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<UserEntity> userRepo = getRepository(UserEntity.class);
 
-        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
         return gue != null && userRepo.delete(gue);
     }
@@ -383,10 +383,10 @@ public class DatabaseHandler
      */
     public static boolean persistFingerprint(String username, int fingerIndex, String fpTpl)
     {
-        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<UserEntity> userRepo = getRepository(UserEntity.class);
         Repository<FingerprintEntity> fpRepo   = getRepository(FingerprintEntity.class);
 
-        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
         return gue != null && fpRepo.update(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
@@ -402,9 +402,9 @@ public class DatabaseHandler
     public static boolean deleteFingerprint(String username, int index)
     {
         Repository<FingerprintEntity> fpRepo = getRepository(FingerprintEntity.class);
-        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<UserEntity> userRepo = getRepository(UserEntity.class);
 
-        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
         if(gue == null)
         {
@@ -426,7 +426,7 @@ public class DatabaseHandler
      */
     public static boolean persistBadgeNumber(String username, String badgeNumber)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository userRepo = getRepository(UserEntity.class);
 
         return ((GrantedUserRepository)userRepo).updateBadge(username, badgeNumber);
     }
@@ -441,7 +441,7 @@ public class DatabaseHandler
      */
     public static boolean persistThiefFingerIndex(String username, Integer fingerIndex)
     {
-        Repository userRepo = getRepository(GrantedUserEntity.class);
+        Repository userRepo = getRepository(UserEntity.class);
 
         return ((GrantedUserRepository)userRepo).updateThiefFingerIndex(username, fingerIndex);
     }
@@ -456,10 +456,10 @@ public class DatabaseHandler
      */
     public static boolean persistPermission(String username, GrantType grantType)
     {
-        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<UserEntity> userRepo = getRepository(UserEntity.class);
         Repository grantTypeRepo = getRepository(GrantTypeEntity.class);
 
-        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, username);
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
         if(gue == null)
         {
@@ -519,13 +519,13 @@ public class DatabaseHandler
      *
      * @return True if operation was successful, false otherwise.
      */
-    public static boolean persistAuthentication(GrantedUser grantedUser, AccessType accessType)
+    public static boolean persistAuthentication(User grantedUser, AccessType accessType)
     {
-        Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+        Repository<UserEntity> userRepo = getRepository(UserEntity.class);
         Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
         Repository<AuthenticationEntity> authenticationRepo = getRepository(AuthenticationEntity.class);
 
-        GrantedUserEntity gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, grantedUser.getUsername());
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
         if(gue == null)
         {
@@ -677,9 +677,9 @@ public class DatabaseHandler
      */
     private static class PersistUserCallable implements Callable<Void>
     {
-        private final GrantedUser _newUser;
+        private final User _newUser;
 
-        private PersistUserCallable(GrantedUser newUser)
+        private PersistUserCallable(User newUser)
         {
             _newUser = newUser;
         }
@@ -688,19 +688,40 @@ public class DatabaseHandler
         public Void call() throws Exception
         {
             // First, get & create the user
-            Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+            Repository<UserEntity> userRepo = getRepository(UserEntity.class);
 
-            GrantedUserEntity gue = new GrantedUserEntity(_newUser);
+            // try to get the user if he already exists (by username)
+            UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, _newUser.getUsername());
 
-            if(!userRepo.insert(gue))
+            // if he doesn't exist
+            if(gue == null)
             {
-                throw new SQLException("Failed when inserting new user.");
+                // create it
+                gue = new UserEntity(_newUser);
+
+                // try to insert him in DB
+                if (!userRepo.insert(gue))
+                {
+                    throw new SQLException("Failed when inserting new user.");
+                }
+
+                Repository<FingerprintEntity> fpRepo = getRepository(FingerprintEntity.class);
+
+                // add his fingerprints
+                for(FingerIndex index : _newUser.getEnrolledFingersIndexes())
+                {
+                    if(!fpRepo.insert(
+                            new FingerprintEntity(gue, index.getIndex(), _newUser.getFingerprintTemplate(index))
+                    ))
+                    {
+                        throw new SQLException("Failed when inserting new user's fingerprints.");
+                    }
+                }
             }
 
             // get GrantTypeEntity instance corresponding to newUser grant type
             Repository grantTypeRepo = getRepository(GrantTypeEntity.class);
-            GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo)
-                    .fromGrantType(_newUser.getPermission());
+            GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo).fromGrantType(_newUser.getPermission());
 
             if(gte == null)
             {
@@ -708,22 +729,9 @@ public class DatabaseHandler
             }
 
             // create & persist fingerprints and access
-            Repository<FingerprintEntity> fpRepo = getRepository(FingerprintEntity.class);
             Repository<GrantedAccessEntity> gaRepo = getRepository(GrantedAccessEntity.class);
 
             GrantedAccessEntity gae = new GrantedAccessEntity(gue, getDeviceConfiguration(), gte);
-
-            // add the fingerprints
-            for(FingerIndex index : _newUser.getEnrolledFingersIndexes())
-            {
-                if(!fpRepo.insert(
-                        new FingerprintEntity(gue, index.getIndex(),
-                                _newUser.getFingerprintTemplate(index))
-                ))
-                {
-                    throw new SQLException("Failed when inserting new fingerprint.");
-                }
-            }
 
             // add the access to current device (if any)
             if(!gaRepo.insert(gae))
@@ -752,16 +760,16 @@ public class DatabaseHandler
         {
             // First, get & create the inventory
             Repository<InventoryEntity> inventoryRepo = getRepository(InventoryEntity.class);
-            Repository<GrantedUserEntity> userRepo = getRepository(GrantedUserEntity.class);
+            Repository<UserEntity> userRepo = getRepository(UserEntity.class);
             Repository accessTypeRepo = getRepository(AccessTypeEntity.class);
             Repository rfidTagRepo = getRepository(RfidTagEntity.class);
             Repository<InventoryRfidTag> inventTagRepo = getRepository(InventoryRfidTag.class);
 
-            GrantedUserEntity gue = null;
+            UserEntity gue = null;
 
             if(_inventory.getUsername() != null && !"".equals(_inventory.getUsername().trim()))
             {
-                gue = userRepo.getEntityBy(GrantedUserEntity.USERNAME, _inventory.getUsername());
+                gue = userRepo.getEntityBy(UserEntity.USERNAME, _inventory.getUsername());
             }
 
             AccessTypeEntity ate = ((AccessTypeRepository) accessTypeRepo).fromAccessType(_inventory.getAccessType());

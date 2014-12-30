@@ -22,7 +22,7 @@ public final class AuthenticationEntity extends Entity
     private DeviceEntity _device;
 
     @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false, foreignAutoRefresh = true)
-    private GrantedUserEntity _grantedUser;
+    private UserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
@@ -43,7 +43,7 @@ public final class AuthenticationEntity extends Entity
      * @param gte       User who opened the device.
      * @param ate       Access type value (fingerprint reader, badge reader...).
      */
-    public AuthenticationEntity(DeviceEntity device, GrantedUserEntity gte, AccessTypeEntity ate)
+    public AuthenticationEntity(DeviceEntity device, UserEntity gte, AccessTypeEntity ate)
     {
         _device = device;
         _grantedUser = gte;
@@ -57,8 +57,8 @@ public final class AuthenticationEntity extends Entity
         return _device;
     }
 
-    /** @return GrantedUserEntity instance. */
-    public GrantedUserEntity getGrantedUser()
+    /** @return UserEntity instance. */
+    public UserEntity getGrantedUser()
     {
         return _grantedUser;
     }
