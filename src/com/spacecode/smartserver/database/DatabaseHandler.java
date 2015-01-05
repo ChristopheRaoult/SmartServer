@@ -588,6 +588,8 @@ public class DatabaseHandler
         // create an AlertEntity from the given Alert. All data is copied (including Id).
         AlertEntity newAlertEntity = new AlertEntity(ate, getDeviceConfiguration(), alert);
 
+        // TODO: check that To/Cc/Bcc, Subject/Content can't allow an SQL injection
+
         if(alert.getId() == 0)
         {
             if(!aRepo.insert(newAlertEntity))
@@ -601,7 +603,7 @@ public class DatabaseHandler
         {
             if(!aRepo.update(newAlertEntity))
             {
-                // if we fail inserting the new alert
+                // if we fail updating the alert
                 return false;
             }
         }
@@ -613,7 +615,7 @@ public class DatabaseHandler
         }
 
         // get the AlertTemperature [SDK] instance
-        if(!(alert instanceof  AlertTemperature))
+        if(!(alert instanceof AlertTemperature))
         {
             SmartLogger.getLogger().severe("Trying to persist an Alert as an AlertTemperature whereas it is not.");
             return false;
@@ -657,6 +659,8 @@ public class DatabaseHandler
         Repository<SmtpServerEntity> ssRepo = getRepository(SmtpServerEntity.class);
 
         SmtpServerEntity currentSse = getSmtpServerConfiguration();
+
+        // TODO: make sure the given data doesn't allow a SQL injection
 
         if(currentSse == null)
         {
