@@ -93,6 +93,8 @@ public final class SmartServer
 
         SmartLogger.getLogger().info("Database initialized.");
 
+        // TODO: execute "script.sql" if any is found, then REMOVE IT.
+
         SmartLogger.getLogger().info("Connecting the local device...");
 
         if(DeviceHandler.connectDevice())
@@ -106,6 +108,8 @@ public final class SmartServer
             if(deviceConfig == null)
             {
                 SmartLogger.getLogger().severe("Device not configured. SmartServer won't start..");
+                // TODO: create & insert a configuration, then continue
+                // The fingerprint & badge readers (+ temperature probe) will be set later (how?)
                 return;
             }
 

@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 /**
- * ORMLite DB Wrapper. Handle common interactions with Database.
+ * ORMLite DB Wrapper. Handle interactions with Database.
  */
 public class DatabaseHandler
 {
@@ -147,7 +147,7 @@ public class DatabaseHandler
     }
 
     /**
-     * Provide an easy access to DAO's.
+     * Provide an access to DAO's.
      *
      * @param entityClass   Class instance of the Entity class to be used.
      *
@@ -243,7 +243,7 @@ public class DatabaseHandler
         // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
         String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
 
-        // raw query to get all users with their access type (on this device) and their fingerprints
+        // raw query to get all users with their fingerprints and their access type (on this device)
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
         sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");
         // join all fingerprints
@@ -262,7 +262,12 @@ public class DatabaseHandler
         sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
                 .append(deviceConfig.getId());
 
+        // username to temporary User instance
         Map<String, User> usernameToUser = new HashMap<>();
+
+        // username to map of fingerprints
+        Map<String, Map<FingerIndex, String>> usernameToFingersMap = new HashMap<>();
+
         UsersService usersService = DeviceHandler.getDevice().getUsersService();
 
         try
@@ -271,24 +276,30 @@ public class DatabaseHandler
             // one more line (with repeated user information) for each user's fingerprint.
             GenericRawResults results = daoUser.queryRaw(sb.toString());
 
-            // fill the users hashmap with results from Raw SQL query
+            // fill the Maps with results from Raw SQL query
             for (String[] result : (Iterable<String[]>) results)
             {
                 User user = usernameToUser.get(result[0]);
 
-                // first, add the user if it's not known yet
+                // first, create the user if he's not known yet
                 if (user == null)
                 {
                     user = new User(result[0], GrantType.valueOf(result[2]), result[1]);
                     usernameToUser.put(result[0], user);
-
-                    usersService.addUser(user);
                 }
 
                 // if there isn't any fingerprint [finger_index is null], go on
                 if (result[3] == null)
                 {
                     continue;
+                }
+
+                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(user.getUsername());
+
+                if(fingersMap == null)
+                {
+                    fingersMap = new EnumMap<>(FingerIndex.class);
+                    usernameToFingersMap.put(user.getUsername(), fingersMap);
                 }
 
                 // parse string value (from db) to int. Exception is caught as IllegalArgumentException.
@@ -299,8 +310,19 @@ public class DatabaseHandler
                 if (fingerIndex != null)
                 {
                     // add this new fingerprint template to the user
-                    usersService.updateFingerprintTemplate(user.getUsername(), fingerIndex, result[4]);
+                    fingersMap.put(fingerIndex, result[4]);
                 }
+            }
+
+            // Maps are filled, now, create the users and register them
+            for(Map.Entry<String, User> e : usernameToUser.entrySet())
+            {
+                String username = e.getKey();
+                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(username);
+                User tmpUser = e.getValue();
+                User newUser = new User(username, tmpUser.getPermission(), tmpUser.getBadgeNumber(), fingersMap);
+
+                usersService.addUser(newUser);
             }
 
             results.close();

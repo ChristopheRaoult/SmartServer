@@ -378,5 +378,11 @@ public final class DeviceHandler
 
             SmartServer.sendAllClients(responsePackets.toArray(new String[0]));
         }
+
+        @Override
+        public void lightingStopped()
+        {
+            SmartServer.sendAllClients(EventCode.LIGHTING_STOPPED);
+        }
     }
 }
