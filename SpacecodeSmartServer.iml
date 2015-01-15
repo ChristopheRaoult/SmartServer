@@ -13,20 +13,13 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="spacecode_sdk" level="project" />
-    <orderEntry type="module-library" scope="TEST">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.10.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="mysql-connector-java" level="project" />
-    <orderEntry type="library" name="ormlite" level="project" />
-    <orderEntry type="library" name="javax.mail" level="project" />
+    <orderEntry type="library" exported="" name="spacecode_sdk" level="project" />
+    <orderEntry type="library" exported="" name="mysql-connector-java" level="project" />
+    <orderEntry type="library" exported="" name="ormlite" level="project" />
+    <orderEntry type="library" exported="" name="javax.mail" level="project" />
+    <orderEntry type="library" name="junit-4.11" level="application" />
     <orderEntry type="library" name="powermock-mockito-1.5.6" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
@@ -221,4 +214,3 @@
     </option>
   </component>
 </module>
-
