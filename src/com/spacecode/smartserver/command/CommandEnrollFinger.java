@@ -4,7 +4,9 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.FingerprintEntity;
+import com.spacecode.smartserver.database.repository.FingerprintRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
@@ -80,7 +82,8 @@ public class CommandEnrollFinger extends ClientCommand
                 User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
                 String fpTpl = gu.getFingerprintTemplate(fingerIndex);
 
-                if (!DatabaseHandler.persistFingerprint(username, fingerIndex.getIndex(), fpTpl))
+                if (!((FingerprintRepository) DbManager.getRepository(FingerprintEntity.class))
+                        .persist(username, fingerIndex.getIndex(), fpTpl))
                 {
                     DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
                     SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);

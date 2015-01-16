@@ -2,7 +2,7 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
 import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -59,11 +59,11 @@ public class CommandAlertReports extends ClientCommand
         }
 
         AlertHistoryRepository repo =
-                (AlertHistoryRepository) DatabaseHandler.getRepository(AlertHistoryEntity.class);
+                (AlertHistoryRepository) DbManager.getRepository(AlertHistoryEntity.class);
 
         List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),
                 new Date(timestampEnd),
-                DatabaseHandler.getDeviceConfiguration());
+                DbManager.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.ALERT_REPORTS);

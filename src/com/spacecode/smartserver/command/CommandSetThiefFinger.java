@@ -3,7 +3,9 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.UserEntity;
+import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -53,7 +55,7 @@ public class CommandSetThiefFinger extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.persistThiefFingerIndex(username, fingerIndex))
+        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).updateThiefFingerIndex(username, fingerIndex))
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
             return;

@@ -5,7 +5,9 @@ import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.AlertEntity;
+import com.spacecode.smartserver.database.repository.AlertRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -45,7 +47,7 @@ public class CommandAddAlert extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.persistAlert(newAlert))
+        if(!((AlertRepository)DbManager.getRepository(AlertEntity.class)).persist(newAlert))
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;

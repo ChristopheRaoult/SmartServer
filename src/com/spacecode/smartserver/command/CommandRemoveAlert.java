@@ -5,7 +5,9 @@ import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.AlertEntity;
+import com.spacecode.smartserver.database.repository.AlertRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -43,7 +45,7 @@ public class CommandRemoveAlert extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.deleteAlert(alert))
+        if(!((AlertRepository) DbManager.getRepository(AlertEntity.class)).delete(alert))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_ALERT, FALSE);
             return;

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="sqlserver-connector-java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/sqlserver-connector-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

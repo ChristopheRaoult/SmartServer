@@ -2,7 +2,9 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.SmtpServerEntity;
+import com.spacecode.smartserver.database.repository.SmtpServerRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -14,7 +16,8 @@ import java.util.logging.Level;
 public class CommandSetSmtpServer extends ClientCommand
 {
     /**
-     * Request to set/update SMTP server configuration for current device. Return true (if operation succeeded) or false (if failure).
+     * Request to set/update SMTP server configuration for current device.
+     * Return true (if operation succeeded) or false (if failure).
      *
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
@@ -46,7 +49,9 @@ public class CommandSetSmtpServer extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.persistSmtpServer(address, port, username, password, sslEnabled))
+
+        if(!((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class))
+                .persist(address, port, username, password, sslEnabled))
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);
             return;

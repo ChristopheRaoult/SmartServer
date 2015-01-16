@@ -9,8 +9,12 @@ import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
+import com.spacecode.smartserver.database.entity.InventoryEntity;
+import com.spacecode.smartserver.database.repository.AuthenticationRepository;
+import com.spacecode.smartserver.database.repository.InventoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,15 +139,15 @@ public final class DeviceHandler
     {
         if(_device == null)
         {
-            SmartLogger.getLogger().info("Unable to connect modules [0x0001]");
+            SmartLogger.getLogger().warning("Unable to connect modules [0x0001]");
             return;
         }
 
-        DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
+        DeviceEntity deviceConfig = DbManager.getDeviceConfiguration();
 
         if(deviceConfig == null)
         {
-            SmartLogger.getLogger().info("Unable to connect modules [0x0002]");
+            SmartLogger.getLogger().warning("Unable to connect modules [0x0002]");
             return;
         }
 
@@ -257,6 +261,9 @@ public final class DeviceHandler
                 SmartLogger.getLogger().info("Reconnecting Device...");
                 // TODO: reload the last inventory from DB
                 reconnectDevice();
+                // TODO: should probably run indefinitely, until the service is shutdown or the device reconnected
+                // NOTE: if running indefinitely, mind the "serial bridge ON" possibility: we should stop the
+                // reconnection process if the device is suddenly used by USB
             }
         }
 
@@ -293,7 +300,9 @@ public final class DeviceHandler
         @Override
         public void scanCompleted()
         {
-            DatabaseHandler.persistInventory(_device.getLastInventory());
+            // todo: thread this operation? At worst, user can call getLastInventory on ScanCompleted, but
+            // the instance returned will be the one in Device's memory... So if it's risk-free, do it.
+            ((InventoryRepository)DbManager.getRepository(InventoryEntity.class)).persist(_device.getLastInventory());
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }
@@ -316,7 +325,8 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
-            DatabaseHandler.persistAuthentication(grantedUser, accessType);
+
+            ((AuthenticationRepository)DbManager.getRepository(AuthenticationEntity.class)).persist(grantedUser, accessType);
         }
 
         @Override

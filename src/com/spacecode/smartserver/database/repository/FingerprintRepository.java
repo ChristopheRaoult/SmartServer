@@ -1,6 +1,7 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -75,5 +76,46 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
         }
 
         return true;
+    }
+
+    /**
+     * Delete a given fingerprint (username + finger index) from database.
+     *
+     * @param username  User attached to the fingerprint.
+     * @param index     FingerIndex's index of the fingerprint.
+     *
+     * @return          True if successful, false otherwise.
+     */
+    public boolean delete(String username, int index)
+    {
+        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
+
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        FingerprintEntity fpe = getFingerprint(gue, index);
+        return fpe != null && delete(fpe);
+    }
+
+    /**
+     * Get FingerprintRepository and start data persistence process.
+     *
+     * @param username      User to be attached to the fingerprint entity.
+     * @param fingerIndex   Finger index (int) to be written in new row.
+     * @param fpTpl         Base64 encoded fingerprint template.
+     *
+     * @return              True if success, false otherwise (user unknown in DB, SQLException...).
+     */
+    public boolean persist(String username, int fingerIndex, String fpTpl)
+    {
+        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
+
+        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
+
+        return gue != null && update(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
 }

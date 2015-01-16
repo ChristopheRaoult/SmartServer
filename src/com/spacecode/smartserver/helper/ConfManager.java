@@ -1,40 +1,44 @@
 package com.spacecode.smartserver.helper;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 import java.util.logging.Level;
 
 /**
- * Singleton providing access (read/write) to the configuration file of SmartServer (smartserver.conf).
+ * Singleton providing access (read/write) to the configuration file of SmartServer (smartserver.properties).
  */
 public class ConfManager
 {
     private final Properties configProp = new Properties();
 
+    private static final String CONFIG_FILE = "./smartserver.properties";
+
     public static final String DB_HOST     = "db_host";
     public static final String DB_PORT     = "db_port";
-    public static final String DB_SGBD     = "db_sgbd";
+    public static final String DB_DBMS     = "db_dbms";
     public static final String DB_NAME     = "db_name";
     public static final String DB_USER     = "db_user";
     public static final String DB_PASSWORD = "db_password";
 
     private ConfManager()
     {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("smartserver.conf");
-
-        if(in == null)
-        {
-            // the conf file could not be found
-            return;
-        }
-
         try
         {
-            configProp.load(in);
+            File configFile = new File(CONFIG_FILE);
+
+            // return true if the file was created, false otherwise
+            if(configFile.createNewFile())
+            {
+                SmartLogger.getLogger().warning("Configuration file was not present. Now created.");
+            }
+
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(CONFIG_FILE), "UTF-8");
+
+            configProp.load(isr);
+            isr.close();
         } catch (IOException ioe)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Could not load the configuration file!", ioe);
+            SmartLogger.getLogger().log(Level.SEVERE, "An I/O error occurred while loading properties.", ioe);
         }
     }
 
@@ -69,5 +73,15 @@ public class ConfManager
     public void setProperty(String key, String value)
     {
         configProp.setProperty(key, value);
+
+        try
+        {
+            FileOutputStream fos = new FileOutputStream(CONFIG_FILE);
+            configProp.store(fos, null);
+            fos.close();
+        } catch (IOException ioe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "An I/O error occurred while updating properties.", ioe);
+        }
     }
 }

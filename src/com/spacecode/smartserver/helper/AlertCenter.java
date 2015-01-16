@@ -11,12 +11,9 @@ import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.*;
-import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
-import com.spacecode.smartserver.database.repository.AlertRepository;
-import com.spacecode.smartserver.database.repository.AlertTypeRepository;
-import com.spacecode.smartserver.database.repository.Repository;
+import com.spacecode.smartserver.database.repository.*;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -79,7 +76,8 @@ public final class AlertCenter
      */
     private static boolean initializeSmtpServer()
     {
-        final SmtpServerEntity sse = DatabaseHandler.getSmtpServerConfiguration();
+        final SmtpServerEntity sse =
+                ((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class)).getSmtpServerConfig();
 
         if(sse == null)
         {
@@ -116,9 +114,9 @@ public final class AlertCenter
      */
     private static boolean initializeRepositories()
     {
-        _alertRepository = (AlertRepository) DatabaseHandler.getRepository(AlertEntity.class);
-        _alertHistoryRepository = DatabaseHandler.getRepository(AlertHistoryEntity.class);
-        _alertTypeRepository = (AlertTypeRepository) DatabaseHandler.getRepository(AlertTypeEntity.class);
+        _alertRepository = (AlertRepository) DbManager.getRepository(AlertEntity.class);
+        _alertHistoryRepository = DbManager.getRepository(AlertHistoryEntity.class);
+        _alertTypeRepository = (AlertTypeRepository) DbManager.getRepository(AlertTypeEntity.class);
 
         return  _alertRepository != null &&
                 _alertRepository instanceof AlertRepository &&
@@ -211,7 +209,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDisconnected, DatabaseHandler.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeDisconnected, DbManager.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -233,7 +231,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DatabaseHandler.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DbManager.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -256,7 +254,7 @@ public final class AlertCenter
                 return;
             }
 
-            Repository<UserEntity> userRepo = DatabaseHandler.getRepository(UserEntity.class);
+            Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
             UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
             // no matching user, or user has no "finger thief" index set.
@@ -275,7 +273,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DatabaseHandler.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DbManager.getDeviceConfiguration());
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -303,7 +301,7 @@ public final class AlertCenter
 
             // get enabled Temperature Alerts
             List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature,
-                    DatabaseHandler.getDeviceConfiguration());
+                    DbManager.getDeviceConfiguration());
 
             if(alerts.isEmpty())
             {
@@ -319,7 +317,7 @@ public final class AlertCenter
             }
 
             // get the attached AlertTemperature entities
-            Repository<AlertTemperatureEntity> atRepo = DatabaseHandler.getRepository(AlertTemperatureEntity.class);
+            Repository<AlertTemperatureEntity> atRepo = DbManager.getRepository(AlertTemperatureEntity.class);
             List<AlertTemperatureEntity> atList = atRepo.getAllWhereFieldIn(AlertTemperatureEntity.ALERT_ID, alertIds);
 
             Map<Entity, AlertEntity> matchingAlerts = new HashMap<>();

@@ -3,8 +3,10 @@ package com.spacecode.smartserver;
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.MessageHandler;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
+import com.spacecode.smartserver.database.entity.InventoryEntity;
+import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.AlertCenter;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -83,7 +85,7 @@ public final class SmartServer
         initializeShutdownHook();
 
         SmartLogger.getLogger().info("Initializing database...");
-        JdbcPooledConnectionSource connectionSource = DatabaseHandler.initializeDatabase();
+        JdbcPooledConnectionSource connectionSource = DbManager.initializeDatabase();
 
         if(connectionSource == null)
         {
@@ -102,7 +104,7 @@ public final class SmartServer
             SmartLogger.getLogger().info("Connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
 
             // Get device configuration from database (see DeviceEntity class)
-            DeviceEntity deviceConfig = DatabaseHandler.getDeviceConfiguration();
+            DeviceEntity deviceConfig = DbManager.getDeviceConfiguration();
 
             // No configuration: stop SmartServer.
             if(deviceConfig == null)
@@ -120,7 +122,7 @@ public final class SmartServer
             // Load users from DB into UsersService.
             SmartLogger.getLogger().info("Loading users...");
 
-            if(!DatabaseHandler.loadGrantedUsers())
+            if(!DbManager.loadGrantedUsers())
             {
                 SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
                 return;
@@ -129,7 +131,8 @@ public final class SmartServer
             SmartLogger.getLogger().info("Users loaded.");
 
             // Load last inventory from DB and load it into device.
-            Inventory lastInventoryFromDb = DatabaseHandler.getLastStoredInventory();
+            Inventory lastInventoryFromDb = ((InventoryRepository)DbManager.getRepository(InventoryEntity.class))
+                    .getLastInventory(DbManager.getDeviceConfiguration());
 
             if(lastInventoryFromDb != null)
             {
@@ -180,7 +183,7 @@ public final class SmartServer
             public void run()
             {
                 DeviceHandler.disconnectDevice();
-                DatabaseHandler.close();
+                DbManager.close();
                 stop();
             }
         }));

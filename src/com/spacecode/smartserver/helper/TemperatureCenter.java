@@ -3,7 +3,7 @@ package com.spacecode.smartserver.helper;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.database.repository.Repository;
 
@@ -50,11 +50,11 @@ public class TemperatureCenter
                 return;
             }
 
-            Repository<TemperatureMeasurementEntity> repo = DatabaseHandler
+            Repository<TemperatureMeasurementEntity> repo = DbManager
                     .getRepository(TemperatureMeasurementEntity.class);
 
             if(!repo.insert(
-                    new TemperatureMeasurementEntity(DatabaseHandler.getDeviceConfiguration(), roundedValue)))
+                    new TemperatureMeasurementEntity(DbManager.getDeviceConfiguration(), roundedValue)))
             {
                 SmartLogger.getLogger().severe("Unable to insert new temperature measure.");
                 return;

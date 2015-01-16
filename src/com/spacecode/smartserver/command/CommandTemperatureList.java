@@ -2,7 +2,7 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.database.repository.TemperatureMeasurementRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -58,11 +58,11 @@ public class CommandTemperatureList extends ClientCommand
         }
 
         TemperatureMeasurementRepository repo =
-                (TemperatureMeasurementRepository) DatabaseHandler.getRepository(TemperatureMeasurementEntity.class);
+                (TemperatureMeasurementRepository) DbManager.getRepository(TemperatureMeasurementEntity.class);
 
         List<TemperatureMeasurementEntity> entities =
                 repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd),
-                        DatabaseHandler.getDeviceConfiguration());
+                        DbManager.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.TEMPERATURE_LIST);

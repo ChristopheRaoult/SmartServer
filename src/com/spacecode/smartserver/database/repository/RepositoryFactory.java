@@ -76,7 +76,7 @@ public class RepositoryFactory
 
         else if(className.equals(UserEntity.class.getName()))
         {
-            return new GrantedUserRepository(dao);
+            return new UserRepository(dao);
         }
 
         else if(className.equals(GrantTypeEntity.class.getName()))

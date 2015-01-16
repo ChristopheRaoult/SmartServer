@@ -2,8 +2,9 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.SmtpServerEntity;
+import com.spacecode.smartserver.database.repository.SmtpServerRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -22,7 +23,8 @@ public class CommandSmtpServer extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        SmtpServerEntity sse = DatabaseHandler.getSmtpServerConfiguration();
+        SmtpServerEntity sse =
+                ((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class)).getSmtpServerConfig();
 
         if(sse == null)
         {

@@ -3,7 +3,7 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -58,10 +58,10 @@ public class CommandInventoriesList extends ClientCommand
             return;
         }
 
-        InventoryRepository repo = (InventoryRepository) DatabaseHandler.getRepository(InventoryEntity.class);
+        InventoryRepository repo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
 
         List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd),
-                DatabaseHandler.getDeviceConfiguration());
+                DbManager.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.INVENTORIES_LIST);

@@ -2,7 +2,7 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
@@ -36,7 +36,7 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
     {
         try
         {
-            QueryBuilder<AlertEntity, Integer> alertQb = DatabaseHandler.getDao(AlertEntity.class).queryBuilder();
+            QueryBuilder<AlertEntity, Integer> alertQb = DbManager.getDao(AlertEntity.class).queryBuilder();
             alertQb.where().eq(AlertEntity.DEVICE_ID, de.getId());
 
             return _dao.queryForFirst(_dao.queryBuilder()
@@ -66,7 +66,7 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
     {
         try
         {
-            QueryBuilder<AlertEntity, Integer> alertQb = DatabaseHandler.getDao(AlertEntity.class).queryBuilder();
+            QueryBuilder<AlertEntity, Integer> alertQb = DbManager.getDao(AlertEntity.class).queryBuilder();
             alertQb.where().eq(AlertEntity.DEVICE_ID, de.getId());
 
             return _dao.query(_dao.queryBuilder()

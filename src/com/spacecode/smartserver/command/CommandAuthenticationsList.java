@@ -3,7 +3,7 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.repository.AccessTypeRepository;
 import com.spacecode.smartserver.database.repository.AuthenticationRepository;
@@ -60,11 +60,11 @@ public class CommandAuthenticationsList extends ClientCommand
         }
 
         AuthenticationRepository repo =
-                (AuthenticationRepository) DatabaseHandler.getRepository(AuthenticationEntity.class);
+                (AuthenticationRepository) DbManager.getRepository(AuthenticationEntity.class);
 
         List<AuthenticationEntity> authentications = repo.getAuthentications(new Date(timestampStart),
                 new Date(timestampEnd),
-                DatabaseHandler.getDeviceConfiguration());
+                DbManager.getDeviceConfiguration());
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.AUTHENTICATIONS_LIST);

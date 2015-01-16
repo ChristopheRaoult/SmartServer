@@ -4,7 +4,9 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.FingerprintEntity;
+import com.spacecode.smartserver.database.repository.FingerprintRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -66,7 +68,7 @@ public class CommandRemoveFingerprint extends ClientCommand
         }
 
         // persist deletion in database
-        if(!DatabaseHandler.deleteFingerprint(username, fingerIndex.getIndex()))
+        if(!((FingerprintRepository) DbManager.getRepository(FingerprintEntity.class)).delete(username, fingerIndex.getIndex()))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;

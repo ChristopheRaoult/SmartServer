@@ -3,7 +3,9 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.UserEntity;
+import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -50,7 +52,7 @@ public class CommandAddUser extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.persistUser(newUser))
+        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).persist(newUser))
         {
             // if insert in db failed, remove user from local users.
             DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());

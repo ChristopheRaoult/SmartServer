@@ -2,7 +2,9 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
-import com.spacecode.smartserver.database.DatabaseHandler;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.UserEntity;
+import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -41,7 +43,7 @@ public class CommandRemoveUser extends ClientCommand
             return;
         }
 
-        if(!DatabaseHandler.deleteUser(username))
+        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).deleteByName(username))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;
