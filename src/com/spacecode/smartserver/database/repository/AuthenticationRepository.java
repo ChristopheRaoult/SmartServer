@@ -7,7 +7,6 @@ import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AccessTypeEntity;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
@@ -30,24 +29,21 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
     /**
      * Get the list of Authentications created during a certain period.
      *
-     * @param from  Period start date.
-     * @param to    Period end date.
-     * @param de    Device to look inventories for.
+     * @param from      Period start date.
+     * @param to        Period end date.
      *
      * @return List of Authentications recorded during the given period (empty if no result or error).
      */
-    public List<AuthenticationEntity> getAuthentications(Date from, Date to, DeviceEntity de)
+    public List<AuthenticationEntity> getAuthentications(Date from, Date to)
     {
         try
         {
             QueryBuilder<AuthenticationEntity, Integer> qb = _dao.queryBuilder();
 
-            qb.orderBy(AuthenticationEntity.CREATED_AT, true);
-
             return _dao.query(qb
                             .orderBy(AuthenticationEntity.CREATED_AT, true)
                             .where()
-                            .eq(AuthenticationEntity.DEVICE_ID, de.getId())
+                            .eq(AuthenticationEntity.DEVICE_ID, DbManager.getDevEntity().getId())
                             .and()
                             .between(AuthenticationEntity.CREATED_AT, from, to)
                             .prepare()
@@ -88,6 +84,6 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
             return false;
         }
 
-        return insert(new AuthenticationEntity(DbManager.getDeviceConfiguration(), gue, ate));
+        return insert(new AuthenticationEntity(DbManager.getDevEntity(), gue, ate));
     }
 }

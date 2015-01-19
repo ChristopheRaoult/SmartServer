@@ -7,10 +7,7 @@ import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
-import com.spacecode.smartserver.helper.AlertCenter;
-import com.spacecode.smartserver.helper.DeviceHandler;
-import com.spacecode.smartserver.helper.SmartLogger;
-import com.spacecode.smartserver.helper.TemperatureCenter;
+import com.spacecode.smartserver.helper.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -63,23 +60,23 @@ public final class SmartServer
 
     /**
      * Entry point:
-     * <p>1 - Initialize a shutdown hook to free Device and Database.</p>
-     * <p>2 - Following critical operations: (application stop if one operation of the list fails)
+     * <p>1 - Initialize a shutdown hook to free Device (including modules) and Database.</p>
+     * <p>2 - Following operations:
      * <ul>
-     *     <li>Try to initialize/connect to Database</li>
-     *     <li>Try to initialize/connect to Device</li>
-     *     <li>Load granted users</li>
-     *     <li>Load last inventory*</li>
-     *     <li>Start the Alert center*</li>
-     *     <li>Start the Temperature center*</li>
+     *     <li>Try to initialize/connect to Database*</li>
+     *     <li>Try to initialize/connect to Device*</li>
+     *     <li>Load granted users*</li>
+     *     <li>Load last inventory</li>
+     *     <li>Start the Alert center</li>
+     *     <li>Start the Temperature center</li>
      * </ul>
-     * *: Not a critical operation.</p>
+     * *: Critical operations. SmartServer won't start if one fails.</p>
      * <p>3 - Start the asynchronous Server.</p>
      */
     public static void main(String[] args) throws IOException, SQLException
     {
         // SDK use Global logger. Only display its SEVERE logs.
-        Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.SEVERE);
+        Logger.getGlobal().setLevel(Level.SEVERE);
 
         SmartLogger.initialize();
         initializeShutdownHook();
@@ -101,18 +98,30 @@ public final class SmartServer
 
         if(DeviceHandler.connectDevice())
         {
-            SmartLogger.getLogger().info("Connected to " + DeviceHandler.getDevice().getDeviceType() + " (" + DeviceHandler.getDevice().getSerialNumber() + ")");
+            String devSerialNumber = DeviceHandler.getDevice().getSerialNumber();
+
+            SmartLogger.getLogger().info("Connected to " + DeviceHandler.getDevice().getDeviceType() +
+                    " (" + devSerialNumber + ")");
 
             // Get device configuration from database (see DeviceEntity class)
-            DeviceEntity deviceConfig = DbManager.getDeviceConfiguration();
+            DeviceEntity deviceEntity = DbManager.getDevEntity();
 
             // No configuration: stop SmartServer.
-            if(deviceConfig == null)
+            if(deviceEntity == null)
             {
-                SmartLogger.getLogger().severe("Device not configured. SmartServer won't start..");
-                // TODO: create & insert a configuration, then continue
-                // The fingerprint & badge readers (+ temperature probe) will be set later (how?)
-                return;
+                SmartLogger.getLogger().warning("Device not configured. Creating a new entry in Database...");
+
+                if(!DbManager.getRepository(DeviceEntity.class).insert(new DeviceEntity(devSerialNumber)))
+                {
+                    SmartLogger.getLogger().severe("Could not create a new entry in Database, SmartServer will stop.");
+                    return;
+                }
+
+                if(DbManager.getDevEntity() == null)
+                {
+                    SmartLogger.getLogger().severe("New device entry created, but an error occurred while loading it.");
+                    return;
+                }
             }
 
             // Use the configuration to connect/load modules.
@@ -132,7 +141,7 @@ public final class SmartServer
 
             // Load last inventory from DB and load it into device.
             Inventory lastInventoryFromDb = ((InventoryRepository)DbManager.getRepository(InventoryEntity.class))
-                    .getLastInventory(DbManager.getDeviceConfiguration());
+                    .getLastInventory();
 
             if(lastInventoryFromDb != null)
             {
@@ -147,7 +156,7 @@ public final class SmartServer
                 SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
             }
 
-            if(deviceConfig.isTemperatureEnabled())
+            if(ConfManager.isDevTemperature())
             {
                 SmartLogger.getLogger().info("Start TemperatureCenter...");
 

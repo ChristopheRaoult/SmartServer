@@ -20,6 +20,21 @@ public class ConfManager
     public static final String DB_USER     = "db_user";
     public static final String DB_PASSWORD = "db_password";
 
+    /** Property containing serial-port name of the Master badge reader. */
+    public static final String DEV_BR_MASTER    = "dev_br_master";
+
+    /** Property containing serial-port name of the Slave badge reader. */
+    public static final String DEV_BR_SLAVE     = "dev_br_slave";
+
+    /** Property containing serial-port name of the Master fingerprint reader. */
+    public static final String DEV_FPR_MASTER   = "dev_fpr_master";
+
+    /** Property containing serial-port name of the Slave fingerprint reader. */
+    public static final String DEV_FPR_SLAVE    = "dev_fpr_slave";
+
+    /** Property containing "on" if the device is using a temperature probe, "off" otherwise. */
+    public static final String DEV_TEMPERATURE  = "dev_temperature";
+
     private ConfManager()
     {
         try
@@ -48,20 +63,15 @@ public class ConfManager
         private static final ConfManager INSTANCE = new ConfManager();
     }
 
-    /** @return Reference to the singleton instance of the Configuration Manager. */
-    public static ConfManager getInstance()
-    {
-        return LazyHolder.INSTANCE;
-    }
-
     /**
      * @param key Name of the setting to be read.
      *
-     * @return Value of the property, or null if no matching property exists (unknown key).
+     * @return Value of the property (lowercase), or null if no matching property exists (unknown key).
      */
-    public String getProperty(String key)
+    private String getProperty(String key)
     {
-        return configProp.getProperty(key);
+        String propertyValue = configProp.getProperty(key);
+        return propertyValue == null ? null : propertyValue.toLowerCase();
     }
 
     /**
@@ -70,7 +80,7 @@ public class ConfManager
      * @param key   Name of the property to be changed.
      * @param value New value.
      */
-    public void setProperty(String key, String value)
+    private void setProperty(String key, String value)
     {
         configProp.setProperty(key, value);
 
@@ -83,5 +93,71 @@ public class ConfManager
         {
             SmartLogger.getLogger().log(Level.SEVERE, "An I/O error occurred while updating properties.", ioe);
         }
+    }
+
+    /** Database Host (IP address or DNS) (if set, or empty), or null if the property is not existing. */
+    public static String getDbHost()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_HOST);
+    }
+
+    /** Database TCP port (if set, or empty), or null if the property is not existing. */
+    public static String getDbPort()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_PORT);
+    }
+
+    /** Database Management System (if set, or empty), or null if the property is not existing. */
+    public static String getDbDbms()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_DBMS);
+    }
+
+    /** Database name (if set, or empty), or null if the property is not existing. */
+    public static String getDbName()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_NAME);
+    }
+
+    /** Database user's name (if set, or empty), or null if the property is not existing. */
+    public static String getDbUser()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_USER);
+    }
+
+    /** Database user's password (if set, or empty), or null if the property is not existing. */
+    public static String getDbPassword()
+    {
+        return LazyHolder.INSTANCE.getProperty(DB_PASSWORD);
+    }
+
+    /** Serial number of the master badge reader (if set, or empty), or null if the property is not existing. */
+    public static String getDevBrMaster()
+    {
+        return LazyHolder.INSTANCE.getProperty(DEV_BR_MASTER);
+    }
+
+    /** Serial number of the slave badge reader (if set, or empty), or null if the property is not existing. */
+    public static String getDevBrSlave()
+    {
+        return LazyHolder.INSTANCE.getProperty(DEV_BR_SLAVE);
+    }
+
+    /** Serial number of the master fingerprint reader (if set, or empty), or null if the property is not existing. */
+    public static String getDevFprMaster()
+    {
+        return LazyHolder.INSTANCE.getProperty(DEV_FPR_MASTER);
+    }
+
+    /** Serial number of the slave fingerprint reader (if set, or empty), or null if the property is not existing. */
+    public static String getDevFprSlave()
+    {
+        return LazyHolder.INSTANCE.getProperty(DEV_FPR_SLAVE);
+    }
+
+    /** @return True if the temperature module is enabled. False otherwise. */
+    public static boolean isDevTemperature()
+    {
+        return "on".equals(LazyHolder.INSTANCE.getProperty(DEV_TEMPERATURE));
     }
 }

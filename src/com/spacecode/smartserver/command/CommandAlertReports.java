@@ -61,9 +61,7 @@ public class CommandAlertReports extends ClientCommand
         AlertHistoryRepository repo =
                 (AlertHistoryRepository) DbManager.getRepository(AlertHistoryEntity.class);
 
-        List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),
-                new Date(timestampEnd),
-                DbManager.getDeviceConfiguration());
+        List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),  new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.ALERT_REPORTS);

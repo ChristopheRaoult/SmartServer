@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.DbManager;
 
 import java.util.Date;
 
@@ -35,12 +36,11 @@ public final class TemperatureMeasurementEntity extends Entity
 
     /**
      * Default constructor.
-     * @param device    Device embedding the temperature probe.
      * @param value     Measure in °C.
      */
-    public TemperatureMeasurementEntity(DeviceEntity device, double value)
+    public TemperatureMeasurementEntity(double value)
     {
-        _device = device;
+        _device = DbManager.getDevEntity();
         _value = value;
         _createdAt = new Date();
     }

@@ -4,6 +4,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.repository.AlertTypeRepository;
 
 /**
@@ -57,22 +58,20 @@ public final class AlertEntity extends Entity
     /**
      * Build an alert without defining cc/bcc recipients.
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
-     * @param de            DeviceEntity instance to be used as Device owning the alert.
      * @param to            List of email addresses (split with commas) to send the alert to.
      * @param emailSubject  Subject of the email to be sent.
      * @param emailContent  Content of the email to be sent.
      * @param enabled       If false, the alert will not be used by SmartServer (AlertCenter).
      */
-    public AlertEntity(AlertTypeEntity ate, DeviceEntity de, String to,
+    public AlertEntity(AlertTypeEntity ate, String to,
                        String emailSubject, String emailContent, boolean enabled)
     {
-        this(ate, de, to, "", "", emailSubject, emailContent, enabled);
+        this(ate, to, "", "", emailSubject, emailContent, enabled);
     }
 
     /**
      * Default constructor, full set of parameters.
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
-     * @param de            DeviceEntity instance to be used as Device owning the alert.
      * @param to            List of email addresses (split with commas) to send the alert to.
      * @param cc            List of "Cc" recipients (split with commas).
      * @param bcc           List of "Bcc" recipients (split with commas).
@@ -80,11 +79,11 @@ public final class AlertEntity extends Entity
      * @param emailContent  Content of the email to be sent.
      * @param enabled       If false, the alert will not be used by SmartServer (AlertCenter).
      */
-    public AlertEntity(AlertTypeEntity ate, DeviceEntity de, String to, String cc, String bcc,
+    public AlertEntity(AlertTypeEntity ate, String to, String cc, String bcc,
                        String emailSubject, String emailContent, boolean enabled)
     {
         _alertType = ate;
-        _device = de;
+        _device = DbManager.getDevEntity();
         _toList = to == null ? "" : to;
         _ccList = cc == null ? "" : cc;
         _bccList = bcc == null ? "" : bcc;
@@ -98,12 +97,11 @@ public final class AlertEntity extends Entity
      * Also copy Id value, which is useful for methods like "createOrUpdate" (ORMLite dao).
      *
      * @param ate   AlertTypeEntity instance to be used as Alert Type.
-     * @param de    DeviceEntity instance to be used as Device owning the alert.
      * @param alert Alert [SDK] instance to be used as source (recipients list, is enabled, etc).
      */
-    public AlertEntity(AlertTypeEntity ate, DeviceEntity de, Alert alert)
+    public AlertEntity(AlertTypeEntity ate, Alert alert)
     {
-        this(ate, de, alert.getToList(), alert.getCcList(), alert.getBccList(),
+        this(ate, alert.getToList(), alert.getCcList(), alert.getBccList(),
                 alert.getEmailSubject(), alert.getEmailContent(), alert.isEnabled());
 
         _id = alert.getId();

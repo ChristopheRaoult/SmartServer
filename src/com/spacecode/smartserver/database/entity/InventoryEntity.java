@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.device.data.Inventory;
+import com.spacecode.smartserver.database.DbManager;
 
 import java.util.Date;
 
@@ -59,13 +60,12 @@ public final class InventoryEntity extends Entity
      * Default constructor.
      *
      * @param inventory Inventory [SDK] instance to take values from.
-     * @param device    DeviceEntity attached to this inventory.
      * @param gue       UserEntity (if any) attached to this inventory.
      * @param ate       AcessTypeEntity (Manual, Fingerprint, Badge...) attached to this inventory.
      */
-    public InventoryEntity(Inventory inventory, DeviceEntity device, UserEntity gue, AccessTypeEntity ate)
+    public InventoryEntity(Inventory inventory, UserEntity gue, AccessTypeEntity ate)
     {
-        _device = device;
+        _device = DbManager.getDevEntity();
         _grantedUser = gue;
         _accessType = ate;
 

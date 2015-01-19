@@ -244,7 +244,7 @@ public class UserRepository extends Repository<UserEntity>
             // create & persist fingerprints and access
             Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
 
-            GrantedAccessEntity gae = new GrantedAccessEntity(gue, DbManager.getDeviceConfiguration(), gte);
+            GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);
 
             // add the access to current device (if any)
             if(!gaRepo.insert(gae))

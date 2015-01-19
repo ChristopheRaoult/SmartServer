@@ -62,9 +62,8 @@ public class CommandAuthenticationsList extends ClientCommand
         AuthenticationRepository repo =
                 (AuthenticationRepository) DbManager.getRepository(AuthenticationEntity.class);
 
-        List<AuthenticationEntity> authentications = repo.getAuthentications(new Date(timestampStart),
-                new Date(timestampEnd),
-                DbManager.getDeviceConfiguration());
+        List<AuthenticationEntity> authentications =
+                repo.getAuthentications(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.AUTHENTICATIONS_LIST);

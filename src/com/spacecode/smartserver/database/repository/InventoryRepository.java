@@ -33,7 +33,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
      *
      * @return An Inventory (SDK) instance or null if anything went wrong.
      */
-    public Inventory getLastInventory(DeviceEntity de)
+    public Inventory getLastInventory()
     {
         // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present,
         // 4: total tags removed, 5: tag uid, 6: tag movement, 7: inventory creation date
@@ -61,7 +61,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
         sb.append("WHERE inv.").append(InventoryEntity.CREATED_AT)
                 .append(" = (SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
                 .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(") ");
-        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID).append(" = ").append(de.getId());
+        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID)
+                .append(" = ").append(DbManager.getDevEntity().getId());
 
         Inventory lastInventoryFromDb = new Inventory();
 
@@ -166,11 +167,10 @@ public class InventoryRepository extends Repository<InventoryEntity>
      *
      * @param from  Period start date.
      * @param to    Period end date.
-     * @param de    Device to look inventories for.
      *
      * @return List of Inventory made during the given period (empty if no result or error).
      */
-    public List<Inventory> getInventories(Date from, Date to, DeviceEntity de)
+    public List<Inventory> getInventories(Date from, Date to)
     {
         List<InventoryEntity> queryResult;
         List<Inventory> result = new ArrayList<>();
@@ -181,7 +181,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
                     _dao.queryBuilder()
                             .orderBy(InventoryEntity.CREATED_AT, true)
                             .where()
-                            .eq(InventoryEntity.DEVICE_ID, de.getId())
+                            .eq(InventoryEntity.DEVICE_ID, DbManager.getDevEntity().getId())
                             .and()
                             .between(InventoryEntity.CREATED_AT, from, to)
                             .prepare());
@@ -291,7 +291,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
             }
 
             // create the entity to be inserted in the DB
-            InventoryEntity ie = new InventoryEntity(_inventory, DbManager.getDeviceConfiguration(), gue, ate);
+            InventoryEntity ie = new InventoryEntity(_inventory, gue, ate);
 
             if(!insert(ie))
             {

@@ -32,7 +32,7 @@ public class CommandLastAlert extends ClientCommand
         Repository<AlertTemperatureEntity> alertTempRepo =
                 DbManager.getRepository(AlertTemperatureEntity.class);
 
-        AlertHistoryEntity alertHisto = histoRepo.getLastAlertHistory(DbManager.getDeviceConfiguration());
+        AlertHistoryEntity alertHisto = histoRepo.getLastAlertHistory();
 
         if(alertHisto != null)
         {

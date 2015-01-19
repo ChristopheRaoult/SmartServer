@@ -8,7 +8,6 @@ import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
 import com.spacecode.smartserver.database.entity.AlertTypeEntity;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
@@ -65,14 +64,12 @@ public class AlertRepository extends Repository<AlertEntity>
      *
      * @param ate   AlertType entity instance (only used to get Id of the type).
      *
-     * @param dc    Device instance, attached to the queried Alerts.
-     *
      * @return      List of AlertEntity matching the conditions.
      *              Could be empty (no result, or SQL Exception).
      */
-    public List<AlertEntity> getEnabledAlerts(AlertTypeEntity ate, DeviceEntity dc)
+    public List<AlertEntity> getEnabledAlerts(AlertTypeEntity ate)
     {
-        if(ate == null || dc == null)
+        if(ate == null)
         {
             return new ArrayList<>();
         }
@@ -84,7 +81,7 @@ public class AlertRepository extends Repository<AlertEntity>
                             .where()
                             .eq(AlertEntity.ALERT_TYPE_ID, ate.getId())
                             .and()
-                            .eq(AlertEntity.DEVICE_ID, dc.getId())
+                            .eq(AlertEntity.DEVICE_ID, DbManager.getDevEntity().getId())
                             .and()
                             .eq(AlertEntity.ENABLED, true)
                             .prepare()
@@ -115,7 +112,7 @@ public class AlertRepository extends Repository<AlertEntity>
         }
 
         // create an AlertEntity from the given Alert. All data is copied (including Id).
-        AlertEntity newAlertEntity = new AlertEntity(ate, DbManager.getDeviceConfiguration(), alert);
+        AlertEntity newAlertEntity = new AlertEntity(ate, alert);
 
         // TODO: check that To/Cc/Bcc, Subject/Content can't allow an SQL injection
 

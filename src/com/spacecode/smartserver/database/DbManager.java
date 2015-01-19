@@ -41,9 +41,6 @@ public class DbManager
     // JDBC connection string used to connect to the database
     private static JdbcPooledConnectionSource _pooledConnectionSrc;
 
-    // Instance of ConfManager, handling the DB settings
-    private static final ConfManager _confManager = ConfManager.getInstance();
-
     // DAO's cache
     private static final Map<String, Dao> _classNameToDao = new HashMap<>();
 
@@ -51,7 +48,7 @@ public class DbManager
     private static final Map<String, Repository> _classNameToRepository = new HashMap<>();
 
     // DeviceEntity instance corresponding (by serial number) to the plugged device
-    private static DeviceEntity _deviceConfiguration;
+    private static DeviceEntity _deviceEntity;
 
     /** Must not be instantiated. */
     private DbManager()
@@ -61,16 +58,14 @@ public class DbManager
     /** @return A connection string built with settings from smartserver.properties (or default configuration). */
     private static String getConnectionString()
     {
-        String confDbHost = _confManager.getProperty(ConfManager.DB_HOST);
-        String confDbPort = _confManager.getProperty(ConfManager.DB_PORT);
-        String confDbDbms = _confManager.getProperty(ConfManager.DB_DBMS);
-        String confDbName = _confManager.getProperty(ConfManager.DB_NAME);
-        String confDbUser = _confManager.getProperty(ConfManager.DB_USER);
-        String confDbPassword = _confManager.getProperty(ConfManager.DB_PASSWORD);
+        String confDbHost = ConfManager.getDbHost();
+        String confDbPort = ConfManager.getDbPort();
+        String confDbDbms = ConfManager.getDbDbms();
+        String confDbName = ConfManager.getDbName();
+        String confDbUser = ConfManager.getDbUser();
 
-        // all parameters are mandatory [except Port], otherwise the conf file is not valid
-        if( confDbHost == null || confDbDbms == null || confDbName == null ||
-            confDbUser == null || confDbPassword == null)
+        // all parameters are mandatory [except Port and Password], otherwise the conf file is not valid
+        if( confDbHost == null || confDbDbms == null || confDbName == null || confDbUser == null)
         {
             // default config [embedded mysql]
             return CONNECTION_STRING;
@@ -98,20 +93,6 @@ public class DbManager
         }
     }
 
-    /** @return Empty string if the setting is not set, or the value of the setting User. */
-    private static String getConnectionUser()
-    {
-        String confDbUser = _confManager.getProperty(ConfManager.DB_USER);
-        return confDbUser == null ? "" : confDbUser;
-    }
-
-    /** @return Empty string if the setting is not set, or the value of the setting Password. */
-    private static String getConnectionPassword()
-    {
-        String confDbPassword = _confManager.getProperty(ConfManager.DB_PASSWORD);
-        return confDbPassword == null ? "" : confDbPassword;
-    }
-
     /**
      * Initialize Connection Pool and create Schema (if not created).
      *
@@ -133,8 +114,12 @@ public class DbManager
 
             else
             {
+                // dbUser cannot be null (if it was, the default configuration would have been chosen), but anyway...
+                String dbUser = ConfManager.getDbUser() == null ? "" : ConfManager.getDbUser();
+                String dbPassword = ConfManager.getDbPassword() == null ? "" : ConfManager.getDbPassword();
+
                 _pooledConnectionSrc =
-                        new JdbcPooledConnectionSource(connectionString, getConnectionUser(), getConnectionPassword());
+                        new JdbcPooledConnectionSource(connectionString, dbUser, dbPassword);
                 SmartLogger.getLogger().warning("Connecting to database: " + connectionString);
             }
 
@@ -311,19 +296,19 @@ public class DbManager
      *
      * @return Instance of DeviceEntity class.
      */
-    public static DeviceEntity getDeviceConfiguration()
+    public static DeviceEntity getDevEntity()
     {
-        if(_deviceConfiguration != null)
+        if(_deviceEntity != null)
         {
-            return _deviceConfiguration;
+            return _deviceEntity;
         }
 
-        Repository deviceRepository = getRepository(DeviceEntity.class);
+        DeviceEntity result = getRepository(DeviceEntity.class).getEntityBy(
+                DeviceEntity.SERIAL_NUMBER,
+                DeviceHandler.getDevice().getSerialNumber());
+        _deviceEntity = result == null ? null : result;
 
-        Object result = deviceRepository.getEntityBy(DeviceEntity.SERIAL_NUMBER, DeviceHandler.getDevice().getSerialNumber());
-        _deviceConfiguration = result == null ? null : (DeviceEntity) result;
-
-        return _deviceConfiguration;
+        return _deviceEntity;
     }
 
     /**
@@ -334,9 +319,8 @@ public class DbManager
      */
     public static boolean loadGrantedUsers()
     {
-        DeviceEntity deviceConfig = getDeviceConfiguration();
-
-        if(deviceConfig == null)
+        // use getDevEntity to initialize devEntity, in case it was null. If still null, stop: no device available.
+        if(getDevEntity() == null)
         {
             return false;
         }
@@ -363,7 +347,7 @@ public class DbManager
         sb.append("gte.").append(GrantTypeEntity.ID).append(" ");
         // for the current device only
         sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
-                .append(deviceConfig.getId());
+                .append(getDevEntity().getId());
 
         // username to temporary User instance
         Map<String, User> usernameToUser = new HashMap<>();

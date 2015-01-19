@@ -11,7 +11,6 @@ import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.repository.AuthenticationRepository;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
@@ -139,27 +138,19 @@ public final class DeviceHandler
     {
         if(_device == null)
         {
-            SmartLogger.getLogger().warning("Unable to connect modules [0x0001]");
+            SmartLogger.getLogger().warning("Unable to connect modules, the device is not initialized.");
             return;
         }
 
-        DeviceEntity deviceConfig = DbManager.getDeviceConfiguration();
-
-        if(deviceConfig == null)
-        {
-            SmartLogger.getLogger().warning("Unable to connect modules [0x0002]");
-            return;
-        }
-
-        String masterFpReaderSerial = deviceConfig.getFpReaderMasterSerial();
-        String slaveFpReaderSerial = deviceConfig.getFpReaderSlaveSerial();
+        String fprMaster = ConfManager.getDevFprMaster();
+        String fprSlave = ConfManager.getDevFprSlave();
 
         try
         {
-            if(masterFpReaderSerial != null && !"".equals(masterFpReaderSerial.trim()))
+            if(fprMaster != null && !"".equals(fprMaster.trim()))
             {
                 // 2 readers
-                if(slaveFpReaderSerial != null && !"".equals(slaveFpReaderSerial.trim()))
+                if(fprSlave != null && !"".equals(fprSlave.trim()))
                 {
                     if(FingerprintReader.connectFingerprintReaders(2) != 2)
                     {
@@ -167,8 +158,8 @@ public final class DeviceHandler
                     }
 
                     else if(!
-                            (_device.addFingerprintReader(masterFpReaderSerial, true)
-                            && _device.addFingerprintReader(slaveFpReaderSerial, false))
+                            (_device.addFingerprintReader(fprMaster, true)
+                            && _device.addFingerprintReader(fprSlave, false))
                             )
                     {
                         SmartLogger.getLogger().warning("Couldn't connect the two fingerprint readers.");
@@ -183,7 +174,7 @@ public final class DeviceHandler
                         SmartLogger.getLogger().warning("Couldn't initialize the fingerprint reader.");
                     }
 
-                    else if(!_device.addFingerprintReader(masterFpReaderSerial, true))
+                    else if(!_device.addFingerprintReader(fprMaster, true))
                     {
                         SmartLogger.getLogger().warning("Couldn't connect the fingerprint reader.");
                     }
@@ -195,29 +186,25 @@ public final class DeviceHandler
                     "An unexpected error occurred during fingerprint readers initialization.", fre);
         }
 
-        int nbOfBadgeReader = deviceConfig.getNbOfBadgeReader();
+        String brMaster = ConfManager.getDevBrMaster();
+        String brSlave = ConfManager.getDevBrSlave();
 
-        if(nbOfBadgeReader == 0)
+        if(brMaster != null && !"".equals(brMaster.trim()))
         {
-            return;
-        }
-
-        if(nbOfBadgeReader >= 1)
-        {
-            if(!_device.addBadgeReader("/dev/ttyUSB1", true))
+            if(!_device.addBadgeReader(brMaster, true))
             {
-                SmartLogger.getLogger().warning("Unable to add Master Badge Reader.");
+                SmartLogger.getLogger().warning("Unable to add Master Badge Reader on "+brMaster+".");
             }
 
-            if(nbOfBadgeReader == 2 && !_device.addBadgeReader("/dev/ttyUSB2", false))
+            if(brSlave != null && !"".equals(brSlave.trim()) && !_device.addBadgeReader(brSlave, false))
             {
-                SmartLogger.getLogger().warning("Unable to add Slave Badge Reader.");
+                SmartLogger.getLogger().warning("Unable to add Slave Badge Reader on "+brSlave+".");
             }
         }
 
-        if(deviceConfig.isTemperatureEnabled())
+        if(ConfManager.isDevTemperature())
         {
-            // TODO: Stuck on this point if VirtualHub cannot be contacted or the probe is unavailable
+            // TODO: Don't get Stuck at this point if VirtualHub cannot be contacted or the probe is unavailable
             if(!_device.addTemperatureProbe("tempProbe1", 60, 0.2))
             {
                 SmartLogger.getLogger().warning("Unable to add the Temperature probe.");

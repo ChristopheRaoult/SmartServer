@@ -60,8 +60,7 @@ public class CommandInventoriesList extends ClientCommand
 
         InventoryRepository repo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
 
-        List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd),
-                DbManager.getDeviceConfiguration());
+        List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.INVENTORIES_LIST);

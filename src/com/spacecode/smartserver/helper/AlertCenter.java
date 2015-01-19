@@ -57,7 +57,7 @@ public final class AlertCenter
 
         if(!_isSmtpServerSet)
         {
-            SmartLogger.getLogger().severe("No SMTP server is set. AlertCenter won't send any email.");
+            SmartLogger.getLogger().warning("No SMTP server is set. AlertCenter won't send any email.");
         }
 
         if(!initializeRepositories())
@@ -209,7 +209,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDisconnected, DbManager.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeDisconnected);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -231,7 +231,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay, DbManager.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -273,7 +273,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger, DbManager.getDeviceConfiguration());
+                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -300,8 +300,7 @@ public final class AlertCenter
             }
 
             // get enabled Temperature Alerts
-            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature,
-                    DbManager.getDeviceConfiguration());
+            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature);
 
             if(alerts.isEmpty())
             {

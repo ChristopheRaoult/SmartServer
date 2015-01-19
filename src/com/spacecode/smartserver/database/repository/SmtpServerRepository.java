@@ -50,6 +50,6 @@ public class SmtpServerRepository extends Repository<SmtpServerEntity>
     /** @return SmtpServerEntity instance created (if any) for the current Device. */
     public SmtpServerEntity getSmtpServerConfig()
     {
-        return getEntityBy(SmtpServerEntity.DEVICE_ID, DbManager.getDeviceConfiguration().getId());
+        return getEntityBy(SmtpServerEntity.DEVICE_ID, DbManager.getDevEntity().getId());
     }
 }

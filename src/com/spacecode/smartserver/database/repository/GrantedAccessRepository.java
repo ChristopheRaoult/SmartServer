@@ -48,17 +48,14 @@ public class GrantedAccessRepository extends Repository<GrantedAccessEntity>
             return false;
         }
 
-        GrantedAccessEntity gae = new GrantedAccessEntity(gue,
-                DbManager.getDeviceConfiguration(),
-                gte
-        );
+        GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);
 
         Iterator<GrantedAccessEntity> it = gue.getGrantedAccesses().iterator();
 
         // remove any previous permission on this device
         while(it.hasNext())
         {
-            if(it.next().getDevice().getId() == DbManager.getDeviceConfiguration().getId())
+            if(it.next().getDevice().getId() == DbManager.getDevEntity().getId())
             {
                 it.remove();
                 break;

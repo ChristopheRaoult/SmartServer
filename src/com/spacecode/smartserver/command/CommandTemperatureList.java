@@ -61,8 +61,7 @@ public class CommandTemperatureList extends ClientCommand
                 (TemperatureMeasurementRepository) DbManager.getRepository(TemperatureMeasurementEntity.class);
 
         List<TemperatureMeasurementEntity> entities =
-                repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd),
-                        DbManager.getDeviceConfiguration());
+                repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.TEMPERATURE_LIST);

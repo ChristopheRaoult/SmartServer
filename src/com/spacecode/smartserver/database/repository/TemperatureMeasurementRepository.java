@@ -2,7 +2,7 @@ package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
+import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
@@ -27,11 +27,10 @@ public class TemperatureMeasurementRepository extends Repository<TemperatureMeas
      *
      * @param from  Period start date.
      * @param to    Period end date.
-     * @param de    Device to look inventories for.
      *
      * @return List of TemperatureMeasurement recorded during the given period (empty if no result or error).
      */
-    public List<TemperatureMeasurementEntity> getTemperatureMeasures(Date from, Date to, DeviceEntity de)
+    public List<TemperatureMeasurementEntity> getTemperatureMeasures(Date from, Date to)
     {
         try
         {
@@ -41,11 +40,11 @@ public class TemperatureMeasurementRepository extends Repository<TemperatureMeas
 
             return _dao.query(qb
                     .where()
-                    .eq(TemperatureMeasurementEntity.DEVICE_ID, de.getId())
-                    .and()
-                    .between(TemperatureMeasurementEntity.CREATED_AT, from, to)
-                    .prepare()
-            );
+                    .eq(TemperatureMeasurementEntity.DEVICE_ID, DbManager.getDevEntity().getId())
+                                    .and()
+                                    .between(TemperatureMeasurementEntity.CREATED_AT, from, to)
+                                    .prepare()
+                    );
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting temperature measures.", sqle);

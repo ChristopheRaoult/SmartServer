@@ -54,7 +54,7 @@ public class TemperatureCenter
                     .getRepository(TemperatureMeasurementEntity.class);
 
             if(!repo.insert(
-                    new TemperatureMeasurementEntity(DbManager.getDeviceConfiguration(), roundedValue)))
+                    new TemperatureMeasurementEntity(roundedValue)))
             {
                 SmartLogger.getLogger().severe("Unable to insert new temperature measure.");
                 return;

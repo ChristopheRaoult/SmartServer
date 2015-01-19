@@ -2,6 +2,7 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.DbManager;
 
 /**
  * GrantedAccess Entity
@@ -34,15 +35,13 @@ public final class GrantedAccessEntity extends Entity
     /**
      * Default constructor.
      * @param grantedUser   UserEntity instance to be set as user.
-     * @param device        DeviceEntity to be set as device.
      * @param grantType     GrantTypeEntity to be set as grant type.
      */
     public GrantedAccessEntity(UserEntity grantedUser,
-                               DeviceEntity device,
                                GrantTypeEntity grantType)
     {
         _grantedUser = grantedUser;
-        _device = device;
+        _device = DbManager.getDevEntity();
         _grantType = grantType;
     }
 
