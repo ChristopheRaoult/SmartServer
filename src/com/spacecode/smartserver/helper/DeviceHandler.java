@@ -5,6 +5,7 @@ import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
+import com.spacecode.sdk.device.module.authentication.FingerprintReaderException;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
@@ -180,7 +181,7 @@ public final class DeviceHandler
                     }
                 }
             }
-        } catch (FingerprintReader.FingerprintReaderException fre)
+        } catch (FingerprintReaderException fre)
         {
             SmartLogger.getLogger().log(Level.INFO,
                     "An unexpected error occurred during fingerprint readers initialization.", fre);
@@ -345,6 +346,12 @@ public final class DeviceHandler
         public void badgeReaderDisconnected(boolean isMaster)
         {
             SmartLogger.getLogger().info("Badge reader ("+ (isMaster ? "Master" : "Slave")+") disconnected.");
+        }
+
+        @Override
+        public void badgeScanned(String badgeNumber)
+        {
+            SmartServer.sendAllClients(EventCode.BADGE_SCANNED, badgeNumber);
         }
 
         @Override

@@ -66,12 +66,12 @@ public class ConfManager
     /**
      * @param key Name of the setting to be read.
      *
-     * @return Value of the property (lowercase), or null if no matching property exists (unknown key).
+     * @return Value of the property or null if no matching property exists (unknown key).
      */
     private String getProperty(String key)
     {
         String propertyValue = configProp.getProperty(key);
-        return propertyValue == null ? null : propertyValue.toLowerCase();
+        return propertyValue == null ? null : propertyValue;
     }
 
     /**
