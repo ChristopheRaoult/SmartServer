@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * UsersList command.
  */
-public class CommandUsersList extends ClientCommand
+public class CmdUsersList extends ClientCommand
 {
     /**
      * Request to get the granted users list. Send the list of GrantedUsers as serialized users (strings).
@@ -40,6 +40,6 @@ public class CommandUsersList extends ClientCommand
             responsePackets.add(user.serialize());
         }
 
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
     }
 }

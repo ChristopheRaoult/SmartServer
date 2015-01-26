@@ -13,7 +13,7 @@ import java.util.logging.Level;
 /**
  * SetSmtpServer command.
  */
-public class CommandSetSmtpServer extends ClientCommand
+public class CmdSetSmtpServer extends ClientCommand
 {
     /**
      * Request to set/update SMTP server configuration for current device.

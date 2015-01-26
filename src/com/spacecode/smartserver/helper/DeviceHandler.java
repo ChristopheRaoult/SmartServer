@@ -2,6 +2,7 @@ package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.device.DeviceCreationException;
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
@@ -339,7 +340,7 @@ public final class DeviceHandler
         @Override
         public void badgeReaderConnected(boolean isMaster)
         {
-            SmartLogger.getLogger().info("Badge reader ("+ (isMaster ? "Master" : "Slave")+") connected.");
+            SmartLogger.getLogger().info("Badge reader (" + (isMaster ? "Master" : "Slave") + ") connected.");
         }
 
         @Override
@@ -380,13 +381,19 @@ public final class DeviceHandler
             responsePackets.add(EventCode.LIGHTING_STARTED);
             responsePackets.addAll(tagsLeft);
 
-            SmartServer.sendAllClients(responsePackets.toArray(new String[0]));
+            SmartServer.sendAllClients(responsePackets.toArray(new String[responsePackets.size()]));
         }
 
         @Override
         public void lightingStopped()
         {
             SmartServer.sendAllClients(EventCode.LIGHTING_STOPPED);
+        }
+
+        @Override
+        public void deviceStatusChanged(DeviceStatus status)
+        {
+            SmartServer.sendAllClients(EventCode.STATUS_CHANGED, status.name());
         }
     }
 }

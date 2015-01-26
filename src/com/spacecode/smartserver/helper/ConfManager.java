@@ -1,17 +1,36 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.smartserver.SmartServer;
+
 import java.io.*;
 import java.util.Properties;
 import java.util.logging.Level;
 
 /**
  * Singleton providing access (read/write) to the configuration file of SmartServer (smartserver.properties).
+ * <br/>
+ * Java "properties" files are constructed following a basic syntaxe: property_name=value
+ * <br/>
+ * Sample of configuration file:
+ * db_name=smartserver<br/>
+ * db_host=localhost<br/>
+ * db_dbms=mysql<br/>
+ * db_port=<br/>
+ * db_user=root<br/>
+ * db_password=<br/>
+ *
+ * dev_br_master=/dev/ttyUSB1<br/>
+ * dev_br_slave=/dev/ttyUSB2<br/>
+ * dev_fpr_master={2FD3A356-F2FF-F243-9B0D-9243C137E641}<br/>
+ * dev_fpr_slave={BFCB44E6-EB02-3142-A596-9ED337EACE19}<br/>
+ * dev_temperature=on<br/>
  */
 public class ConfManager
 {
     private final Properties configProp = new Properties();
 
-    private static final String CONFIG_FILE = "./smartserver.properties";
+    private static final String CONFIG_FILENAME = "smartserver.properties";
+    public static final String CONFIG_FILE = SmartServer.getWorkingDirectory() + CONFIG_FILENAME;
 
     public static final String DB_HOST     = "db_host";
     public static final String DB_PORT     = "db_port";

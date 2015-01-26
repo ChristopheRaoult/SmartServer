@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
@@ -65,6 +66,12 @@ public class TemperatureCenter
 
         @Override
         public void deviceDisconnected()
+        {
+            // not needed
+        }
+
+        @Override
+        public void deviceStatusChanged(DeviceStatus status)
         {
             // not needed
         }

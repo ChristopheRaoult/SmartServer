@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * StartLighting command.
  */
-public class CommandStartLighting extends ClientCommand
+public class CmdStartLighting extends ClientCommand
 {
     /**
      * Build a list of String with provided tags UID's and start lighting order.

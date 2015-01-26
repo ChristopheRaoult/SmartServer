@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * SetThiefFinger command.
  */
-public class CommandSetThiefFinger extends ClientCommand
+public class CmdSetThiefFinger extends ClientCommand
 {
     /**
      * Request to update an user's "thief finger" index. Return true (if operation succeeded) or false (if failure).

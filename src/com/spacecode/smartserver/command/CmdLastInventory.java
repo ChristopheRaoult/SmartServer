@@ -1,17 +1,22 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * Scan command.
+ * LastInventory command.
+ * Provide device's last inventory (serialized).
  */
-public class CommandScan extends ClientCommand
+public class CmdLastInventory extends ClientCommand
 {
     /**
-     * Request a scan on current device. No data is sent/returned. Device events are handled by events handler.
+     * Serialize device's last inventory and send it to current context.
+     *
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *
      * @throws ClientCommandException
      */
     @Override
@@ -22,6 +27,6 @@ public class CommandScan extends ClientCommand
             return;
         }
 
-        DeviceHandler.getDevice().requestScan();
+        SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY, DeviceHandler.getDevice().getLastInventory().serialize());
     }
 }

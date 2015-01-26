@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * AlertsList command.
  */
-public class CommandAlertsList extends ClientCommand
+public class CmdAlertsList extends ClientCommand
 {
     /**
      * Request to get the alerts list. Send the list of Alerts as serialized alerts (strings).

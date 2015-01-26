@@ -11,12 +11,12 @@ import com.spacecode.smartserver.database.repository.AlertRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * UpdateAlert command.
+ * AddAlert command.
  */
-public class CommandUpdateAlert extends ClientCommand
+public class CmdAddAlert extends ClientCommand
 {
     /**
-     * Request to update an alert (in database). Return true (if operation succeeded) or false (if failure).
+     * Request to add a new Alert to database. Send (string) "true" if succeed, "false" otherwise.
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      * @throws ClientCommandException
@@ -24,33 +24,35 @@ public class CommandUpdateAlert extends ClientCommand
     @Override
     public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // waiting for 1 parameters: serialized Alert.
+        // waiting for only 1 parameter: serialized alert
         if(parameters.length != 1)
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
+            SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
-        Alert alert = Alert.deserialize(parameters[0]);
+        Alert newAlert = Alert.deserialize(parameters[0]);
 
-        if(alert == null)
+        if(newAlert == null || newAlert.getId() != 0)
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
+            // alert couldn't be deserialized or already has an id (it's coming from db: can't be re-created)
+            SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;
         }
 
-        if(alert.getType() == AlertType.TEMPERATURE && !(alert instanceof AlertTemperature))
+        if(newAlert.getType() == AlertType.TEMPERATURE && !(newAlert instanceof AlertTemperature))
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
+            // let's make sure the alert is really an AlertTemperature if it's declared as one.
+            SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;
         }
 
-        if(!((AlertRepository)DbManager.getRepository(AlertEntity.class)).persist(alert))
+        if(!((AlertRepository)DbManager.getRepository(AlertEntity.class)).persist(newAlert))
         {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
+            SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, TRUE);
+        SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, TRUE);
     }
 }

@@ -25,6 +25,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -56,6 +57,30 @@ public final class SmartServer
     /** Must not be instantiated. */
     private SmartServer()
     {
+    }
+
+    /**
+     * Allow getting the working directory to work with local files (logging, properties...).
+     *
+     * @return The current JAR directory, or "." if an error occurred.
+     */
+    public static String getWorkingDirectory()
+    {
+        try
+        {
+            String jarPath = SmartServer.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            int lastSeparatorIndex = jarPath.lastIndexOf(File.separator);
+
+            if(jarPath.endsWith(".jar") &&  lastSeparatorIndex != -1)
+            {
+                return jarPath.substring(0, lastSeparatorIndex+1);
+            }
+        } catch(SecurityException se)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Permission to get Working Directory not allowed.", se);
+        }
+
+        return ".";
     }
 
     /**
@@ -92,7 +117,7 @@ public final class SmartServer
 
         SmartLogger.getLogger().info("Database initialized.");
 
-        // TODO: execute "script.sql" if any is found, then REMOVE IT.
+        // TODO: execute "update.sql" if any is found (in SmartServer.getWorkingDirectory()), then REMOVE IT.
 
         SmartLogger.getLogger().info("Connecting the local device...");
 
@@ -169,7 +194,6 @@ public final class SmartServer
 
         else
         {
-            // we still start SmartServer, as NOT finding a device could be
             SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
         }
 

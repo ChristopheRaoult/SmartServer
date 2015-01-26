@@ -11,7 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveUser command.
  */
-public class CommandRemoveUser extends ClientCommand
+public class CmdRemoveUser extends ClientCommand
 {
     /**
      * Request to remove a User from granted users list. Send (string) "true" if succeed, "false" otherwise.
@@ -43,7 +43,7 @@ public class CommandRemoveUser extends ClientCommand
             return;
         }
 
-        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).deleteByName(username))
+        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).removePermission(username))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;

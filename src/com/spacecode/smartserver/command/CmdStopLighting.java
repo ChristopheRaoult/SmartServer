@@ -1,19 +1,19 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.device.module.TemperatureProbe;
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * "TemperatureCurrent" command.
- *
- * Provide device's last temperature (if any) or TemperatureProbe.ERROR_VALUE.
+ * StopLighting command.
  */
-public class CommandTemperatureCurrent extends ClientCommand
+public class CmdStopLighting extends ClientCommand
 {
     /**
+     * Send StopLighting command to the current Device. True or false returned to client.
+     *
      * @param ctx           Channel between SmartServer and the client.
      * @param parameters    String array containing parameters (if any) provided by the client.
      *
@@ -24,12 +24,16 @@ public class CommandTemperatureCurrent extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_CURRENT,
-                    String.valueOf(TemperatureProbe.ERROR_VALUE));
             return;
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_CURRENT,
-                String.valueOf(DeviceHandler.getDevice().getCurrentTemperature()));
+        if(DeviceHandler.getDevice().getStatus() != DeviceStatus.LED_ON)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
+            return;
+        }
+
+        boolean result = DeviceHandler.getDevice().stopLightingTagsLed();
+        SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, result ? TRUE : FALSE);
     }
 }

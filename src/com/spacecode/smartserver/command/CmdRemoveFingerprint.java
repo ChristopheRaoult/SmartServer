@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveFingerprint command.
  */
-public class CommandRemoveFingerprint extends ClientCommand
+public class CmdRemoveFingerprint extends ClientCommand
 {
     /**
      * Request to add a new User to granted users list. Send (string) "true" if succeed, "false" otherwise.

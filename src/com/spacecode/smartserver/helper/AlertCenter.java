@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
@@ -390,6 +391,12 @@ public final class AlertCenter
 
         @Override
         public void authenticationFailure(User grantedUser, AccessType accessType, boolean isMaster)
+        {
+            // not required
+        }
+
+        @Override
+        public void deviceStatusChanged(DeviceStatus status)
         {
             // not required
         }

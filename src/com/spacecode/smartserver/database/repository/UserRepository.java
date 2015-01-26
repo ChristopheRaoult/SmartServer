@@ -12,6 +12,7 @@ import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -51,7 +52,7 @@ public class UserRepository extends Repository<UserEntity>
     }
 
     /**
-     * Start the user deletion process (user + fingerprints).
+     * Start the user deletion process (user + permissions + fingerprints).
      *
      * @param username  Name of to-be-deleted user.
      *
@@ -189,6 +190,37 @@ public class UserRepository extends Repository<UserEntity>
     }
 
     /**
+     * Delete all permissions (if any) of a given user (by name) on the current device.
+     *
+     * @param username User's name.
+     *
+     * @return True if the operation succeded, false otherwise (unknown user, SQL exception).
+     */
+    public boolean removePermission(String username)
+    {
+        UserEntity gue = getEntityBy(UserEntity.USERNAME, username);
+
+        if(gue == null)
+        {
+            return false;
+        }
+
+        Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
+        Collection<GrantedAccessEntity> gaesList = gue.getGrantedAccesses();
+        Collection<GrantedAccessEntity> gaesOndevice = new ArrayList<>();
+
+        for(GrantedAccessEntity gae : gaesList)
+        {
+            if(gae.getDevice().getId() == DbManager.getDevEntity().getId())
+            {
+                gaesOndevice.add(gae);
+            }
+        }
+
+        return gaRepo.delete(gaesOndevice);
+    }
+
+    /**
      * Callable subclass called when persisting a new user (SQL transaction)
      */
     private class PersistUserCallable implements Callable<Void>
@@ -203,7 +235,7 @@ public class UserRepository extends Repository<UserEntity>
         @Override
         public Void call() throws Exception
         {
-            // try to get the user if he already exists (by username)
+            // try to get the user if he already exists
             UserEntity gue = getEntityBy(UserEntity.USERNAME, _newUser.getUsername());
 
             // if he doesn't exist
@@ -241,7 +273,7 @@ public class UserRepository extends Repository<UserEntity>
                 throw new SQLException("Persisting user: unknown grant type "+ _newUser.getPermission() +".");
             }
 
-            // create & persist fingerprints and access
+            // create & persist access
             Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
 
             GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);

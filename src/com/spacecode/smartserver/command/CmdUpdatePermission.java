@@ -16,7 +16,7 @@ import java.util.logging.Level;
 /**
  * UpdatePermission command.
  */
-public class CommandUpdatePermission extends ClientCommand
+public class CmdUpdatePermission extends ClientCommand
 {
     /**
      * Request to update an user's permission type to this device. Return true (if operation succeeded) or false (if failure).

@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * SmtpServer command.
  */
-public class CommandSmtpServer extends ClientCommand
+public class CmdSmtpServer extends ClientCommand
 {
     /**
      * Send SMTP server information (if any) for current device.

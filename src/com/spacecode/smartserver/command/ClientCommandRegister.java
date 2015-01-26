@@ -16,8 +16,13 @@ public final class ClientCommandRegister extends ClientCommand
 {
     // Key:     Command code (RequestCode value).
     // Value:   ClientCommand instance.
-    // Visibility package-local in order to be accessible for JUnit tests.
-    Map<String, ClientCommand> _commands = new HashMap<>();
+    private Map<String, ClientCommand> _commands = new HashMap<>();
+
+    private static final int DELAY_BETWEEN_EXEC = 500;
+    private long _lastExecTimestamp;
+    private String _lastExecRequestCode;
+    private int _lastExecParamCount;
+    private String _lastExecFirstParam;
 
     /**
      * Initialize command register.
@@ -25,59 +30,61 @@ public final class ClientCommandRegister extends ClientCommand
      */
     public ClientCommandRegister()
     {
-        _commands.put(RequestCode.ADD_ALERT,            new CommandAddAlert());
-        _commands.put(RequestCode.ADD_USER,             new CommandAddUser());
-        _commands.put(RequestCode.ALERTS_LIST,          new CommandAlertsList());
-        _commands.put(RequestCode.ALERT_REPORTS,        new CommandAlertReports());
-        _commands.put(RequestCode.AUTHENTICATIONS_LIST, new CommandAuthenticationsList());
-        _commands.put(RequestCode.DISCONNECT,           new CommandDisconnect());
-        _commands.put(RequestCode.ENROLL_FINGER,        new CommandEnrollFinger());
-        _commands.put(RequestCode.INITIALIZATION,       new CommandInitialization());
-        _commands.put(RequestCode.INVENTORIES_LIST,     new CommandInventoriesList());
-        _commands.put(RequestCode.LAST_ALERT,           new CommandLastAlert());
-        _commands.put(RequestCode.LAST_INVENTORY,       new CommandLastInventory());
-        _commands.put(RequestCode.REMOVE_ALERT,         new CommandRemoveAlert());
-        _commands.put(RequestCode.REMOVE_FINGERPRINT,   new CommandRemoveFingerprint());
-        _commands.put(RequestCode.REMOVE_USER,          new CommandRemoveUser());
-        _commands.put(RequestCode.REWRITE_UID,          new CommandRewriteUid());
-        _commands.put(RequestCode.SCAN,                 new CommandScan());
-        _commands.put(RequestCode.SET_SMTP_SERVER,      new CommandSetSmtpServer());
-        _commands.put(RequestCode.SET_THIEF_FINGER,     new CommandSetThiefFinger());
-        _commands.put(RequestCode.SERIAL_BRIDGE,        new CommandSerialBridge());
-        _commands.put(RequestCode.SMTP_SERVER,          new CommandSmtpServer());
-        _commands.put(RequestCode.START_LIGHTING,       new CommandStartLighting());
-        _commands.put(RequestCode.STOP_LIGHTING,        new CommandStopLighting());
-        _commands.put(RequestCode.STOP_SCAN,            new CommandStopScan());
-        _commands.put(RequestCode.UPDATE_PERMISSION,    new CommandUpdatePermission());
-        _commands.put(RequestCode.UPDATE_ALERT,         new CommandUpdateAlert());
-        _commands.put(RequestCode.UPDATE_BADGE,         new CommandUpdateBadge());
-        _commands.put(RequestCode.USER_BY_NAME,         new CommandUserByName());
-        _commands.put(RequestCode.USERS_LIST,           new CommandUsersList());
-        _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CommandTemperatureCurrent());
-        _commands.put(RequestCode.TEMPERATURE_LIST,     new CommandTemperatureList());
+        _commands.put(RequestCode.ADD_ALERT,            new CmdAddAlert());
+        _commands.put(RequestCode.ADD_USER,             new CmdAddUser());
+        _commands.put(RequestCode.ALERTS_LIST,          new CmdAlertsList());
+        _commands.put(RequestCode.ALERT_REPORTS,        new CmdAlertReports());
+        _commands.put(RequestCode.AUTHENTICATIONS_LIST, new CmdAuthenticationsList());
+        _commands.put(RequestCode.DEVICE_STATUS,        new CmdDeviceStatus());
+        _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
+        _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
+        _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
+        _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());
+        _commands.put(RequestCode.LAST_ALERT,           new CmdLastAlert());
+        _commands.put(RequestCode.LAST_INVENTORY,       new CmdLastInventory());
+        _commands.put(RequestCode.REMOVE_ALERT,         new CmdRemoveAlert());
+        _commands.put(RequestCode.REMOVE_FINGERPRINT,   new CmdRemoveFingerprint());
+        _commands.put(RequestCode.REMOVE_USER,          new CmdRemoveUser());
+        _commands.put(RequestCode.REWRITE_UID,          new CmdRewriteUid());
+        _commands.put(RequestCode.SCAN,                 new CmdScan());
+        _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
+        _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
+        _commands.put(RequestCode.SERIAL_BRIDGE,        new CmdSerialBridge());
+        _commands.put(RequestCode.SMTP_SERVER,          new CmdSmtpServer());
+        _commands.put(RequestCode.START_LIGHTING,       new CmdStartLighting());
+        _commands.put(RequestCode.STOP_LIGHTING,        new CmdStopLighting());
+        _commands.put(RequestCode.STOP_SCAN,            new CmdStopScan());
+        _commands.put(RequestCode.UPDATE_PERMISSION,    new CmdUpdatePermission());
+        _commands.put(RequestCode.UPDATE_ALERT,         new CmdUpdateAlert());
+        _commands.put(RequestCode.UPDATE_BADGE,         new CmdUpdateBadge());
+        _commands.put(RequestCode.USER_BY_NAME,         new CmdUserByName());
+        _commands.put(RequestCode.USERS_LIST,           new CmdUsersList());
+        _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CmdTemperatureCurrent());
+        _commands.put(RequestCode.TEMPERATURE_LIST,     new CmdTemperatureList());
     }
 
     /**
      * Allow dynamic (new) command registering.
      *
-     * @param commandName       Command name. Should correspond to a RequestCode.
-     * @param commandInstance   Command instance (implementing ClientCommand) which should be executed.
+     * @param name      Command name. Should correspond to a RequestCode.
+     * @param command   Command instance (implementing ClientCommand) which should be executed.
+     *
+     * @return True if the operation succeeded, false otherwise (invalid command and/or name, or name already in use).
      */
-    public void addCommand(String commandName, ClientCommand commandInstance)
+    public boolean addCommand(String name, ClientCommand command)
     {
-        if(commandName == null || commandInstance == null)
+        if(name == null || command == null || name.trim().isEmpty())
         {
-            return;
+            return false;
         }
 
-        String cmd = commandName.trim();
-
-        if(cmd.isEmpty() || _commands.containsKey(cmd))
+        if(_commands.containsKey(name))
         {
-            return;
+            return false;
         }
 
-        _commands.put(cmd, commandInstance);
+        _commands.put(name, command);
+        return true;
     }
 
     /**
@@ -92,14 +99,25 @@ public final class ClientCommandRegister extends ClientCommand
     @Override
     public void execute(final ChannelHandlerContext ctx, final String[] parameters) throws ClientCommandException
     {
-        final ClientCommand cmd = _commands.get(parameters[0]);
+        String requestCode = parameters[0];
+
+        final ClientCommand cmd = _commands.get(requestCode);
 
         if(cmd == null)
         {
-            throw new ClientCommandException("Unknown Command: " + parameters[0]);
+            throw new ClientCommandException("Unknown Command: " + requestCode);
         }
 
-        // TODO: prevent a request being handled twice in a row (ex: double adduser). => Add a delay between same req.
+        long currentTimestamp = System.currentTimeMillis();
+
+        if(requestCode.equals(_lastExecRequestCode))
+        {
+            if(_lastExecParamCount == parameters.length - 1)
+            {
+
+            }
+        }
+
         cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
     }
 }

@@ -120,7 +120,7 @@ public class DbManager
 
                 _pooledConnectionSrc =
                         new JdbcPooledConnectionSource(connectionString, dbUser, dbPassword);
-                SmartLogger.getLogger().warning("Connecting to database: " + connectionString);
+                SmartLogger.getLogger().info("Connecting to database: " + connectionString);
             }
 
             // a connection should not stay opened more than 10 minutes
@@ -330,6 +330,7 @@ public class DbManager
         // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
         String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
 
+        // TODO: Try to get rid of RAW sql...
         // raw query to get all users with their fingerprints and their access type (on this device)
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
         sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");
@@ -385,6 +386,7 @@ public class DbManager
 
                 if(fingersMap == null)
                 {
+                    // if there was no map for current user's fingers, create one
                     fingersMap = new EnumMap<>(FingerIndex.class);
                     usernameToFingersMap.put(user.getUsername(), fingersMap);
                 }

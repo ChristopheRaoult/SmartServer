@@ -17,7 +17,7 @@ import java.util.logging.Level;
 /**
  * EnrollFinger command.
  */
-public class CommandEnrollFinger extends ClientCommand
+public class CmdEnrollFinger extends ClientCommand
 {
     /**
      * Request to start enrollment process for a given user and finger index. Send (string) "true" if succeed, "false" otherwise.

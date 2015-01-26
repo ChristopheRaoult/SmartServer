@@ -5,6 +5,7 @@ import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
+import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.database.repository.AccessTypeRepository;
 import com.spacecode.smartserver.database.repository.AuthenticationRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -20,7 +21,7 @@ import java.util.logging.Level;
  *
  * Provide authentications recorded during a certain period, if any.
  */
-public class CommandAuthenticationsList extends ClientCommand
+public class CmdAuthenticationsList extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
@@ -78,7 +79,8 @@ public class CommandAuthenticationsList extends ClientCommand
                     ? "F"
                     : "U";
 
-            responsePackets.add(authentication.getGrantedUser().getUsername());
+            UserEntity authenticatedUser = authentication.getGrantedUser();
+            responsePackets.add(authenticatedUser != null ? authenticatedUser.getUsername() : "Unknown User");
             responsePackets.add(String.valueOf(authentication.getCreatedAt().getTime() / 1000));
             responsePackets.add(accessTypePacket);
         }

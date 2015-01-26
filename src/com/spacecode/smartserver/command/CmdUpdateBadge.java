@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * UpdateBadge command.
  */
-public class CommandUpdateBadge extends ClientCommand
+public class CmdUpdateBadge extends ClientCommand
 {
     /**
      * Request to update an user's badge number. Return true (if operation succeeded) or false (if failure).

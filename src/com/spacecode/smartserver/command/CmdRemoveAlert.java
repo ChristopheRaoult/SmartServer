@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveAlert command.
  */
-public class CommandRemoveAlert extends ClientCommand
+public class CmdRemoveAlert extends ClientCommand
 {
     /**
      * Request to remove an Alert from database. Send (string) "true" if succeed, "false" otherwise.

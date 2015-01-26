@@ -14,7 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
  * LastAlert command.
  * Provide device's last alert raised (serialized).
  */
-public class CommandLastAlert extends ClientCommand
+public class CmdLastAlert extends ClientCommand
 {
     /**
      * Serialize the last alert raised and send it to current context.

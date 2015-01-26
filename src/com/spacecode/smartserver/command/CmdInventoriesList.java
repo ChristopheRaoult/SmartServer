@@ -1,10 +1,11 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
-import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
+import com.spacecode.smartserver.database.entity.InventoryEntity;
+import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -14,12 +15,11 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * "AlertReports" command.
+ * InventoriesList command.
  *
- * Provide reports (if any) for alert raised during a certain period (start/end date provided).
- * Sends Alert IDs instead of sending serialized alerts, in order to minimize risk to exceed the TCP frame size.
+ * Provide inventories over a given period (start/end date provided), if any.
  */
-public class CommandAlertReports extends ClientCommand
+public class CmdInventoriesList extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
@@ -33,7 +33,7 @@ public class CommandAlertReports extends ClientCommand
         // waiting for 2 parameters: start date, end date.
         if(parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             throw new ClientCommandException("Invalid number of parameters.");
         }
 
@@ -47,33 +47,29 @@ public class CommandAlertReports extends ClientCommand
         } catch(NumberFormatException nfe)
         {
             SmartLogger.getLogger().log(Level.WARNING,
-                    "Invalid timestamp sent by client for AlertReports.", nfe);
-            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
+                    "Invalid timestamp sent by client for Inventories.", nfe);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             return;
         }
 
         if(timestampEnd <= timestampStart)
         {
-            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
+            SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
             return;
         }
 
-        AlertHistoryRepository repo =
-                (AlertHistoryRepository) DbManager.getRepository(AlertHistoryEntity.class);
+        InventoryRepository repo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
 
-        List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),  new Date(timestampEnd));
+        List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
-        responsePackets.add(RequestCode.ALERT_REPORTS);
+        responsePackets.add(RequestCode.INVENTORIES_LIST);
 
-        for(AlertHistoryEntity entity : entities)
+        for(Inventory inventory : inventories)
         {
-            // add: [alert id, timestamp (seconds), extra data]
-            responsePackets.add(String.valueOf(entity.getAlert().getId()));
-            responsePackets.add(String.valueOf(entity.getCreatedAt().getTime()/1000));
-            responsePackets.add("".equals(entity.getExtraData()) ? " " : entity.getExtraData());
+            responsePackets.add(inventory.serialize());
         }
 
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
     }
 }

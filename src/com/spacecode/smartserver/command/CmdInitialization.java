@@ -9,7 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
  * Initialization command.
  * Provide basic information of current device (serial number, device type, hardware and software version).
  */
-public class CommandInitialization extends ClientCommand
+public class CmdInitialization extends ClientCommand
 {
     /**
      * Send a message to the current context containing basic information (serial number, device type, hardware version, software version, Device Status).

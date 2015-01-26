@@ -92,7 +92,6 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object>
         if (frame instanceof CloseWebSocketFrame)
         {
             _handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
-            // TODO: remove from CHANNEL_GROUP?
             return;
         }
 

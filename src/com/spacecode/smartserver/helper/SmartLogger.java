@@ -1,5 +1,7 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.smartserver.SmartServer;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -12,6 +14,9 @@ import java.util.logging.*;
  */
 public final class SmartLogger extends Logger
 {
+    private static final String LOG_FILENAME = "smartserver.log";
+    private static final String LOG_FILE = SmartServer.getWorkingDirectory() + LOG_FILENAME;
+
     // singleton reference
     private static final SmartLogger LOGGER = new SmartLogger("SmartLogger", null);
 
@@ -45,7 +50,7 @@ public final class SmartLogger extends Logger
         try
         {
             ConsoleHandler consoleHandler = new ConsoleHandler();
-            FileHandler fileHandler = new FileHandler("./smartserver.log", true);
+            FileHandler fileHandler = new FileHandler(LOG_FILE, true);
 
             ShortFormatter formatter = new ShortFormatter();
 

@@ -8,7 +8,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -29,29 +30,22 @@ public class CommandRegisterTest
     @Test
     public void testAddNullCommandFails()
     {
-        int registerSize = commandRegister._commands.size();
-        commandRegister.addCommand(null, null);
-        commandRegister.addCommand("nullCommand", null);
-        // size mustn't change as previous addCommand have invalid parameters.
-        assertEquals(registerSize, commandRegister._commands.size());
+        assertFalse(commandRegister.addCommand(null, null));
+        assertFalse(commandRegister.addCommand("nullCommand", null));
     }
 
     @Test
     public void testAddCommandAlreadyExistingFails()
     {
-        int registerSize = commandRegister._commands.size();
-        commandRegister.addCommand(RequestCode.DISCONNECT, new CommandDisconnect());
-        // size mustn't change as previous entry already exist (see ClientCommandRegister constructor)
-        assertEquals(registerSize, commandRegister._commands.size());
+        // operation must fail as a previous entry already exist (see ClientCommandRegister constructor)
+        commandRegister.addCommand(RequestCode.DISCONNECT, new CmdDisconnect());
     }
 
     @Test
     public void testAddValidUnknownCommandSucceeds()
     {
-        int registerSize = commandRegister._commands.size();
-        // add a new command (not existing), supposed to have a new rule
-        commandRegister.addCommand(RequestCode.DISCONNECT + "bis", new CommandDisconnect());
-        assertEquals(registerSize+1, commandRegister._commands.size());
+        // add a new command (not existing)
+        assertTrue(commandRegister.addCommand(RequestCode.DISCONNECT + "bis", new CmdDisconnect()));
     }
 
     @Test(expected = ClientCommandException.class)
