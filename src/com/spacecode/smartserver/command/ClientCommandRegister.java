@@ -18,6 +18,7 @@ public final class ClientCommandRegister extends ClientCommand
     // Value:   ClientCommand instance.
     private Map<String, ClientCommand> _commands = new HashMap<>();
 
+    // delay (ms) allowed between 2 executions of a same request (same request code, param count, and first param)
     private static final int DELAY_BETWEEN_EXEC = 500;
     private long _lastExecTimestamp;
     private String _lastExecRequestCode;
@@ -108,16 +109,36 @@ public final class ClientCommandRegister extends ClientCommand
             throw new ClientCommandException("Unknown Command: " + requestCode);
         }
 
+        boolean executeCommand = true;
+
         long currentTimestamp = System.currentTimeMillis();
+        int paramCount = parameters.length - 1;
 
         if(requestCode.equals(_lastExecRequestCode))
         {
-            if(_lastExecParamCount == parameters.length - 1)
+            if(paramCount > 0 && _lastExecParamCount == paramCount)
             {
+                if(parameters[1].equals(_lastExecFirstParam))
+                {
+                    if(currentTimestamp - _lastExecTimestamp < DELAY_BETWEEN_EXEC)
+                    {
+                        // if the last cmd executed had the same request code & first param,
+                        // and was executed less than DELAY_BETWEEN_EXEC milliseconds, then skip the request
+                        executeCommand = false;
+                    }
+                }
 
             }
         }
 
-        cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+        _lastExecRequestCode = requestCode;
+        _lastExecTimestamp = currentTimestamp;
+        _lastExecParamCount = paramCount;
+        _lastExecFirstParam = paramCount > 0 ? parameters[1] : null;
+
+        if(executeCommand)
+        {
+            cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+        }
     }
 }

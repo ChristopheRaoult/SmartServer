@@ -29,7 +29,7 @@ public final class DeviceHandler
 {
     private volatile static Device _device;
 
-    // allows the CommandSerialBridge to set the current state of device (usb / ethernet).
+    // allows the CmdSerialBridge to set the current state of device (usb / ethernet).
     private static boolean SERIAL_PORT_FORWARDING = false;
 
     /** Must not be instantiated. */
@@ -207,7 +207,7 @@ public final class DeviceHandler
         if(ConfManager.isDevTemperature())
         {
             // TODO: Don't get Stuck at this point if VirtualHub cannot be contacted or the probe is unavailable
-            if(!_device.addTemperatureProbe("tempProbe1", 60, 0.2))
+            if(!_device.addTemperatureProbe("tempProbe1", 60, 0.3))
             {
                 SmartLogger.getLogger().warning("Unable to add the Temperature probe.");
             }

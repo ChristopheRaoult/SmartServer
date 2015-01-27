@@ -77,7 +77,7 @@ public final class SmartServer
             }
         } catch(SecurityException se)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Permission to get Working Directory not allowed.", se);
+            SmartLogger.getLogger().log(Level.SEVERE, "Permission to get SmartServer Directory not allowed.", se);
         }
 
         return ".";

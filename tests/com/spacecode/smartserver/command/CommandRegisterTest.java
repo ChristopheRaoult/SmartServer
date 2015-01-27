@@ -1,16 +1,22 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import io.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * JUnit "ClientCommandRegister" testing class.
@@ -19,33 +25,40 @@ import static org.mockito.Mockito.verify;
 @PrepareForTest(ClientCommandRegister.class)
 public class CommandRegisterTest
 {
-    private ClientCommandRegister commandRegister;
+    private ClientCommandRegister _commandRegister;
+    private Map<String, ClientCommand> _commands;
 
     @Before
     public void setUpbeforeTest()
     {
-        commandRegister = new ClientCommandRegister();
+        _commandRegister = PowerMockito.mock(ClientCommandRegister.class, CALLS_REAL_METHODS);
+
+        _commands = new HashMap<>();
+
+        Whitebox.setInternalState(_commandRegister, "_commands", _commands);
     }
 
     @Test
     public void testAddNullCommandFails()
     {
-        assertFalse(commandRegister.addCommand(null, null));
-        assertFalse(commandRegister.addCommand("nullCommand", null));
+        assertFalse(_commandRegister.addCommand(null, null));
+        assertFalse(_commandRegister.addCommand("nullCommand", null));
     }
 
     @Test
     public void testAddCommandAlreadyExistingFails()
     {
-        // operation must fail as a previous entry already exist (see ClientCommandRegister constructor)
-        commandRegister.addCommand(RequestCode.DISCONNECT, new CmdDisconnect());
+        _commands.put(RequestCode.DISCONNECT, new CmdDisconnect());
+
+        // operation must fail as a previous entry already exist
+        assertFalse(_commandRegister.addCommand(RequestCode.DISCONNECT, new CmdDisconnect()));
     }
 
     @Test
     public void testAddValidUnknownCommandSucceeds()
     {
         // add a new command (not existing)
-        assertTrue(commandRegister.addCommand(RequestCode.DISCONNECT + "bis", new CmdDisconnect()));
+        assertTrue(_commandRegister.addCommand(RequestCode.DISCONNECT + "bis", new CmdDisconnect()));
     }
 
     @Test(expected = ClientCommandException.class)
@@ -53,7 +66,7 @@ public class CommandRegisterTest
     {
         String[] params = new String[] { "not_existing_rule" };
 
-        commandRegister.execute(null, params);
+        _commandRegister.execute(null, params);
     }
 
     @Test
@@ -64,12 +77,28 @@ public class CommandRegisterTest
         String[] params = new String[] { requestCode };
 
         // register the command
-        commandRegister.addCommand(requestCode, command);
+        _commandRegister.addCommand(requestCode, command);
 
         // execute the command
-        commandRegister.execute(null, params);
+        _commandRegister.execute(null, params);
         // verify the command has been executed [without the request code, obviously]
         verify(command).execute(null, new String[0]);
+    }
+
+    @Test
+    public void testExecuteAntiFloodNotPassing() throws ClientCommandException
+    {
+        CmdAddAlert cmd = PowerMockito.mock(CmdAddAlert.class);
+        _commands.put(RequestCode.ADD_ALERT, cmd);
+
+        doNothing().when(cmd).execute(any(ChannelHandlerContext.class), any(String[].class));
+
+        // execute the same request twice in a row to trigger the "anti flood" delay
+        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
+        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
+
+        // must be called once, not twice
+        verify(cmd).execute(null, new String[]{"fake_serialized_alert"});
     }
 
     @Test
@@ -80,10 +109,10 @@ public class CommandRegisterTest
         String[] params = new String[] { requestCode, "param1", "param2" };
 
         // register the command
-        commandRegister.addCommand(requestCode, command);
+        _commandRegister.addCommand(requestCode, command);
 
         // execute the command
-        commandRegister.execute(null, params);
+        _commandRegister.execute(null, params);
         // verify the command has been executed [without the request code, obviously]
         verify(command).execute(null, new String[] { "param1", "param2"});
     }
