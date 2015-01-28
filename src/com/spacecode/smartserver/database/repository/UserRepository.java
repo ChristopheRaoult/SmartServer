@@ -1,9 +1,11 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.misc.TransactionManager;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
+import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
@@ -12,8 +14,7 @@ import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
@@ -286,5 +287,121 @@ public class UserRepository extends Repository<UserEntity>
 
             return null;
         }
+    }
+
+    /**
+     * Get all users having a permission of the current device, create corresponding User instances and fill a list.
+     * TODO: Try to get rid of RAW SQL
+     *
+     * @return A list of User instances, or null if any error occurred.
+     */
+    public List<User> getAuthorizedUsers()
+    {
+        // use getDevEntity to initialize devEntity, in case it was null. If still null, stop: no device available.
+        if(DbManager.getDevEntity() == null)
+        {
+            return null;
+        }
+
+        List<User> users = new ArrayList<>();
+
+        // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
+        String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
+
+        // TODO: Try to get rid of RAW sql...
+        // raw query to get all users with their fingerprints and their access type (on this device)
+        StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
+        sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");
+        // join all fingerprints
+        sb.append("LEFT JOIN ").append(FingerprintEntity.TABLE_NAME).append(" fpe ");
+        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
+        sb.append("fpe.").append(FingerprintEntity.GRANTED_USER_ID).append(" ");
+        // join all granted accesses
+        sb.append("LEFT JOIN ").append(GrantedAccessEntity.TABLE_NAME).append(" gae ");
+        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
+        sb.append("gae.").append(GrantedAccessEntity.GRANTED_USER_ID).append(" ");
+        // join grant types to granted accesses
+        sb.append("LEFT JOIN ").append(GrantTypeEntity.TABLE_NAME).append(" gte ");
+        sb.append("ON gae.").append(GrantedAccessEntity.GRANT_TYPE_ID).append(" = ");
+        sb.append("gte.").append(GrantTypeEntity.ID).append(" ");
+        // for the current device only
+        sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
+                .append(DbManager.getDevEntity().getId());
+
+        // username to temporary User instance
+        Map<String, User> usernameToUser = new HashMap<>();
+
+        // username to map of fingerprints
+        Map<String, Map<FingerIndex, String>> usernameToFingersMap = new HashMap<>();
+
+        try
+        {
+            // get one line per user having a granted access on this device
+            // one more line (with repeated user information) for each user's fingerprint.
+            GenericRawResults results = _dao.queryRaw(sb.toString());
+
+            // fill the Maps with results from Raw SQL query
+            for (String[] result : (Iterable<String[]>) results)
+            {
+                User user = usernameToUser.get(result[0]);
+
+                // first, create the user if he's not known yet
+                if (user == null)
+                {
+                    user = new User(result[0], GrantType.valueOf(result[2]), result[1]);
+                    usernameToUser.put(result[0], user);
+                }
+
+                // if there isn't any fingerprint [finger_index is null], go on
+                if (result[3] == null)
+                {
+                    continue;
+                }
+
+                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(user.getUsername());
+
+                if(fingersMap == null)
+                {
+                    // if there was no map for current user's fingers, create one
+                    fingersMap = new EnumMap<>(FingerIndex.class);
+                    usernameToFingersMap.put(user.getUsername(), fingersMap);
+                }
+
+                // parse string value (from db) to int. Exception is caught as IllegalArgumentException.
+                int fingerIndexVal = Integer.parseInt(result[3]);
+                FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
+
+                // if finger index from db is valid and in the expected range
+                if (fingerIndex != null)
+                {
+                    // add this new fingerprint template to the user
+                    fingersMap.put(fingerIndex, result[4]);
+                }
+            }
+
+            // Maps are filled, now, create the users and fill the results list
+            for(Map.Entry<String, User> e : usernameToUser.entrySet())
+            {
+                String username = e.getKey();
+                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(username);
+                User tmpUser = e.getValue();
+                User newUser = new User(username, tmpUser.getPermission(), tmpUser.getBadgeNumber(), fingersMap);
+
+                users.add(newUser);
+            }
+
+            results.close();
+
+            return users;
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load users from database.", sqle);
+        } catch(IllegalArgumentException iae)
+        {
+            // invalid fingerIndex or grantType from database
+            SmartLogger.getLogger().log(Level.SEVERE, "Loading users process failed because of corrupted data.", iae);
+        }
+
+        return null;
     }
 }

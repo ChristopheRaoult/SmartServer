@@ -1,12 +1,9 @@
 package com.spacecode.smartserver;
 
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
-import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
-import com.spacecode.smartserver.database.entity.InventoryEntity;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
@@ -80,7 +77,7 @@ public final class SmartServer
             SmartLogger.getLogger().log(Level.SEVERE, "Permission to get SmartServer Directory not allowed.", se);
         }
 
-        return ".";
+        return "."+File.separator;
     }
 
     /**
@@ -106,7 +103,7 @@ public final class SmartServer
         SmartLogger.initialize();
         initializeShutdownHook();
 
-        SmartLogger.getLogger().info("Initializing database...");
+        // Initialize database connection and (if required) model
         JdbcPooledConnectionSource connectionSource = DbManager.initializeDatabase();
 
         if(connectionSource == null)
@@ -115,18 +112,13 @@ public final class SmartServer
             return;
         }
 
-        SmartLogger.getLogger().info("Database initialized.");
-
         // TODO: execute "update.sql" if any is found (in SmartServer.getWorkingDirectory()), then REMOVE IT.
-
-        SmartLogger.getLogger().info("Connecting the local device...");
 
         if(DeviceHandler.connectDevice())
         {
             String devSerialNumber = DeviceHandler.getDevice().getSerialNumber();
 
-            SmartLogger.getLogger().info("Connected to " + DeviceHandler.getDevice().getDeviceType() +
-                    " (" + devSerialNumber + ")");
+            SmartLogger.getLogger().info(DeviceHandler.getDevice().getDeviceType() + ": " + devSerialNumber);
 
             // Get device configuration from database (see DeviceEntity class)
             DeviceEntity deviceEntity = DbManager.getDevEntity();
@@ -153,28 +145,18 @@ public final class SmartServer
             // TODO: do something if any failure
             DeviceHandler.connectModules();
 
-            // Load users from DB into UsersService.
-            SmartLogger.getLogger().info("Loading users...");
-
-            if(!DbManager.loadGrantedUsers())
+            // Load users from DB into Device's UsersService.
+            if(!DeviceHandler.loadAuthorizedUsers())
             {
                 SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
                 return;
             }
 
-            SmartLogger.getLogger().info("Users loaded.");
-
             // Load last inventory from DB and load it into device.
-            Inventory lastInventoryFromDb = ((InventoryRepository)DbManager.getRepository(InventoryEntity.class))
-                    .getLastInventory();
-
-            if(lastInventoryFromDb != null)
+            if(!DeviceHandler.loadLastInventory())
             {
-                DeviceHandler.getDevice().setLastInventory(lastInventoryFromDb);
-                SmartLogger.getLogger().info("Last inventory loaded in RfidDevice memory.");
+                SmartLogger.getLogger().info("No \"previous\" Inventory was loaded because none was found.");
             }
-
-            SmartLogger.getLogger().info("Start AlertCenter...");
 
             if(!AlertCenter.initialize())
             {
@@ -183,13 +165,13 @@ public final class SmartServer
 
             if(ConfManager.isDevTemperature())
             {
-                SmartLogger.getLogger().info("Start TemperatureCenter...");
-
                 if(!TemperatureCenter.initialize())
                 {
                     SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
                 }
             }
+
+            SmartLogger.getLogger().info("SmartServer is Ready");
         }
 
         else

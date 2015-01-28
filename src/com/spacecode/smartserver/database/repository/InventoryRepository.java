@@ -35,6 +35,11 @@ public class InventoryRepository extends Repository<InventoryEntity>
      */
     public Inventory getLastInventory()
     {
+        if(DbManager.getDevEntity() == null)
+        {
+            return null;
+        }
+
         // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present,
         // 4: total tags removed, 5: tag uid, 6: tag movement, 7: inventory creation date
         String columns = "inv."+InventoryEntity.GRANTED_USER_ID+"," +
@@ -63,8 +68,6 @@ public class InventoryRepository extends Repository<InventoryEntity>
                 .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(") ");
         sb.append("AND inv.").append(InventoryEntity.DEVICE_ID)
                 .append(" = ").append(DbManager.getDevEntity().getId());
-
-        Inventory lastInventoryFromDb = new Inventory();
 
         try
         {
@@ -114,7 +117,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
             if(lastRow == null)
             {
                 // there were no result: inventory table is empty.
-                return lastInventoryFromDb;
+                return null;
             }
 
             /*
@@ -149,17 +152,16 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
             creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastRow[7]);
 
-            lastInventoryFromDb = new Inventory(tagsAdded, tagsPresent, tagsRemoved, username, accessType, creationDate);
+            return new Inventory(tagsAdded, tagsPresent, tagsRemoved, username, accessType, creationDate);
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to load last inventory from database.", sqle);
-            return null;
         } catch(IllegalArgumentException | ParseException e)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Invalid data provided for last inventory loading.", e);
         }
 
-        return lastInventoryFromDb;
+        return null;
     }
 
     /**

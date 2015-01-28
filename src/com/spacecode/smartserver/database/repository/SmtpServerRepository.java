@@ -33,8 +33,6 @@ public class SmtpServerRepository extends Repository<SmtpServerEntity>
 
         SmtpServerEntity currentSse = getSmtpServerConfig();
 
-        // TODO: make sure the given data doesn't allow a SQL injection
-
         if(currentSse == null)
         {
             return ssRepo.insert(new SmtpServerEntity(address, port, username, password, sslEnabled));

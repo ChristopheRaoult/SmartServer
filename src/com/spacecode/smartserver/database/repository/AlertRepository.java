@@ -114,8 +114,6 @@ public class AlertRepository extends Repository<AlertEntity>
         // create an AlertEntity from the given Alert. All data is copied (including Id).
         AlertEntity newAlertEntity = new AlertEntity(ate, alert);
 
-        // TODO: check that To/Cc/Bcc, Subject/Content can't allow an SQL injection
-
         if(alert.getId() == 0)
         {
             if(!insert(newAlertEntity))

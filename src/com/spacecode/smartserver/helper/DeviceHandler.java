@@ -3,6 +3,7 @@ package com.spacecode.smartserver.helper;
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.data.DeviceStatus;
+import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
@@ -14,8 +15,10 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
+import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.database.repository.AuthenticationRepository;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
+import com.spacecode.smartserver.database.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,17 +95,19 @@ public final class DeviceHandler
     }
 
     /**
-     * Try to reconnect device five times (waiting 3sec after each try).
+     * Try to reconnect device during one hour (waiting five seconds after each try).
      *
      * @return True if reconnection succeeded, false otherwise.
      */
     public static boolean reconnectDevice()
     {
-        byte tryStep = 0;
         boolean deviceConnected = false;
+        long initialTimestamp = System.currentTimeMillis();
 
-        while(!deviceConnected && tryStep < 5)
+        while(!deviceConnected && !SERIAL_PORT_FORWARDING && (System.currentTimeMillis() - initialTimestamp < 3600000))
         {
+            SmartLogger.getLogger().info("Reconnecting Device...");
+
             deviceConnected = connectDevice();
 
             if(deviceConnected)
@@ -110,15 +115,20 @@ public final class DeviceHandler
                 connectModules();
             }
 
-            ++tryStep;
-
             try
             {
-                Thread.sleep(3000);
+                Thread.sleep(5000);
             } catch (InterruptedException ie)
             {
                 SmartLogger.getLogger().log(Level.WARNING, "Interrupted while trying to reconnect Device.", ie);
+                break;
             }
+        }
+
+        if(deviceConnected)
+        {
+            loadAuthorizedUsers();
+            loadLastInventory();
         }
 
         return deviceConnected;
@@ -233,6 +243,48 @@ public final class DeviceHandler
     }
 
     /**
+     * Get the list of Authorized Users (from UserRepository) and load them in the UsersService.
+     *
+     * @return True if the operation succeeded, false otherwise.
+     */
+    public static boolean loadAuthorizedUsers()
+    {
+        if(_device == null)
+        {
+            return false;
+        }
+
+        UserRepository userRepo = (UserRepository) DbManager.getRepository(UserEntity.class);
+        List<User> notAddedUsers = _device.getUsersService().addUsers(userRepo.getAuthorizedUsers());
+
+        if(!notAddedUsers.isEmpty())
+        {
+            SmartLogger.getLogger().warning(notAddedUsers.size() + " Users could not be loaded.");
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the last inventory (if any) from Db and set it as "Last Inventory" of the current device.
+     *
+     * @return True if an inventory has been found, false otherwise.
+     */
+    public static boolean loadLastInventory()
+    {
+        Inventory lastInventoryRecorded = ((InventoryRepository)DbManager.getRepository(InventoryEntity.class))
+            .getLastInventory();
+
+        if(lastInventoryRecorded == null)
+        {
+            return false;
+        }
+
+        _device.setLastInventory(lastInventoryRecorded);
+        return true;
+    }
+
+    /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
@@ -241,19 +293,12 @@ public final class DeviceHandler
         @Override
         public void deviceDisconnected()
         {
+            SmartLogger.getLogger().info("Device Disconnected...");
+
             SmartServer.sendAllClients(EventCode.DEVICE_DISCONNECTED);
             _device = null;
 
-            // if the device is in ethernet mode, try to reconnect it
-            if(!SERIAL_PORT_FORWARDING)
-            {
-                SmartLogger.getLogger().info("Reconnecting Device...");
-                // TODO: reload the last inventory from DB
-                reconnectDevice();
-                // TODO: should probably run indefinitely, until the service is shutdown or the device reconnected
-                // NOTE: if running indefinitely, mind the "serial bridge ON" possibility: we should stop the
-                // reconnection process if the device is suddenly used by USB
-            }
+            reconnectDevice();
         }
 
         @Override
