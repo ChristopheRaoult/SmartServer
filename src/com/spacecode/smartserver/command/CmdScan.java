@@ -1,5 +1,7 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.network.communication.EventCode;
+import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -19,6 +21,7 @@ public class CmdScan extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
+            SmartServer.sendAllClients(EventCode.SCAN_FAILED);
             return;
         }
 

@@ -92,8 +92,8 @@ public class CmdSerialBridge extends ClientCommand
                 SmartLogger.getLogger().severe("Stopped Port Forwarding command. Reconnecting Device...");
 
                 // reconnect to local Device
-                DeviceHandler.reconnectDevice();
                 DeviceHandler.setForwardingSerialPort(false);
+                DeviceHandler.reconnectDevice();
             } catch (IOException | InterruptedException e)
             {
                 SmartLogger.getLogger().log(Level.SEVERE, "Unable to stop Port Forwarding command.", e);

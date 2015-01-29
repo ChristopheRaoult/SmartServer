@@ -57,7 +57,7 @@ public class CmdUpdatePermission extends ClientCommand
         User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
 
         // grantType can't be null with "valueOf" (enum), but anyway
-        if(user == null || grantType == null)
+        if(user == null || grantType == null || grantType == GrantType.UNDEFINED)
         {
             // user could not be found or grantType was invalid
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
