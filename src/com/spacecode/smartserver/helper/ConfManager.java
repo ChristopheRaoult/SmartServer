@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.sdk.network.DbConfiguration;
 import com.spacecode.smartserver.SmartServer;
 
 import java.io.*;
@@ -98,19 +99,23 @@ public class ConfManager
      *
      * @param key   Name of the property to be changed.
      * @param value New value.
+     *
+     * @return True if the properties could be updated. False otherwise (I/O error).
      */
-    private void setProperty(String key, String value)
+    private boolean setProperty(String key, String value)
     {
-        configProp.setProperty(key, value);
+        configProp.setProperty(key, value == null ? "" : value);
 
         try
         {
             FileOutputStream fos = new FileOutputStream(CONFIG_FILE);
             configProp.store(fos, null);
             fos.close();
+            return true;
         } catch (IOException ioe)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "An I/O error occurred while updating properties.", ioe);
+            return false;
         }
     }
 
@@ -178,5 +183,94 @@ public class ConfManager
     public static boolean isDevTemperature()
     {
         return "on".equals(LazyHolder.INSTANCE.getProperty(DEV_TEMPERATURE));
+    }
+
+    /**
+     * Update the property "db_host" in the properties file.
+     *
+     * @param host New value for the host of the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbHost(String host)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_HOST, host);
+    }
+
+    /**
+     * Update the property "db_port" in the properties file.
+     *
+     * @param port New value for the port used by the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbPort(String port)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_PORT, port);
+    }
+
+    /**
+     * Update the property "db_name" in the properties file.
+     *
+     * @param name Name of the database to be used by SmartServer.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbName(String name)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_NAME, name);
+    }
+
+    /**
+     * Update the property "db_user" in the properties file.
+     *
+     * @param username New username for the access to the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbUser(String username)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_USER, username);
+    }
+
+    /**
+     * Update the property "db_password" in the properties file.
+     *
+     * @param password New password for the access to the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbPassword(String password)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_PASSWORD, password);
+    }
+
+    /**
+     * Update the property "db_dbms" in the properties file.
+     *
+     * @param dbms DBMS to be used.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbDbms(String dbms)
+    {
+        return LazyHolder.INSTANCE.setProperty(DB_DBMS, dbms);
+    }
+
+    /**
+     * Update the DB properties "all at once" using a DbConfiguration instance.
+     *
+     * @param dbConfiguration DbConfiguration containing all new settings.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setDbConfiguration(DbConfiguration dbConfiguration)
+    {
+        return  setDbHost(dbConfiguration.getHost()) &&
+                setDbPort(String.valueOf(dbConfiguration.getPort())) &&
+                setDbName(dbConfiguration.getName()) &&
+                setDbUser(dbConfiguration.getUser()) &&
+                setDbPassword(dbConfiguration.getPassword()) &&
+                setDbDbms(dbConfiguration.getDbms());
     }
 }

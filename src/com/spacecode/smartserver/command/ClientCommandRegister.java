@@ -36,6 +36,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.ALERTS_LIST,          new CmdAlertsList());
         _commands.put(RequestCode.ALERT_REPORTS,        new CmdAlertReports());
         _commands.put(RequestCode.AUTHENTICATIONS_LIST, new CmdAuthenticationsList());
+        _commands.put(RequestCode.DB_SETTINGS,          new CmdDbSettings());
         _commands.put(RequestCode.DEVICE_STATUS,        new CmdDeviceStatus());
         _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
@@ -48,6 +49,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.REMOVE_USER,          new CmdRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,          new CmdRewriteUid());
         _commands.put(RequestCode.SCAN,                 new CmdScan());
+        _commands.put(RequestCode.SET_DB_SETTINGS,      new CmdSetDbSettings());
         _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
         _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
         _commands.put(RequestCode.SERIAL_BRIDGE,        new CmdSerialBridge());

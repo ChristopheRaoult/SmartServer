@@ -1,9 +1,8 @@
 package com.spacecode.smartserver;
 
-import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.helper.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
@@ -104,9 +103,7 @@ public final class SmartServer
         initializeShutdownHook();
 
         // Initialize database connection and (if required) model
-        JdbcPooledConnectionSource connectionSource = DbManager.initializeDatabase();
-
-        if(connectionSource == null)
+        if(!DbManager.initializeDatabase())
         {
             SmartLogger.getLogger().severe("Database couldn't be initialized. SmartServer won't start.");
             return;
@@ -116,59 +113,9 @@ public final class SmartServer
 
         if(DeviceHandler.connectDevice())
         {
-            String devSerialNumber = DeviceHandler.getDevice().getSerialNumber();
-
-            SmartLogger.getLogger().info(DeviceHandler.getDevice().getDeviceType() + ": " + devSerialNumber);
-
-            // Get device configuration from database (see DeviceEntity class)
-            DeviceEntity deviceEntity = DbManager.getDevEntity();
-
-            // No configuration: stop SmartServer.
-            if(deviceEntity == null)
+            if(!init())
             {
-                SmartLogger.getLogger().warning("Device not configured. Creating a new entry in Database...");
-
-                if(!DbManager.getRepository(DeviceEntity.class).insert(new DeviceEntity(devSerialNumber)))
-                {
-                    SmartLogger.getLogger().severe("Could not create a new entry in Database, SmartServer will stop.");
-                    return;
-                }
-
-                if(DbManager.getDevEntity() == null)
-                {
-                    SmartLogger.getLogger().severe("New device entry created, but an error occurred while loading it.");
-                    return;
-                }
-            }
-
-            // Use the configuration to connect/load modules.
-            // TODO: do something if any failure
-            DeviceHandler.connectModules();
-
-            // Load users from DB into Device's UsersService.
-            if(!DeviceHandler.loadAuthorizedUsers())
-            {
-                SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
                 return;
-            }
-
-            // Load last inventory from DB and load it into device.
-            if(!DeviceHandler.loadLastInventory())
-            {
-                SmartLogger.getLogger().info("No \"previous\" Inventory was loaded because none was found.");
-            }
-
-            if(!AlertCenter.initialize())
-            {
-                SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
-            }
-
-            if(ConfManager.isDevTemperature())
-            {
-                if(!TemperatureCenter.initialize())
-                {
-                    SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
-                }
             }
 
             SmartLogger.getLogger().info("SmartServer is Ready");
@@ -202,6 +149,57 @@ public final class SmartServer
                 stop();
             }
         }));
+    }
+
+    private static boolean init()
+    {
+        Device currentDevice = DeviceHandler.getDevice();
+
+        if(currentDevice == null)
+        {
+            return false;
+        }
+
+        String devSerialNumber = currentDevice.getSerialNumber();
+        SmartLogger.getLogger().info(currentDevice.getDeviceType() + ": " + devSerialNumber);
+
+        if(!DbManager.createDeviceIfNotExists(devSerialNumber))
+        {
+            SmartLogger.getLogger().severe("Unknown device could not be create in DB. SmartServer won't start.");
+            return false;
+        }
+
+        // Use the configuration to connect/load modules.
+        // TODO: do something if any failure
+        DeviceHandler.connectModules();
+
+        // Load users from DB into Device's UsersService.
+        if(!DeviceHandler.loadAuthorizedUsers())
+        {
+            SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
+            return false;
+        }
+
+        // Load last inventory from DB and load it into device.
+        if(!DeviceHandler.loadLastInventory())
+        {
+            SmartLogger.getLogger().info("No \"last\" Inventory was loaded because none was found.");
+        }
+
+        if(!AlertCenter.initialize())
+        {
+            SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
+        }
+
+        if(ConfManager.isDevTemperature())
+        {
+            if(!TemperatureCenter.initialize())
+            {
+                SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
+            }
+        }
+
+        return true;
     }
 
     /**

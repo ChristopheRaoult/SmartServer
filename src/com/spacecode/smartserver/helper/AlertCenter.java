@@ -120,7 +120,6 @@ public final class AlertCenter
         _alertTypeRepository = (AlertTypeRepository) DbManager.getRepository(AlertTypeEntity.class);
 
         return  _alertRepository != null &&
-                _alertRepository instanceof AlertRepository &&
                 _alertHistoryRepository != null &&
                 _alertHistoryRepository instanceof AlertHistoryRepository &&
                 _alertTypeRepository != null;

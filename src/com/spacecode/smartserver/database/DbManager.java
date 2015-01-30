@@ -4,6 +4,7 @@
  import com.j256.ormlite.dao.DaoManager;
  import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
  import com.j256.ormlite.table.TableUtils;
+ import com.spacecode.sdk.network.DbConfiguration;
  import com.spacecode.sdk.network.alert.AlertType;
  import com.spacecode.sdk.user.data.AccessType;
  import com.spacecode.sdk.user.data.GrantType;
@@ -75,15 +76,15 @@ public class DbManager
 
         switch(confDbDbms)
         {
-            case "sqlserver":
+            case DbConfiguration.SQL_Server:
                 confDbPort = "".equals(confDbPort) ? "1433" : confDbPort;
                 return String.format("jdbc:%s://%s:%s;databaseName=%s;", confDbDbms, confDbHost, confDbPort, confDbName);
 
-            case "postgresql":
+            case DbConfiguration.PostgreSQL:
                 confDbPort = "".equals(confDbPort) ? "5432" : confDbPort;
                 return String.format("jdbc:%s://%s:%s/%s", confDbDbms, confDbHost, confDbPort, confDbName);
 
-            case "mysql":
+            case DbConfiguration.MySQL:
                 confDbPort = "".equals(confDbPort) ? "3306" : confDbPort;
                 return String.format("jdbc:%s://%s:%s/%s", confDbDbms, confDbHost, confDbPort, confDbName);
 
@@ -93,15 +94,15 @@ public class DbManager
     }
 
     /**
-     * Initialize Connection Pool and create Schema (if not created).
+     * Initialize Connection Pool and create the Schema (if not created).
      *
-     * @return JdbcPooledConnectionSource instance if succeeds, null otherwise.
+     * @return True if the connection/initialization succeeded. False otherwise.
      */
-    public static JdbcPooledConnectionSource initializeDatabase()
+    public static boolean initializeDatabase()
     {
         try
         {
-            // get connection string, from settings in smartserver.properties OR default conf
+            // get connection string, from settings in smartserver.properties OR use the default conf
             String connectionString = getConnectionString();
 
             if(CONNECTION_STRING.equals(connectionString))
@@ -129,10 +130,10 @@ public class DbManager
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to connect to the database, or initialize ORM.", sqle);
-            return null;
+            return false;
         }
 
-        return _pooledConnectionSrc;
+        return true;
     }
 
     /** @return A JdbcPooledConnectionSource (ORMLite) instance for DAO's. */
@@ -308,5 +309,20 @@ public class DbManager
         _deviceEntity = result == null ? null : result;
 
         return _deviceEntity;
+    }
+
+    /**
+     * Create a DeviceEntity for the given RFID serial number, if none is found.
+     *
+     * @param devSerialNumber RFID serial number (Serial number of the device).
+     *
+     * @return True if the configuration exists, or if it has been created and loaded. False otherwise.
+     */
+    public static boolean createDeviceIfNotExists(String devSerialNumber)
+    {
+        // either a DeviceEntity is available => return true, otherwise try to create and load it => return result
+        return  getDevEntity() != null ||
+                getRepository(DeviceEntity.class).insert(new DeviceEntity(devSerialNumber)) && getDevEntity() != null;
+
     }
 }
