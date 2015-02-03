@@ -29,7 +29,7 @@ public class CmdStartLighting extends ClientCommand
         // if there is no parameter, then there is no tags to light
         if(parameters.length == 0)
         {
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [StartLighting].");
         }
 
         if(DeviceHandler.getDevice() == null)

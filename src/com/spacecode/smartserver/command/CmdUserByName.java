@@ -24,7 +24,7 @@ public class CmdUserByName extends ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.USER_BY_NAME, "");
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [UserByName].");
         }
 
         if(DeviceHandler.getDevice() == null)

@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.network.alert.SmtpServer;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
@@ -31,7 +32,7 @@ public class CmdSetSmtpServer extends ClientCommand
         if(parameters.length != 5)
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [SetSmtpServer].");
         }
 
         String address = parameters[0];
@@ -49,10 +50,19 @@ public class CmdSetSmtpServer extends ClientCommand
             return;
         }
 
-
-        if(!((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class))
-                .persist(address, port, username, password, sslEnabled))
+        try
         {
+            SmtpServer smtpServer = new SmtpServer(address, port, username, password, sslEnabled);
+
+            if (!((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class))
+                    .persist(smtpServer))
+            {
+                SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);
+                return;
+            }
+        } catch(IllegalArgumentException iae)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid SmtpServer provided.", iae);
             SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);
             return;
         }

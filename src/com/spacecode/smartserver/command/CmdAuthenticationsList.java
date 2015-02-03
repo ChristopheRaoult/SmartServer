@@ -36,7 +36,7 @@ public class CmdAuthenticationsList extends ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.AUTHENTICATIONS_LIST);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [AuthenticationList].");
         }
 
         long timestampStart;

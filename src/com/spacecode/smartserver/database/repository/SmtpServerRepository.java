@@ -18,16 +18,11 @@ public class SmtpServerRepository extends Repository<SmtpServerEntity>
     /**
      * Persist new SMTP server information for the current device.
      *
-     * @param address       Server address.
-     * @param port          Server TCP port number.
-     * @param username      Username to connect to the SMTP server.
-     * @param password      Password to connect to the SMTP server.
-     * @param sslEnabled    If true, will use SSL for authentication.
+     * @param smtpServer    SmtpServer instance containing new information.
      *
      * @return              True if operation succeeded, false otherwise.
      */
-    public boolean persist(String address, int port, String username,
-                                            String password, boolean sslEnabled)
+    public boolean persist(SmtpServer smtpServer)
     {
         Repository<SmtpServerEntity> ssRepo = DbManager.getRepository(SmtpServerEntity.class);
 
@@ -35,12 +30,13 @@ public class SmtpServerRepository extends Repository<SmtpServerEntity>
 
         if(currentSse == null)
         {
-            return ssRepo.insert(new SmtpServerEntity(address, port, username, password, sslEnabled));
+            return ssRepo.insert(new SmtpServerEntity(smtpServer.getAddress(), smtpServer.getPort(),
+                    smtpServer.getUsername(), smtpServer.getPassword(), smtpServer.isSslEnabled()));
         }
 
         else
         {
-            currentSse.updateFrom(new SmtpServer(address, port, username, password, sslEnabled));
+            currentSse.updateFrom(smtpServer);
             return ssRepo.update(currentSse);
         }
     }

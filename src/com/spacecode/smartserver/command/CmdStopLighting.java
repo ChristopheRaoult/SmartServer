@@ -24,6 +24,7 @@ public class CmdStopLighting extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
+            SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
             return;
         }
 

@@ -31,7 +31,7 @@ public class CmdSetDbSettings extends ClientCommand
         if(parameters.length != 6)
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [SetDbSettings].");
         }
 
         try
@@ -42,21 +42,31 @@ public class CmdSetDbSettings extends ClientCommand
 
             DbConfiguration newConfig = new DbConfiguration(host, port, dbName, user, password, dbms);
 
-            SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS,
-                    ConfManager.setDbConfiguration(newConfig) ? TRUE : FALSE);
+            if(!ConfManager.setDbConfiguration(newConfig))
+            {
+                SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, FALSE);
+                return;
+            }
+
+            SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, TRUE);
 
             SmartLogger.getLogger().info("DB Settings have changed... Connecting to Database...");
 
             if(!DbManager.initializeDatabase())
             {
                 SmartLogger.getLogger()
-                        .severe("Unable to initialize Database. New database configuration may be invalid.");
+                        .severe("Unable to re-initialize Database. New database configuration may be invalid.");
             }
+            return;
         } catch(NumberFormatException nfe)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "TCP Port number invalid.", nfe);
-            SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, FALSE);
+        } catch(IllegalArgumentException iae)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid DbConfiguration provided.", iae);
         }
+
+        SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, FALSE);
     }
 }
 

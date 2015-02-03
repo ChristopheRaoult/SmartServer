@@ -34,7 +34,7 @@ public class CmdInventoriesList extends ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.INVENTORIES_LIST);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [InventoriesList].");
         }
 
         long timestampStart;

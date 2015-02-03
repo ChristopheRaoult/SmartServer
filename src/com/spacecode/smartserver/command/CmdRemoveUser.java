@@ -26,7 +26,7 @@ public class CmdRemoveUser extends ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [RemoveUser].");
         }
 
         if(DeviceHandler.getDevice() == null)

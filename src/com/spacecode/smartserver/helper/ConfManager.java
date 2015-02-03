@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.helper;
 
+import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.sdk.network.DbConfiguration;
 import com.spacecode.smartserver.SmartServer;
 
@@ -24,7 +25,10 @@ import java.util.logging.Level;
  * dev_br_slave=/dev/ttyUSB2<br/>
  * dev_fpr_master={2FD3A356-F2FF-F243-9B0D-9243C137E641}<br/>
  * dev_fpr_slave={BFCB44E6-EB02-3142-A596-9ED337EACE19}<br/>
+ *
  * dev_temperature=on<br/>
+ * dev_t_delta=0.3<br/>
+ * dev_t_delay=60<br/>
  */
 public class ConfManager
 {
@@ -40,20 +44,26 @@ public class ConfManager
     public static final String DB_USER     = "db_user";
     public static final String DB_PASSWORD = "db_password";
 
-    /** Property containing serial-port name of the Master badge reader. */
+    /** Contains serial-port name of the Master badge reader. */
     public static final String DEV_BR_MASTER    = "dev_br_master";
 
-    /** Property containing serial-port name of the Slave badge reader. */
+    /** Contains serial-port name of the Slave badge reader. */
     public static final String DEV_BR_SLAVE     = "dev_br_slave";
 
-    /** Property containing serial-port name of the Master fingerprint reader. */
+    /** Contains serial-port name of the Master fingerprint reader. */
     public static final String DEV_FPR_MASTER   = "dev_fpr_master";
 
-    /** Property containing serial-port name of the Slave fingerprint reader. */
+    /** Contains serial-port name of the Slave fingerprint reader. */
     public static final String DEV_FPR_SLAVE    = "dev_fpr_slave";
 
-    /** Property containing "on" if the device is using a temperature probe, "off" otherwise. */
+    /** Contains "on" if the device is using a temperature probe, "off" otherwise. */
     public static final String DEV_TEMPERATURE  = "dev_temperature";
+
+    /** Contains the minimum delta expected between two temperature measures, to make the last one relevant. */
+    public static final String DEV_TEMPERATURE_DELTA  = "dev_t_delta";
+
+    /** Contains the delay between each temperature measure. */
+    public static final String DEV_TEMPERATURE_DELAY  = "dev_t_delay";
 
     private ConfManager()
     {
@@ -119,61 +129,61 @@ public class ConfManager
         }
     }
 
-    /** Database Host (IP address or DNS) (if set, or empty), or null if the property is not existing. */
+    /** @return Database Host (IP address or DNS) (can be empty), or null if the property is not existing. */
     public static String getDbHost()
     {
         return LazyHolder.INSTANCE.getProperty(DB_HOST);
     }
 
-    /** Database TCP port (if set, or empty), or null if the property is not existing. */
+    /** @return Database TCP port (can be empty), or null if the property is not existing. */
     public static String getDbPort()
     {
         return LazyHolder.INSTANCE.getProperty(DB_PORT);
     }
 
-    /** Database Management System (if set, or empty), or null if the property is not existing. */
+    /** @return Database Management System (can be empty), or null if the property is not existing. */
     public static String getDbDbms()
     {
         return LazyHolder.INSTANCE.getProperty(DB_DBMS);
     }
 
-    /** Database name (if set, or empty), or null if the property is not existing. */
+    /** @return Database name (can be empty), or null if the property is not existing. */
     public static String getDbName()
     {
         return LazyHolder.INSTANCE.getProperty(DB_NAME);
     }
 
-    /** Database user's name (if set, or empty), or null if the property is not existing. */
+    /** @return Database user's name (can be empty), or null if the property is not existing. */
     public static String getDbUser()
     {
         return LazyHolder.INSTANCE.getProperty(DB_USER);
     }
 
-    /** Database user's password (if set, or empty), or null if the property is not existing. */
+    /** @return Database user's password (can be empty), or null if the property is not existing. */
     public static String getDbPassword()
     {
         return LazyHolder.INSTANCE.getProperty(DB_PASSWORD);
     }
 
-    /** Serial number of the master badge reader (if set, or empty), or null if the property is not existing. */
+    /** @return Serial number of the master badge reader (can be empty), or null if the property is not existing. */
     public static String getDevBrMaster()
     {
         return LazyHolder.INSTANCE.getProperty(DEV_BR_MASTER);
     }
 
-    /** Serial number of the slave badge reader (if set, or empty), or null if the property is not existing. */
+    /** @return Serial number of the slave badge reader (can be empty), or null if the property is not existing. */
     public static String getDevBrSlave()
     {
         return LazyHolder.INSTANCE.getProperty(DEV_BR_SLAVE);
     }
 
-    /** Serial number of the master fingerprint reader (if set, or empty), or null if the property is not existing. */
+    /** @return Serial number of the master fingerprint reader (can be empty), or null if the property is not existing. */
     public static String getDevFprMaster()
     {
         return LazyHolder.INSTANCE.getProperty(DEV_FPR_MASTER);
     }
 
-    /** Serial number of the slave fingerprint reader (if set, or empty), or null if the property is not existing. */
+    /** @return Serial number of the slave fingerprint reader (can be empty), or null if the property is not existing. */
     public static String getDevFprSlave()
     {
         return LazyHolder.INSTANCE.getProperty(DEV_FPR_SLAVE);
@@ -183,6 +193,36 @@ public class ConfManager
     public static boolean isDevTemperature()
     {
         return "on".equals(LazyHolder.INSTANCE.getProperty(DEV_TEMPERATURE));
+    }
+
+    /** @return Minimum delta expected between two temperature measures. Null if no valid value is available. */
+    public static double getDevTemperatureDelta()
+    {
+        String propertyValue = LazyHolder.INSTANCE.getProperty(DEV_TEMPERATURE_DELTA);
+
+        try
+        {
+            return propertyValue == null || propertyValue.trim().isEmpty() ? -1 : Double.parseDouble(propertyValue);
+        } catch(NumberFormatException nfe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid value for property Temperature Measurement Delta", nfe);
+            return -1;
+        }
+    }
+
+    /** @return Delay between each temperature measure. -1 if no valid value is available. */
+    public static int getDevTemperatureDelay()
+    {
+        String propertyValue = LazyHolder.INSTANCE.getProperty(DEV_TEMPERATURE_DELAY);
+
+        try
+        {
+            return propertyValue == null || propertyValue.trim().isEmpty() ? -1 : Integer.parseInt(propertyValue);
+        } catch(NumberFormatException nfe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid value for property Temperature Measurement Delay", nfe);
+            return -1;
+        }
     }
 
     /**
@@ -272,5 +312,54 @@ public class ConfManager
                 setDbUser(dbConfiguration.getUser()) &&
                 setDbPassword(dbConfiguration.getPassword()) &&
                 setDbDbms(dbConfiguration.getDbms());
+    }
+
+    /**
+     * Update the probe settings "all at once" using a TemperatureProbe.Settings instance.
+     *
+     * @param settings Configuration containing all new values.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setProbeConfiguration(TemperatureProbe.Settings settings)
+    {
+        return  setDevTemperatureDelay(settings.getDelay()) &&
+                setDevTemperatureDelta(settings.getDelta()) &&
+                setDevTemperature(settings.isEnabled());
+    }
+
+    public static boolean setDevBrMaster(String serialPort)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_BR_MASTER, serialPort);
+    }
+
+    public static boolean setDevBrSlave(String serialPort)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_BR_SLAVE, serialPort);
+    }
+
+    public static boolean setDevFprMaster(String serialNumber)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_FPR_MASTER, serialNumber);
+    }
+
+    public static boolean setDevFprSlave(String serialNumber)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_FPR_SLAVE, serialNumber);
+    }
+
+    public static boolean setDevTemperature(boolean state)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_TEMPERATURE, state ? "on" : "off");
+    }
+
+    public static boolean setDevTemperatureDelay(int seconds)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_TEMPERATURE_DELAY, String.valueOf(seconds));
+    }
+
+    public static boolean setDevTemperatureDelta(double delta)
+    {
+        return LazyHolder.INSTANCE.setProperty(DEV_TEMPERATURE_DELTA, String.valueOf(delta));
     }
 }

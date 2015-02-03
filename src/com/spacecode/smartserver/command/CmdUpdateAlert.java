@@ -28,7 +28,7 @@ public class CmdUpdateAlert extends ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [UpdateAlert].");
         }
 
         Alert alert = Alert.deserialize(parameters[0]);

@@ -35,7 +35,7 @@ public class CmdAddUser extends ClientCommand
         if(parameters.length != 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [AddUser].");
         }
 
         if(DeviceHandler.getDevice() == null)

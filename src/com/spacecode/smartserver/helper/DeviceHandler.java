@@ -159,10 +159,10 @@ public final class DeviceHandler
 
         try
         {
-            if(fprMaster != null && !"".equals(fprMaster.trim()))
+            if(fprMaster != null && !fprMaster.trim().isEmpty())
             {
                 // 2 readers
-                if(fprSlave != null && !"".equals(fprSlave.trim()))
+                if(fprSlave != null && !fprSlave.trim().isEmpty())
                 {
                     if(FingerprintReader.connectFingerprintReaders(2) != 2)
                     {
@@ -201,27 +201,48 @@ public final class DeviceHandler
         String brMaster = ConfManager.getDevBrMaster();
         String brSlave = ConfManager.getDevBrSlave();
 
-        if(brMaster != null && !"".equals(brMaster.trim()))
+        if(brMaster != null && !brMaster.trim().isEmpty())
         {
             if(!_device.addBadgeReader(brMaster, true))
             {
-                SmartLogger.getLogger().warning("Unable to add Master Badge Reader on "+brMaster+".");
+                SmartLogger.getLogger().warning("Unable to add Master Badge Reader on "+brMaster);
             }
 
-            if(brSlave != null && !"".equals(brSlave.trim()) && !_device.addBadgeReader(brSlave, false))
+            if(brSlave != null && !brSlave.trim().isEmpty() && !_device.addBadgeReader(brSlave, false))
             {
-                SmartLogger.getLogger().warning("Unable to add Slave Badge Reader on "+brSlave+".");
+                SmartLogger.getLogger().warning("Unable to add Slave Badge Reader on "+brSlave);
             }
         }
 
+        connectProbeIfEnabled();
+    }
+
+    /** If a temperature probe is enabled (see ConfManager), try to add a module TemperatureProbe to the current Device.
+     */
+    private static void connectProbeIfEnabled()
+    {
         if(ConfManager.isDevTemperature())
         {
+            int measurementDelay = ConfManager.getDevTemperatureDelay();
+            double measurementDelta = ConfManager.getDevTemperatureDelta();
+
+            measurementDelay = measurementDelay == -1 ? 60  : measurementDelay;
+            measurementDelta = measurementDelta == -1 ? 0.3 : measurementDelta;
+
             // TODO: Don't get Stuck at this point if VirtualHub cannot be contacted or the probe is unavailable
-            if(!_device.addTemperatureProbe("tempProbe1", 60, 0.3))
+            if(!_device.addTemperatureProbe("tempProbe1", measurementDelay, measurementDelta))
             {
                 SmartLogger.getLogger().warning("Unable to add the Temperature probe.");
             }
         }
+    }
+
+    /** Disconnect the temperature probe, if any, and reconnect it using last parameters (see ConfManager).
+     */
+    public static void reloadTemperatureProbe()
+    {
+        _device.disconnectTemperatureProbe();
+        connectProbeIfEnabled();
     }
 
     /**

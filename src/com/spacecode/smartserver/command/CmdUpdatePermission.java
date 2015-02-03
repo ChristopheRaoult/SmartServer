@@ -31,7 +31,7 @@ public class CmdUpdatePermission extends ClientCommand
         if(parameters.length != 2)
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [UpdatePermission].");
         }
 
         if(DeviceHandler.getDevice() == null)

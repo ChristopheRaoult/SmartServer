@@ -27,7 +27,7 @@ public class CmdUpdateBadge extends ClientCommand
         if(parameters.length < 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
-            throw new ClientCommandException("Invalid number of parameters.");
+            throw new ClientCommandException("Invalid number of parameters [UpdateBadge].");
         }
 
         if(DeviceHandler.getDevice() == null)
