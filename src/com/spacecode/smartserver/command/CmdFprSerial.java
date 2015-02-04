@@ -27,7 +27,7 @@ public class CmdFprSerial extends ClientCommand
         }
 
         boolean isMaster = Boolean.parseBoolean(parameters[0]);
-        String serialPortNumber = isMaster ? ConfManager.getDevBrMaster() : ConfManager.getDevBrSlave();
+        String serialPortNumber = isMaster ? ConfManager.getDevFprMaster() : ConfManager.getDevFprSlave();
 
         SmartServer.sendMessage(ctx, RequestCode.FPR_SERIAL, serialPortNumber);
     }

@@ -26,6 +26,7 @@ public class CmdBrSerial extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [BrSerial].");
         }
 
+        //SmartLogger.getLogger().info(parameters[0]);
         boolean isMaster = Boolean.parseBoolean(parameters[0]);
         String serialPortName = isMaster ? ConfManager.getDevBrMaster() : ConfManager.getDevBrSlave();
 

@@ -52,7 +52,9 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.REMOVE_USER,          new CmdRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,          new CmdRewriteUid());
         _commands.put(RequestCode.SCAN,                 new CmdScan());
+        _commands.put(RequestCode.SET_BR_SERIAL,        new CmdSetBrSerial());
         _commands.put(RequestCode.SET_DB_SETTINGS,      new CmdSetDbSettings());
+        _commands.put(RequestCode.SET_FPR_SERIAL,       new CmdSetFprSerial());
         _commands.put(RequestCode.SET_PROBE_SETTINGS,   new CmdSetProbeSettings());
         _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
         _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
