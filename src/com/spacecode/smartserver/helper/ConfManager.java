@@ -18,8 +18,8 @@ import java.util.logging.Level;
  * db_host=localhost<br/>
  * db_dbms=mysql<br/>
  * db_port=<br/>
- * db_user=root<br/>
- * db_password=<br/>
+ * db_user=spacecode<br/>
+ * db_password=Spacecode4sql<br/>
  *
  * dev_br_master=/dev/ttyUSB1<br/>
  * dev_br_slave=/dev/ttyUSB2<br/>

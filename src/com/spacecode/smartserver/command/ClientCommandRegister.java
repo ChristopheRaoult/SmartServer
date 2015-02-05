@@ -41,6 +41,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.DEVICE_STATUS,        new CmdDeviceStatus());
         _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
+        _commands.put(RequestCode.FLASH_FIRMWARE,       new CmdFlashFirmware());
         _commands.put(RequestCode.FPR_SERIAL,           new CmdFprSerial());
         _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
         _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());

@@ -32,8 +32,8 @@ public class DbManager
     private static final String DB_PORT             = "3306";
     private static final String DB_NAME             = "smartserver";
     // TODO: Do not use root user in production
-    private static final String DB_USER             = "root";
-    private static final String DB_PASSWORD         = "";
+    private static final String DB_USER             = "spacecode";
+    private static final String DB_PASSWORD         = "Spacecode4sql";
 
     private static final String CONNECTION_STRING   =
             "jdbc:mysql://"+DB_HOST+":"+DB_PORT+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD;

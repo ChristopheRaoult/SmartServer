@@ -28,6 +28,8 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object>
     private WebSocketServerHandshaker _handshaker;
     private static final ClientCommandRegister COMMAND_REGISTER = new ClientCommandRegister();
 
+    private final StringBuilder _continuousBuffer = new StringBuilder();
+
     @Override
     public void channelActive(final ChannelHandlerContext ctx)
     {
@@ -73,7 +75,7 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object>
 
         // Handshake
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-                "ws://" + req.headers().get(HOST), null, false);
+                "ws://" + req.headers().get(HOST), null, false, SmartServer.MAX_FRAME_LENGTH);
         _handshaker = wsFactory.newHandshaker(req);
 
         if (_handshaker == null)
@@ -95,13 +97,31 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object>
             return;
         }
 
-        if (!(frame instanceof TextWebSocketFrame))
+        String request;
+
+        if (frame instanceof TextWebSocketFrame)
         {
-            SmartLogger.getLogger().severe("Invalid WebSocketFrame not handled: "+frame.getClass());
+            _continuousBuffer.append(((TextWebSocketFrame) frame).text());
+        }
+
+        else if (frame instanceof ContinuationWebSocketFrame)
+        {
+            _continuousBuffer.append(((ContinuationWebSocketFrame) frame).text());
+        }
+
+        else
+        {
+            SmartLogger.getLogger().severe("Invalid WebSocketFrame not handled: " + frame.getClass());
             return;
         }
 
-        String request = ((TextWebSocketFrame) frame).text();
+        if(!frame.isFinalFragment())
+        {
+            return;
+        }
+
+        request = _continuousBuffer.toString();
+        _continuousBuffer.setLength(0);
 
         if(request.trim().isEmpty())
         {

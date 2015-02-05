@@ -50,6 +50,9 @@ public final class SmartServer
     private static Channel _channel;
     private static Channel _wsChannel;
 
+    // default is 65536 (most of the time). Increase this value.
+    public static final int MAX_FRAME_LENGTH = 262144;
+
     /** Must not be instantiated. */
     private SmartServer()
     {
@@ -219,7 +222,7 @@ public final class SmartServer
                         public void initChannel(SocketChannel ch)
                         {
                             // Define character EOT (0x04) as an end-of-frame character.
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(32768,
+                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(MAX_FRAME_LENGTH,
                                     Unpooled.wrappedBuffer(new byte[] {MessageHandler.END_OF_MESSAGE})));
 
                             // Allow sending/receiving string instead of byte buffers.
@@ -244,7 +247,7 @@ public final class SmartServer
                         public void initChannel(SocketChannel ch)
                         {
                             ch.pipeline().addLast(new HttpServerCodec());
-                            ch.pipeline().addLast(new HttpObjectAggregator(65536));
+                            ch.pipeline().addLast(new HttpObjectAggregator(MAX_FRAME_LENGTH));
                             ch.pipeline().addLast(WS_HANDLER);
                         }
                     });
