@@ -2,7 +2,11 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Command FlashFirmware
@@ -27,6 +31,15 @@ public class CmdFlashFirmware extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [FlashFirmware].");
         }
 
-        SmartServer.sendMessage(ctx, RequestCode.FLASH_FIRMWARE, TRUE);
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendAllClients(RequestCode.FLASH_FIRMWARE, FALSE);
+            return;
+        }
+
+        List<String> firmwareLines = Arrays.asList(parameters[0].split("[\\r\\n]+"));
+        boolean result = DeviceHandler.getDevice().flashFirmware(firmwareLines);
+
+        SmartServer.sendMessage(ctx, RequestCode.FLASH_FIRMWARE, result ? TRUE : FALSE);
     }
 }

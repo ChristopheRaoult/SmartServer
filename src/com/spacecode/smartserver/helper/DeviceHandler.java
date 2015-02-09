@@ -309,7 +309,8 @@ public final class DeviceHandler
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
-            AccessControlEventHandler, AccessModuleEventHandler, TemperatureEventHandler, LedEventHandler
+            AccessControlEventHandler, AccessModuleEventHandler, TemperatureEventHandler, LedEventHandler,
+            MaintenanceEventHandler
     {
         @Override
         public void deviceDisconnected()
@@ -460,6 +461,14 @@ public final class DeviceHandler
         public void deviceStatusChanged(DeviceStatus status)
         {
             SmartServer.sendAllClients(EventCode.STATUS_CHANGED, status.name());
+        }
+
+        @Override
+        public void flashingProgress(int rowNumber, int rowCount)
+        {
+            SmartServer.sendAllClients(EventCode.FLASHING_PROGRESS,
+                    String.valueOf(rowNumber),
+                    String.valueOf(rowCount));
         }
     }
 }
