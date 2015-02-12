@@ -5,6 +5,7 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.database.repository.TemperatureMeasurementRepository;
+import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -34,6 +35,12 @@ public class CmdTemperatureList extends ClientCommand
         {
             SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_LIST);
             throw new ClientCommandException("Invalid number of parameters [TemperatureList].");
+        }
+
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_LIST);
+            return;
         }
 
         long timestampStart;

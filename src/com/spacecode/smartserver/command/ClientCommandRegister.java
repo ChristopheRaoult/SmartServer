@@ -25,6 +25,15 @@ public final class ClientCommandRegister extends ClientCommand
     private int _lastExecParamCount;
     private String _lastExecFirstParam;
 
+    /** RequestCode only used by the SmartApp to flash the Firmware */
+    static final String FLASH_FIRMWARE = "flashfirmware";
+    /** RequestCode only used by the "serialbridge.sh" script to switch ON/OFF the "Serial Bridge" */
+    static final String SERIAL_BRIDGE = "serialbridge";
+    /** RequestCode only used by the SmartApp to start the update script */
+    static final String START_UPDATE = "startupdate";
+    /** RequestCode only used by the "update.py" script to inform SmartServer of the progress of Updates */
+    static final String UPDATE_REPORT = "updatereport";
+
     /**
      * Initialize command register.
      * Add an entry to "_commands" HashMap with request code & command instance for each known request.
@@ -41,7 +50,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.DEVICE_STATUS,        new CmdDeviceStatus());
         _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
-        _commands.put(RequestCode.FLASH_FIRMWARE,       new CmdFlashFirmware());
+        _commands.put(FLASH_FIRMWARE,                   new CmdFlashFirmware());
         _commands.put(RequestCode.FPR_SERIAL,           new CmdFprSerial());
         _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
         _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());
@@ -59,11 +68,13 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.SET_PROBE_SETTINGS,   new CmdSetProbeSettings());
         _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
         _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
-        _commands.put(RequestCode.SERIAL_BRIDGE,        new CmdSerialBridge());
+        _commands.put(SERIAL_BRIDGE,                    new CmdSerialBridge());
         _commands.put(RequestCode.SMTP_SERVER,          new CmdSmtpServer());
         _commands.put(RequestCode.START_LIGHTING,       new CmdStartLighting());
+        _commands.put(START_UPDATE,                     new CmdStartUpdate());
         _commands.put(RequestCode.STOP_LIGHTING,        new CmdStopLighting());
         _commands.put(RequestCode.STOP_SCAN,            new CmdStopScan());
+        _commands.put(UPDATE_REPORT,                    new CmdUpdateReport());
         _commands.put(RequestCode.UPDATE_PERMISSION,    new CmdUpdatePermission());
         _commands.put(RequestCode.UPDATE_ALERT,         new CmdUpdateAlert());
         _commands.put(RequestCode.UPDATE_BADGE,         new CmdUpdateBadge());

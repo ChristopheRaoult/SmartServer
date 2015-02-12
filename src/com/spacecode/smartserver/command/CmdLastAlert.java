@@ -8,6 +8,7 @@ import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
 import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
 import com.spacecode.smartserver.database.repository.Repository;
+import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -27,6 +28,12 @@ public class CmdLastAlert extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.LAST_ALERT, "");
+            return;
+        }
+
         AlertHistoryRepository histoRepo = (AlertHistoryRepository)
                 DbManager.getRepository(AlertHistoryEntity.class);
         Repository<AlertTemperatureEntity> alertTempRepo =
