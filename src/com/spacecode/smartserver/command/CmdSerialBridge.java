@@ -61,7 +61,7 @@ public class CmdSerialBridge extends ClientCommand
                 DeviceHandler.disconnectDevice();
 
                 // execute command for port forwarding
-                _portForwardingProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwStartCmd ).start();
+                _portForwardingProcess = new ProcessBuilder("/bin/sh", "-c", _pfwStartCmd).start();
 
                 SmartLogger.getLogger().severe("Running Port Forwarding command.");
             } catch (IOException ioe)
@@ -84,7 +84,7 @@ public class CmdSerialBridge extends ClientCommand
             {
                 // stop the process (port forwarding)
                 // NOTE: calling destroy() on Process instance does not stop "socat"...
-                Process killingSocatProcess = new ProcessBuilder( "/bin/sh", "-c", _pfwEndCmd).start();
+                Process killingSocatProcess = new ProcessBuilder("/bin/sh", "-c", _pfwEndCmd).start();
                 killingSocatProcess.waitFor();
 
                 _portForwardingProcess = null;

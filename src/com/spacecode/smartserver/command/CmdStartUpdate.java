@@ -27,15 +27,20 @@ public class CmdStartUpdate extends ClientCommand
         // do not execute anything if the process exists (= not terminated)
         if(_pythonProcess != null)
         {
-            return;
+            try
+            {
+                _pythonProcess.waitFor();
+            } catch (InterruptedException ie)
+            {
+                SmartLogger.getLogger().log(Level.SEVERE, "Interrupted while waiting for AutoUpdate to complete.", ie);
+            }
         }
 
         try
         {
             // execute the auto-update script
-            _pythonProcess = Runtime.getRuntime()
-                    .exec("/usr/bin/nohup /usr/local/bin/Spacecode/update_runner.sh 2>&1 > /dev/null &");
-            SmartLogger.getLogger().info("Running the auto-update script...");
+            _pythonProcess = new ProcessBuilder("/bin/sh", "-c", "python /usr/local/bin/Spacecode/update.py").start();
+            SmartLogger.getLogger().info("Running the auto-update process...");
         } catch (IOException ioe)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to execute the auto-update script.", ioe);
