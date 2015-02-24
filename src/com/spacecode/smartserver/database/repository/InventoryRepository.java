@@ -1,18 +1,14 @@
 package com.spacecode.smartserver.database.repository;
 
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.misc.TransactionManager;
 import com.spacecode.sdk.device.data.Inventory;
-import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.*;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -28,10 +24,9 @@ public class InventoryRepository extends Repository<InventoryEntity>
     }
 
     /**
-     * Perform RAW SQL query to get the last inventory and create an Inventory (SDK) instance from its data.
-     * TODO: Try to get rid of RAW SQL
+     * Get last inventory recorded in the Database and return it as an Inventory (sdk) instance.
      *
-     * @return An Inventory (SDK) instance or null if anything went wrong.
+     * @return An Inventory (SDK) instance or null if: any error occurred, or no inventory was found.
      */
     public Inventory getLastInventory()
     {
@@ -40,131 +35,20 @@ public class InventoryRepository extends Repository<InventoryEntity>
             return null;
         }
 
-        // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present,
-        // 4: total tags removed, 5: tag uid, 6: tag movement, 7: inventory creation date
-        // 8: inventory id (Not required at the beginning but needed for SmartTracker users... ~)
-        String columns = "inv."+InventoryEntity.GRANTED_USER_ID+"," +
-                " inv."+InventoryEntity.ACCESS_TYPE_ID+"," +
-                " inv."+InventoryEntity.TOTAL_ADDED+"," +
-                " inv."+InventoryEntity.TOTAL_PRESENT+"," +
-                " inv."+InventoryEntity.TOTAL_REMOVED+"," +
-                " rt."+ RfidTagEntity.UID+"," +
-                " irt."+ InventoryRfidTag.MOVEMENT+"," +
-                " inv."+InventoryEntity.CREATED_AT+"," +
-                " inv."+InventoryEntity.ID;
-
-        // raw query to get all columns for the last inventory
-        StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
-        sb.append("FROM ").append(InventoryEntity.TABLE_NAME).append(" inv ");
-        // join through the many-to-many relationship
-        sb.append("LEFT JOIN ").append(InventoryRfidTag.TABLE_NAME).append(" irt ");
-        sb.append("ON inv.").append(InventoryEntity.ID).append(" = ");
-        sb.append("irt.").append(InventoryRfidTag.INVENTORY_ID).append(" ");
-        // join all tags
-        sb.append("LEFT JOIN ").append(RfidTagEntity.TABLE_NAME).append(" rt ");
-        sb.append("ON rt.").append(RfidTagEntity.ID).append(" = ");
-        sb.append("irt.").append(InventoryRfidTag.RFID_TAG_ID).append(" ");
-        // for the current device only
-        sb.append("WHERE inv.").append(InventoryEntity.CREATED_AT)
-                .append(" = (SELECT MAX(").append(InventoryEntity.CREATED_AT).append(")")
-                .append(" FROM ").append(InventoryEntity.TABLE_NAME).append(") ");
-        sb.append("AND inv.").append(InventoryEntity.DEVICE_ID)
-                .append(" = ").append(DbManager.getDevEntity().getId());
-
         try
         {
-            // one line per tag movement in the inventory (if any)
-            GenericRawResults results = _dao.queryRaw(sb.toString());
+            InventoryEntity lastEntity = _dao.queryForFirst(
+                    _dao.queryBuilder()
+                            .orderBy(InventoryEntity.CREATED_AT, false)
+                            .limit(1L)
+                            .prepare());
 
-            List<String> tagsAdded = new ArrayList<>();
-            List<String> tagsPresent = new ArrayList<>();
-            List<String> tagsRemoved = new ArrayList<>();
-
-            String[] lastRow = null;
-
-            // fill the inventory instance with results from Raw SQL query
-            for (String[] result : (Iterable<String[]>) results)
-            {
-                // if it's a no-tag scan, there will be no line with a tag-movement
-                if(result[6] == null)
-                {
-                    continue;
-                }
-
-                switch(result[6])
-                {
-                    case "1":
-                        tagsAdded.add(result[5]);
-                        break;
-
-                    case "0":
-                        tagsPresent.add(result[5]);
-                        break;
-
-                    case "-1":
-                        tagsRemoved.add(result[5]);
-                        break;
-
-                    default:
-                        // invalid row or value. Should not happen.
-                        continue;
-                }
-
-                // store the last line in order to initialize (once) repeated data (creation date, username...).
-                lastRow = result;
-            }
-
-            results.close();
-
-            if(lastRow == null)
-            {
-                // there were no result: inventory table is empty.
-                return null;
-            }
-
-            /*
-            Parse GrantedUser id as int to get its name from db
-            Get AccessType as a value from enum
-            Parse Creation Date as a Date
-             */
-            String username = null;
-            AccessType accessType = null;
-            Date creationDate;
-
-            // user
-            if(lastRow[0] != null)
-            {
-                int userId = Integer.parseInt(lastRow[0]);
-                UserEntity gue = DbManager.getRepository(UserEntity.class).getEntityById(userId);
-
-                if(gue != null)
-                {
-                    username = gue.getUsername();
-                }
-            }
-
-            // access type
-            int accessTypeId = Integer.parseInt(lastRow[1]);
-            AccessTypeEntity ate = DbManager.getRepository(AccessTypeEntity.class).getEntityById(accessTypeId);
-
-            if(ate != null)
-            {
-                accessType = AccessTypeRepository.asAccessType(ate);
-            }
-
-            creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastRow[7]);
-
-            return new Inventory(Integer.parseInt(lastRow[8]), tagsAdded, tagsPresent, tagsRemoved,
-                    username, accessType, creationDate);
+            return lastEntity != null ? lastEntity.asInventory() : null;
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load last inventory from database.", sqle);
-        } catch(IllegalArgumentException | ParseException e)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Invalid data provided for last inventory loading.", e);
+            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity where field not equal.", sqle);
+            return null;
         }
-
-        return null;
     }
 
     /**
