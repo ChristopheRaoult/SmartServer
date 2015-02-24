@@ -54,6 +54,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.FPR_SERIAL,           new CmdFprSerial());
         _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
         _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());
+        _commands.put(RequestCode.INVENTORY_BY_ID,      new CmdInventoryById());
         _commands.put(RequestCode.LAST_ALERT,           new CmdLastAlert());
         _commands.put(RequestCode.LAST_INVENTORY,       new CmdLastInventory());
         _commands.put(RequestCode.PROBE_SETTINGS,       new CmdProbeSettings());

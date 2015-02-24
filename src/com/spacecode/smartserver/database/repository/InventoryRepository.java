@@ -42,6 +42,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
         // 0: GrantedUser id, 1: AccessType id, 2: total tags added, 3: total tags present,
         // 4: total tags removed, 5: tag uid, 6: tag movement, 7: inventory creation date
+        // 8: inventory id (Not required at the beginning but needed for SmartTracker users... ~)
         String columns = "inv."+InventoryEntity.GRANTED_USER_ID+"," +
                 " inv."+InventoryEntity.ACCESS_TYPE_ID+"," +
                 " inv."+InventoryEntity.TOTAL_ADDED+"," +
@@ -49,7 +50,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
                 " inv."+InventoryEntity.TOTAL_REMOVED+"," +
                 " rt."+ RfidTagEntity.UID+"," +
                 " irt."+ InventoryRfidTag.MOVEMENT+"," +
-                " inv."+InventoryEntity.CREATED_AT;
+                " inv."+InventoryEntity.CREATED_AT+"," +
+                " inv."+InventoryEntity.ID;
 
         // raw query to get all columns for the last inventory
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
@@ -152,7 +154,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
             creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastRow[7]);
 
-            return new Inventory(tagsAdded, tagsPresent, tagsRemoved, username, accessType, creationDate);
+            return new Inventory(Integer.parseInt(lastRow[8]), tagsAdded, tagsPresent, tagsRemoved,
+                    username, accessType, creationDate);
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to load last inventory from database.", sqle);
@@ -195,35 +198,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
         for(InventoryEntity invEntity : queryResult)
         {
-            List<String> tagsAdded = new ArrayList<>();
-            List<String> tagsPresent = new ArrayList<>();
-            List<String> tagsRemoved = new ArrayList<>();
-            String username = invEntity.getGrantedUser() != null ? invEntity.getGrantedUser().getUsername() : "";
-            AccessType accessType = AccessTypeRepository.asAccessType(invEntity.getAccessType());
-            Date creationDate = invEntity.getCreatedAt();
-
-            for(InventoryRfidTag irtEntity : invEntity.getRfidTags())
-            {
-                switch(irtEntity.getMovement())
-                {
-                    case 1:
-                        tagsAdded.add(irtEntity.getRfidTag().getUid());
-                        break;
-
-                    case 0:
-                        tagsPresent.add(irtEntity.getRfidTag().getUid());
-                        break;
-
-                    case -1:
-                        tagsRemoved.add(irtEntity.getRfidTag().getUid());
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            result.add(new Inventory(tagsAdded, tagsPresent, tagsRemoved, username, accessType, creationDate));
+            result.add(invEntity.asInventory());
         }
         
         return result;

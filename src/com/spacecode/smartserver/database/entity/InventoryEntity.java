@@ -6,8 +6,11 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.repository.AccessTypeRepository;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Inventory Entity
@@ -122,5 +125,46 @@ public final class InventoryEntity extends Entity
     public ForeignCollection<InventoryRfidTag> getRfidTags()
     {
         return _rfidTags;
+    }
+
+    /**
+     * Build an Inventory instance from the Entity information.
+     *
+     * @return Instance of (SDK) Inventory.
+     */
+    public Inventory asInventory()
+    {
+        List<String> tagsAdded = new ArrayList<>();
+        List<String> tagsPresent = new ArrayList<>();
+        List<String> tagsRemoved = new ArrayList<>();
+
+        for(InventoryRfidTag irtEntity : _rfidTags)
+        {
+            switch(irtEntity.getMovement())
+            {
+                case 1:
+                    tagsAdded.add(irtEntity.getRfidTag().getUid());
+                    break;
+
+                case 0:
+                    tagsPresent.add(irtEntity.getRfidTag().getUid());
+                    break;
+
+                case -1:
+                    tagsRemoved.add(irtEntity.getRfidTag().getUid());
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+       return new Inventory(_id,
+               tagsAdded,
+               tagsPresent,
+               tagsRemoved,
+               _grantedUser != null ? _grantedUser.getUsername() : "",
+               AccessTypeRepository.asAccessType(_accessType),
+               _createdAt);
     }
 }

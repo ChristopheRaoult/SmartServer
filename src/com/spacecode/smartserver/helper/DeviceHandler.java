@@ -61,22 +61,16 @@ public final class DeviceHandler
             return false;
         }
 
-        for(Map.Entry<String, PluggedDeviceInformation> deviceEntry : pluggedDevices.entrySet())
+        PluggedDeviceInformation deviceInfo = pluggedDevices.entrySet().iterator().next().getValue();
+
+        try
         {
-            PluggedDeviceInformation deviceInfo = deviceEntry.getValue();
-
-            try
-            {
-                _device = new Device(null, deviceInfo.getSerialPort());
-                _device.addListener(new SmartEventHandler());
-            } catch (DeviceCreationException dce)
-            {
-                SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
-                return false;
-            }
-
-            // take the first device plugged, as we only run if exactly one is available
-            break;
+            _device = new Device(null, deviceInfo.getSerialPort());
+            _device.addListener(new SmartEventHandler());
+        } catch (DeviceCreationException dce)
+        {
+            SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
+            return false;
         }
 
         return true;
@@ -104,7 +98,7 @@ public final class DeviceHandler
         boolean deviceConnected = false;
         long initialTimestamp = System.currentTimeMillis();
 
-        while(!deviceConnected && !SERIAL_PORT_FORWARDING && (System.currentTimeMillis() - initialTimestamp < 3600000))
+        while(!SERIAL_PORT_FORWARDING && (System.currentTimeMillis() - initialTimestamp < 3600000))
         {
             SmartLogger.getLogger().info("Reconnecting Device...");
 
@@ -112,7 +106,14 @@ public final class DeviceHandler
 
             if(deviceConnected)
             {
+                // let all the clients know that the device is "Ready" again
+                SmartServer.sendAllClients(EventCode.STATUS_CHANGED, DeviceStatus.READY.name());
+
+                // reconnect modules, reload the users and the last inventory
                 connectModules();
+                loadAuthorizedUsers();
+                loadLastInventory();
+                break;
             }
 
             try
@@ -123,12 +124,6 @@ public final class DeviceHandler
                 SmartLogger.getLogger().log(Level.WARNING, "Interrupted while trying to reconnect Device.", ie);
                 break;
             }
-        }
-
-        if(deviceConnected)
-        {
-            loadAuthorizedUsers();
-            loadLastInventory();
         }
 
         return deviceConnected;

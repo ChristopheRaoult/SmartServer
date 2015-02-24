@@ -92,7 +92,8 @@ public final class SmartServer
      *     <li>Load granted users*</li>
      *     <li>Load last inventory</li>
      *     <li>Start the Alert center</li>
-     *     <li>Start the Temperature center</li>
+     *     <li>Start the Temperature center (if a probe is used)</li>
+     *     <li>Load the "G-Serial" module ["Serial Bridge" mode]</li>
      * </ul>
      * *: Critical operations. SmartServer won't start if one fails.</p>
      * <p>3 - Start the asynchronous Server.</p>
@@ -129,7 +130,23 @@ public final class SmartServer
             SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
         }
 
-        start();
+        startListening();
+    }
+
+    /**
+     * Execute the script load_g_serial.sh to load the module G-Serial if it is not already loaded.
+     * This method should be called once SmartServer has completely started.
+     * If the device is plugged (via USB) to a computer, the "Serial BRidge" mode should be triggered.
+     */
+    private static void loadModuleGSerial()
+    {
+        try
+        {
+            new ProcessBuilder("/bin/sh", "-c", "if ! lsmod | grep g_serial; then modprobe g_serial; fi;").start();
+        } catch (IOException ioe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load module g_serial: I/O error.", ioe);
+        }
     }
 
     /**
@@ -209,7 +226,7 @@ public final class SmartServer
      * Entry point of SmartServer.
      * Instantiate ServerBootstrap, SmartServerHandler, and configure the server channel.
      */
-    private static void start()
+    private static void startListening()
     {
         try
         {
@@ -253,6 +270,10 @@ public final class SmartServer
                     });
 
              _wsChannel = wsBootStrap.bind(WS_PORT).sync().channel();
+
+            // Before the main thread got stuck waiting, load the module g_serial, if required
+            SmartLogger.getLogger().info("Loading module g_serial (if necessary)...");
+            loadModuleGSerial();
 
             // wait until the main channel (TCP/IP) is closed
             _channel.closeFuture().sync();
