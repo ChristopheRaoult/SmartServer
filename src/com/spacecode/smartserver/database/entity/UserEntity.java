@@ -30,7 +30,7 @@ public final class UserEntity extends Entity
     @DatabaseField(columnName = THIEF_FINGER_INDEX)
     private Integer _thiefFingerIndex;
 
-    @DatabaseField(columnName = CREATED_AT)
+    @DatabaseField(columnName = CREATED_AT, index = true)
     private Date _createdAt;
 
     @ForeignCollectionField(eager = false)

@@ -24,7 +24,7 @@ public final class TemperatureMeasurementEntity extends Entity
     @DatabaseField(columnName = VALUE, canBeNull = false)
     private double _value;
 
-    @DatabaseField(columnName = CREATED_AT)
+    @DatabaseField(columnName = CREATED_AT, index = true)
     private Date _createdAt;
 
     /**

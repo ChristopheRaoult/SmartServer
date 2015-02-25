@@ -27,7 +27,7 @@ public final class AuthenticationEntity extends Entity
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
 
-    @DatabaseField(columnName = CREATED_AT)
+    @DatabaseField(columnName = CREATED_AT, index = true)
     private Date _createdAt;
 
     /**

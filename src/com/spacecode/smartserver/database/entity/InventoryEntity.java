@@ -46,7 +46,7 @@ public final class InventoryEntity extends Entity
     @DatabaseField(columnName = TOTAL_REMOVED, canBeNull = false)
     private int _totalRemoved;
 
-    @DatabaseField(columnName = CREATED_AT)
+    @DatabaseField(columnName = CREATED_AT, index = true)
     private Date _createdAt;
 
     @ForeignCollectionField(eager = true)

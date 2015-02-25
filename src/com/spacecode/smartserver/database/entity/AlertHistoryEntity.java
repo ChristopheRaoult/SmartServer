@@ -23,7 +23,7 @@ public final class AlertHistoryEntity extends Entity
     @DatabaseField(columnName = EXTRA_DATA)
     private String _extraData;
 
-    @DatabaseField(columnName = CREATED_AT, canBeNull = false)
+    @DatabaseField(columnName = CREATED_AT, canBeNull = false, index = true)
     private Date _createdAt;
 
     /** No-Arg constructor (with package visibility) for ORMLite. */
