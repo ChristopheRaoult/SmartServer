@@ -41,6 +41,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
                     _dao.queryBuilder()
                             .orderBy(InventoryEntity.CREATED_AT, false)
                             .limit(1L)
+                            .where()
+                            .eq(InventoryEntity.DEVICE_ID, DbManager.getDevEntity().getId())
                             .prepare());
 
             return lastEntity != null ? lastEntity.asInventory() : null;

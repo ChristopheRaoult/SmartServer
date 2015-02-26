@@ -303,7 +303,7 @@ public final class DeviceHandler
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
-    private static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
+    static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
             AccessControlEventHandler, AccessModuleEventHandler, TemperatureEventHandler, LedEventHandler,
             MaintenanceEventHandler
     {
@@ -376,8 +376,8 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
-
-            ((AuthenticationRepository)DbManager.getRepository(AuthenticationEntity.class)).persist(grantedUser, accessType);
+            ((AuthenticationRepository)DbManager.getRepository(AuthenticationEntity.class))
+                    .persist(grantedUser, accessType);
         }
 
         @Override
