@@ -111,8 +111,16 @@ public final class DeviceHandler
 
                 // reconnect modules, reload the users and the last inventory
                 connectModules();
-                loadAuthorizedUsers();
-                loadLastInventory();
+
+                if(!loadAuthorizedUsers())
+                {
+                    SmartLogger.getLogger().warning("Failed on loading authorized users when reconnecting the Device.");
+                }
+
+                if(!loadLastInventory())
+                {
+                    SmartLogger.getLogger().warning("Failed on loading the last inventory when reconnecting the Device.");
+                }
                 break;
             }
 

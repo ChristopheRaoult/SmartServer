@@ -2,10 +2,12 @@ package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.device.DeviceCreationException;
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.DeviceType;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.device.data.PluggedDeviceInformation;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
+import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.UsersService;
@@ -32,8 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -41,13 +42,14 @@ import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * JUnit "DeviceHandler" testing class.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DeviceHandler.class, Device.class, SmartLogger.class, SmartServer.class,
-        DbManager.class, Inventory.class })
+        DbManager.class, Inventory.class, ConfManager.class, FingerprintReader.class })
 public class DeviceHandlerTest
 {
     private DeviceHandler.SmartEventHandler _eventHandler;
@@ -152,19 +154,133 @@ public class DeviceHandlerTest
     @Test
     public void testReconnectDevice() throws Exception
     {
+        mockStatic(DeviceHandler.class);
+        doReturn(true).when(DeviceHandler.class, "connectDevice");
+        doNothing().when(DeviceHandler.class, "connectModules");
+        doReturn(false).when(DeviceHandler.class, "loadAuthorizedUsers");
+        doReturn(false).when(DeviceHandler.class, "loadLastInventory");
+        when(DeviceHandler.class, "reconnectDevice").thenCallRealMethod();
 
+        DeviceHandler.reconnectDevice();
+
+        verifyStatic();
+        DeviceHandler.connectDevice();
+        verifyStatic();
+        DeviceHandler.connectModules();
+        verifyStatic();
+        DeviceHandler.loadAuthorizedUsers();
+        verifyStatic();
+        DeviceHandler.loadLastInventory();
+        // SmartLogger warned twice: failure of loading authorized users and failure of loading the last inventory
+        verify(_smartLogger, times(2)).warning(anyString());
     }
 
     @Test
     public void testGetDevice() throws Exception
     {
-
+        assertEquals(DeviceHandler.getDevice(), _device);
     }
 
     @Test
-    public void testConnectModules() throws Exception
+    public void testConnectModulesDeviceNull() throws Exception
     {
+        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
 
+        mockStatic(DeviceHandler.class);
+        when(DeviceHandler.class, "connectModules").thenCallRealMethod();
+        DeviceHandler.connectModules();
+
+        verifyPrivate(DeviceHandler.class, never()).invoke("connectProbeIfEnabled");
+
+        // warning that device is null
+        verify(_smartLogger).warning(anyString());
+    }
+
+    @Test
+    public void testConnectModulesNoAuthenticationModules() throws Exception
+    {
+        mockStatic(ConfManager.class);
+        doReturn(null).when(ConfManager.class, "getDevFprMaster");
+        doReturn(null).when(ConfManager.class, "getDevFprSlave");
+        doReturn(null).when(ConfManager.class, "getDevBrMaster");
+        doReturn(null).when(ConfManager.class, "getDevBrSlave");
+
+        mockStatic(DeviceHandler.class);
+        when(DeviceHandler.class, "connectModules").thenCallRealMethod();
+        DeviceHandler.connectModules();
+
+        verifyPrivate(DeviceHandler.class).invoke("connectProbeIfEnabled");
+    }
+
+    @Test
+    public void testConnectModulesOneFingerprintReader() throws Exception
+    {
+        String fprMaster = "{478455-5478-111441}";
+
+        mockStatic(ConfManager.class);
+        doReturn(fprMaster).when(ConfManager.class, "getDevFprMaster");
+        doReturn(null).when(ConfManager.class, "getDevFprSlave");
+        doReturn(null).when(ConfManager.class, "getDevBrMaster");
+        doReturn(null).when(ConfManager.class, "getDevBrSlave");
+
+        mockStatic(FingerprintReader.class);
+        doReturn(1).when(FingerprintReader.class, "connectFingerprintReader");
+
+        mockStatic(DeviceHandler.class);
+        when(DeviceHandler.class, "connectModules").thenCallRealMethod();
+        DeviceHandler.connectModules();
+
+        verify(_device).addFingerprintReader(fprMaster, true);
+    }
+
+    @Test
+    public void testConnectModulesTwoFingerprintReaders() throws Exception
+    {
+        String fprMaster = "{478455-5478-111441}";
+        String fprSlave = "{478455-5478-222442}";
+
+        mockStatic(ConfManager.class);
+        doReturn(fprMaster).when(ConfManager.class, "getDevFprMaster");
+        doReturn(fprSlave).when(ConfManager.class, "getDevFprSlave");
+        doReturn(null).when(ConfManager.class, "getDevBrMaster");
+        doReturn(null).when(ConfManager.class, "getDevBrSlave");
+
+        mockStatic(FingerprintReader.class);
+        doReturn(2).when(FingerprintReader.class, "connectFingerprintReaders", 2);
+
+        // the "add" of master reader must succeeds if we wanna verify that the second has been added
+        doReturn(true).when(_device).addFingerprintReader(fprMaster, true);
+
+        mockStatic(DeviceHandler.class);
+        when(DeviceHandler.class, "connectModules").thenCallRealMethod();
+        DeviceHandler.connectModules();
+
+        verify(_device).addFingerprintReader(fprMaster, true);
+        verify(_device).addFingerprintReader(fprSlave, false);
+    }
+
+    @Test
+    public void testConnectModulesTwoBadgeReaders() throws Exception
+    {
+        String brMaster = "/dev/ttyUSB1";
+        String brSlave = "/dev/ttyUSB2";
+
+        mockStatic(ConfManager.class);
+        doReturn(null).when(ConfManager.class, "getDevFprMaster");
+        doReturn(null).when(ConfManager.class, "getDevFprSlave");
+        doReturn(brMaster).when(ConfManager.class, "getDevBrMaster");
+        doReturn(brSlave).when(ConfManager.class, "getDevBrSlave");
+
+        // the "add" of master reader must succeeds if we wanna verify that the second has been added
+        doReturn(true).when(_device).addBadgeReader(brMaster, true);
+        doReturn(true).when(_device).addBadgeReader(brSlave, true);
+
+        mockStatic(DeviceHandler.class);
+        when(DeviceHandler.class, "connectModules").thenCallRealMethod();
+        DeviceHandler.connectModules();
+
+        verify(_device).addBadgeReader(brMaster, true);
+        verify(_device).addBadgeReader(brSlave, false);
     }
 
     @Test
@@ -357,5 +473,128 @@ public class DeviceHandlerTest
                 String.valueOf(true));
 
         verify(authenticationRepo).persist(user, accessType);
+    }
+
+    @Test
+    public void testEventHandlerAuthenticationFailure() throws Exception
+    {
+        AccessType accessType = AccessType.BADGE;
+        User user = new User("Vincent", GrantType.MASTER);
+
+        _eventHandler.authenticationFailure(user, accessType, true);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, user.serialize(), accessType.name(),
+                String.valueOf(true));
+    }
+
+    @Test
+    public void testEventHandlerFingerTouched() throws Exception
+    {
+        _eventHandler.fingerTouched(true);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.FINGER_TOUCHED, String.valueOf(true));
+
+        _eventHandler.fingerTouched(false);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.FINGER_TOUCHED, String.valueOf(false));
+    }
+
+    @Test
+    public void testEventHandlerFingerEnrollmentSample() throws Exception
+    {
+        _eventHandler.fingerprintEnrollmentSample((byte) 5);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.ENROLLMENT_SAMPLE, String.valueOf(5));
+
+        _eventHandler.fingerprintEnrollmentSample((byte) 6);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.ENROLLMENT_SAMPLE, String.valueOf(6));
+    }
+
+    @Test
+    public void testEventHandlerBadgeScanned() throws Exception
+    {
+        _eventHandler.badgeScanned("ABCDEFG");
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.BADGE_SCANNED, "ABCDEFG");
+
+        _eventHandler.badgeScanned("123456");
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.BADGE_SCANNED, "123456");
+    }
+
+    @Test
+    public void testEventHandlerTemperatureMeasure() throws Exception
+    {
+        _eventHandler.temperatureMeasure(4.56);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.TEMPERATURE_MEASURE, "4.56");
+
+        _eventHandler.temperatureMeasure(5.0);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.TEMPERATURE_MEASURE, "5.0");
+    }
+
+    @Test
+    public void testEventHandlerLightingStartedNoTagsLeft() throws Exception
+    {
+        List<String> tagsLeft = Arrays.asList();
+        _eventHandler.lightingStarted(tagsLeft);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.LIGHTING_STARTED);
+    }
+
+    @Test
+    public void testEventHandlerLightingStarted() throws Exception
+    {
+        String tag1 = "3001234567", tag2 = "3002345678";
+        List<String> tagsLeft = Arrays.asList(tag1, tag2);
+        _eventHandler.lightingStarted(tagsLeft);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.LIGHTING_STARTED, tag1, tag2);
+    }
+
+    @Test
+    public void testEventHandlerLightingStopped() throws Exception
+    {
+        _eventHandler.lightingStopped();
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.LIGHTING_STOPPED);
+    }
+
+    @Test
+    public void testEventHandlerDeviceStatusChanged() throws Exception
+    {
+        _eventHandler.deviceStatusChanged(DeviceStatus.READY);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.STATUS_CHANGED, DeviceStatus.READY.name());
+
+        _eventHandler.deviceStatusChanged(DeviceStatus.SCANNING);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.STATUS_CHANGED, DeviceStatus.SCANNING.name());
+    }
+
+
+    @Test
+    public void testEventHandlerFlashingProgress() throws Exception
+    {
+        _eventHandler.flashingProgress(2, 200);
+
+        PowerMockito.verifyStatic();
+        SmartServer.sendAllClients(EventCode.FLASHING_PROGRESS, "2", "200");
     }
 }

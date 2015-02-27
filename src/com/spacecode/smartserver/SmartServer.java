@@ -104,31 +104,31 @@ public final class SmartServer
         Logger.getGlobal().setLevel(Level.SEVERE);
 
         SmartLogger.initialize();
+
         initializeShutdownHook();
 
         // Initialize database connection and (if required) model
         if(!DbManager.initializeDatabase())
         {
-            SmartLogger.getLogger().severe("Database couldn't be initialized. SmartServer won't start.");
+            SmartLogger.getLogger().severe("Database could not be initialized. SmartServer will not start.");
             return;
         }
 
         // TODO: execute "update.sql" if any is found (in SmartServer.getWorkingDirectory()), then REMOVE IT.
 
-        if(DeviceHandler.connectDevice())
+        if(!DeviceHandler.connectDevice())
         {
-            if(!init())
-            {
-                return;
-            }
-
-            SmartLogger.getLogger().info("SmartServer is Ready");
+            SmartLogger.getLogger().severe("Unable to connect a device. SmartServer will not start");
+            return;
         }
 
-        else
+        if(!init())
         {
-            SmartLogger.getLogger().warning("Unable to connect to a SpaceCode RFID device...");
+            SmartLogger.getLogger().severe("Unable to initialize SmartServer [init].");
+            return;
         }
+
+        SmartLogger.getLogger().info("SmartServer is Ready");
 
         startListening();
     }
@@ -171,6 +171,18 @@ public final class SmartServer
         }));
     }
 
+    /**
+     * <ul>
+     *  <li>* Create the device in the DB, if it does not exist</li>
+     *  <li>* Connect modules if any (fingerprint/badge readers, temperature probe)</li>
+     *  <li>* Load the authorized users in the UsersService of the Device instance</li>
+     *  <li>Load the last inventory (if any) in the Device instance</li>
+     *  <li>Start the Alert Center</li>
+     *  <li>Start the Temperature Center (if required)</li>
+     * </ul>
+     *
+     * @return True if the whole initialization succeeded (* mandatory steps), false otherwise.
+     */
     private static boolean init()
     {
         Device currentDevice = DeviceHandler.getDevice();
@@ -336,6 +348,11 @@ public final class SmartServer
      */
     public static ChannelFuture sendMessage(ChannelHandlerContext ctx, String... packets)
     {
+        if(ctx == null)
+        {
+            return null;
+        }
+
         String message = MessageHandler.packetsToFullMessage(packets);
 
         if(message == null)
@@ -345,7 +362,7 @@ public final class SmartServer
 
         if(ctx.handler() == WS_HANDLER)
         {
-            ctx.writeAndFlush(new TextWebSocketFrame(message));
+            return ctx.writeAndFlush(new TextWebSocketFrame(message));
         }
 
         return ctx.writeAndFlush(message);

@@ -145,16 +145,17 @@ public class DbManager
     /** Allow closing the connection pool. */
     public static void close()
     {
-        if(_pooledConnectionSrc != null)
+        if(_pooledConnectionSrc == null || !_pooledConnectionSrc.isOpen())
         {
-            try
-            {
-                _pooledConnectionSrc.close();
-                _pooledConnectionSrc = null;
-            } catch (SQLException sqle)
-            {
-                SmartLogger.getLogger().log(Level.WARNING, "Unable to close connection pool.", sqle);
-            }
+            return;
+        }
+
+        try
+        {
+            _pooledConnectionSrc.close();
+        } catch (SQLException sqle)
+        {
+            SmartLogger.getLogger().log(Level.WARNING, "Unable to close connection pool.", sqle);
         }
     }
 
@@ -176,12 +177,12 @@ public class DbManager
                 FingerprintEntity.class,
                 GrantedAccessEntity.class,
                 GrantTypeEntity.class,
-                UserEntity.class,
                 InventoryEntity.class,
                 InventoryRfidTag.class,
                 RfidTagEntity.class,
                 SmtpServerEntity.class,
-                TemperatureMeasurementEntity.class
+                TemperatureMeasurementEntity.class,
+                UserEntity.class
         );
 
         // for each Entity class
