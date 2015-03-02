@@ -27,6 +27,8 @@ public final class ClientCommandRegister extends ClientCommand
 
     /** RequestCode only used by the SmartApp to flash the Firmware */
     static final String FLASH_FIRMWARE = "flashfirmware";
+    /** RequestCode only used by the SmartApp to get the device's Hostname */
+    static final String HOSTNAME = "hostname";
     /** RequestCode only used by the "serialbridge.sh" script to switch ON/OFF the "Serial Bridge" */
     static final String SERIAL_BRIDGE = "serialbridge";
     /** RequestCode only used by the SmartApp to start the update script */
@@ -51,6 +53,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
         _commands.put(FLASH_FIRMWARE,                   new CmdFlashFirmware());
+        _commands.put(HOSTNAME,                         new CmdHostname());
         _commands.put(RequestCode.FPR_SERIAL,           new CmdFprSerial());
         _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
         _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());

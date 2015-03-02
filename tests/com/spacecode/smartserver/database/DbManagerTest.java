@@ -217,7 +217,6 @@ public class DbManagerTest
         doReturn(dbPassword).when(ConfManager.class, "getDbPassword");
 
         whenNew(JdbcPooledConnectionSource.class).withAnyArguments().thenReturn(_connectionSource);
-
         when(DbManager.class, "getConnectionString").thenCallRealMethod();
         when(DbManager.class, "initializeDatabase").thenCallRealMethod();
         doNothing().when(DbManager.class, "createModelIfNotExists");
@@ -233,6 +232,46 @@ public class DbManagerTest
         verify(_connectionSource).setMaxConnectionAgeMillis(10 * 60 * 1000);
         verifyPrivate(DbManager.class).invoke("getConnectionString");
         verifyPrivate(DbManager.class).invoke("createModelIfNotExists");
+    }
+
+    @Test
+    public void testInitializeDatabaseDefaultConnectionString() throws Exception
+    {
+        mockStatic(DbManager.class);
+
+        doReturn(_defaultConnectionString).when(DbManager.class, "getConnectionString");
+        whenNew(JdbcPooledConnectionSource.class).withAnyArguments().thenReturn(_connectionSource);
+        when(DbManager.class, "initializeDatabase").thenCallRealMethod();
+        doNothing().when(DbManager.class, "createModelIfNotExists");
+
+        assertTrue(DbManager.initializeDatabase());
+
+        verifyNew(JdbcPooledConnectionSource.class).withArguments(_defaultConnectionString);
+    }
+
+    @Test
+    public void testCloseNullConnectionPool() throws Exception
+    {
+        mockStatic(DbManager.class);
+        Whitebox.setInternalState(DbManager.class, "_pooledConnectionSrc", (Object) null);
+        when(DbManager.class, "close").thenCallRealMethod();
+
+        DbManager.close();
+        verify(_connectionSource, never()).isOpen();
+        verify(_connectionSource, never()).close();
+    }
+
+    @Test
+    public void testCloseNotConnected() throws Exception
+    {
+        mockStatic(DbManager.class);
+        doReturn(false).when(_connectionSource).isOpen();
+        Whitebox.setInternalState(DbManager.class, "_pooledConnectionSrc", _connectionSource);
+        when(DbManager.class, "close").thenCallRealMethod();
+
+        DbManager.close();
+        verify(_connectionSource).isOpen();
+        verify(_connectionSource, never()).close();
     }
 
     @Test
