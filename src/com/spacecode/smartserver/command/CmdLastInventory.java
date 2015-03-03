@@ -50,7 +50,7 @@ public class CmdLastInventory extends ClientCommand
                 SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY, _lastInventory.serialize());
             }
 
-            // else, get the last one and send it
+            // else, get the last one (from the DB, to also get its ID...) and send it
             else
             {
                 getAndSendLastInventory(ctx);

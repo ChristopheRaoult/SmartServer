@@ -17,9 +17,9 @@ public class CmdUpdateReport extends ClientCommand
     // number of patches to be applied for this update process, sent with each Progress Report
     private static String PATCHES_COUNT             = "0";
 
-    private static final String EVENT_CODE_STARTED  = "event_update_started";
-    private static final String EVENT_CODE_PROGRESS = "event_update_progress";
-    private static final String EVENT_CODE_ENDED    = "event_update_ended";
+    static final String EVENT_CODE_STARTED  = "event_update_started";
+    static final String EVENT_CODE_PROGRESS = "event_update_progress";
+    static final String EVENT_CODE_ENDED    = "event_update_ended";
 
     /**
      * Send the appropriate event code to notify the listeners what is the auto-update status.
