@@ -16,7 +16,7 @@ public final class ClientCommandRegister extends ClientCommand
 {
     // Key:     Command code (RequestCode value).
     // Value:   ClientCommand instance.
-    private Map<String, ClientCommand> _commands = new HashMap<>();
+    private final Map<String, ClientCommand> _commands = new HashMap<>();
 
     // delay (ms) allowed between 2 executions of a same request (same request code, param count, and first param)
     private static final int DELAY_BETWEEN_EXEC = 500;

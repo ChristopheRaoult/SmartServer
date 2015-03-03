@@ -57,6 +57,7 @@ public final class AlertEntity extends Entity
 
     /**
      * Build an alert without defining cc/bcc recipients.
+     *
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
      * @param to            List of email addresses (split with commas) to send the alert to.
      * @param emailSubject  Subject of the email to be sent.
@@ -71,6 +72,7 @@ public final class AlertEntity extends Entity
 
     /**
      * Default constructor, full set of parameters.
+     *
      * @param ate           AlertTypeEntity instance to be used as Alert Type.
      * @param to            List of email addresses (split with commas) to send the alert to.
      * @param cc            List of "Cc" recipients (split with commas).

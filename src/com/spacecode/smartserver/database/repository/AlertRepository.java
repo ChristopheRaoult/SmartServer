@@ -20,7 +20,7 @@ import java.util.logging.Level;
  */
 public class AlertRepository extends Repository<AlertEntity>
 {
-    protected AlertRepository(Dao<AlertEntity, Integer> dao)
+    AlertRepository(Dao<AlertEntity, Integer> dao)
     {
         super(dao);
     }

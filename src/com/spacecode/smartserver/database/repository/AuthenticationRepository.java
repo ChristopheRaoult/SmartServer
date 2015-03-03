@@ -21,7 +21,7 @@ import java.util.logging.Level;
  */
 public class AuthenticationRepository extends Repository<AuthenticationEntity>
 {
-    protected AuthenticationRepository(Dao<AuthenticationEntity, Integer> dao)
+    AuthenticationRepository(Dao<AuthenticationEntity, Integer> dao)
     {
         super(dao);
     }

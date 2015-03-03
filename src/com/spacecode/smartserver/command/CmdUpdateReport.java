@@ -1,20 +1,30 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
+
+import java.util.logging.Level;
 
 /**
  * Command UpdateReport.
  */
 public class CmdUpdateReport extends ClientCommand
 {
+    // if true, the cmd sends a Progress Report, otherwise, it sends a "start" notification
+    private static boolean UPDATE_IN_PROGRESS       = false;
+
+    // number of patches to be applied for this update process, sent with each Progress Report
+    private static String PATCHES_COUNT             = "0";
+
     private static final String EVENT_CODE_STARTED  = "event_update_started";
+    private static final String EVENT_CODE_PROGRESS = "event_update_progress";
     private static final String EVENT_CODE_ENDED    = "event_update_ended";
 
     /**
      * Send the appropriate event code to notify the listeners what is the auto-update status.
-     * If the parameter received is equal to 0, it means the updated start.
-     * Else, it means that it ended. For "1", we got a successful update, for "-1" a failure.
+     * The update-script sends "0" for a successful update, "-1" for a failure, and the number of patches to be applied
+     * when the update has just started.
      *
      * @param ctx           Channel between SmartServer and the client.
      * @param parameters    String array containing parameters (if any) provided by the client.
@@ -31,19 +41,50 @@ public class CmdUpdateReport extends ClientCommand
 
         String parameter = parameters[0].trim();
 
-        if(!"0".equals(parameter) && !"-1".equals(parameter) && !"1".equals(parameter))
+        try
         {
+            int integerValue = Integer.parseInt(parameter);
+        } catch (NumberFormatException nfe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Invalid parameter provided to UpdateReport command", nfe);
             return;
         }
 
-        if(parameter.equals("0"))
+        switch (parameter)
         {
-            SmartServer.sendAllClients(EVENT_CODE_STARTED);
-        }
+            case "0":
+                // update successful
+                SmartLogger.getLogger().info("[Update] Success.");
+                SmartServer.sendAllClients(EVENT_CODE_ENDED, TRUE);
 
-        else
-        {
-            SmartServer.sendAllClients(EVENT_CODE_ENDED, parameter.equals("1") ? TRUE : FALSE);
+                UPDATE_IN_PROGRESS = false;
+                break;
+
+            case "-1":
+                // update failure
+                SmartLogger.getLogger().info("[Update] Failure.");
+                SmartServer.sendAllClients(EVENT_CODE_ENDED, FALSE);
+
+                UPDATE_IN_PROGRESS = false;
+                break;
+
+            default:
+                if(!UPDATE_IN_PROGRESS)
+                {
+                    // update started
+                    SmartLogger.getLogger().info("[Update] Started. "+parameter+" new patches.");
+                    UPDATE_IN_PROGRESS = true;
+                    SmartServer.sendAllClients(EVENT_CODE_STARTED);
+                    PATCHES_COUNT = parameter;
+                }
+
+                else
+                {
+                    // a new patch has been applied
+                    SmartLogger.getLogger().info("[Update] Progress: "+parameter+" patches left.");
+                    SmartServer.sendAllClients(EVENT_CODE_PROGRESS, parameter, PATCHES_COUNT);
+                }
+                break;
         }
     }
 }

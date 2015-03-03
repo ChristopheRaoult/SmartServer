@@ -74,6 +74,6 @@ public class CmdAlertReports extends ClientCommand
             responsePackets.add("".equals(entity.getExtraData()) ? " " : entity.getExtraData());
         }
 
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
     }
 }

@@ -16,7 +16,7 @@ import java.util.logging.Level;
  */
 public abstract class Repository<E extends Entity>
 {
-    protected Dao<E, Integer> _dao;
+    protected final Dao<E, Integer> _dao;
 
     protected Repository(Dao<E, Integer> dao)
     {

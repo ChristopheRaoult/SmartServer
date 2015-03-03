@@ -37,7 +37,7 @@ public class CmdAlertsList extends ClientCommand
 
         if(alertTypeTemperature == null)
         {
-            SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+            SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
             SmartLogger.getLogger().severe("Unable to get AlertTypeEntity Temperature from DB.");
             return;
         }
@@ -73,7 +73,6 @@ public class CmdAlertsList extends ClientCommand
         }
 
         // then all the serialized alerts
-
-        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[0]));
+        SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
     }
 }

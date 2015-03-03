@@ -18,7 +18,7 @@ import java.util.logging.Level;
  */
 public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
 {
-    protected AlertHistoryRepository(Dao<AlertHistoryEntity, Integer> dao)
+    AlertHistoryRepository(Dao<AlertHistoryEntity, Integer> dao)
     {
         super(dao);
     }

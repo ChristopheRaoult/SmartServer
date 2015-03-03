@@ -10,8 +10,8 @@ import java.util.concurrent.Executors;
  */
 abstract class ClientCommand
 {
-    protected static String TRUE = "true";
-    protected static String FALSE = "false";
+    static final String TRUE = "true";
+    static final String FALSE = "false";
 
     /**
      * To be overridden for each command behavior.
@@ -29,7 +29,7 @@ abstract class ClientCommand
      *
      * @param runnable  Runnable instance of the task to be paralleled.
      */
-    protected static void parallelize(Runnable runnable)
+    static void parallelize(Runnable runnable)
     {
         Executors.newSingleThreadExecutor().submit(runnable);
     }

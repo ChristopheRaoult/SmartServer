@@ -19,8 +19,6 @@ import java.util.logging.Level;
 public class CmdSerialBridge extends ClientCommand
 {
     private static Process _portForwardingProcess = null;
-    private static String _pfwStartCmd = "socat /dev/ttyGS0,raw,echo=0,crnl /dev/ttyUSB0,raw,echo=0,crnl";
-    private static String _pfwEndCmd = "pkill -f socat";
 
     /**
      * According to parameter ("ON"/"OFF"), enable or disable Serial Port forwarding ("Serial Bridge").
@@ -61,7 +59,8 @@ public class CmdSerialBridge extends ClientCommand
                 DeviceHandler.disconnectDevice();
 
                 // execute command for port forwarding
-                _portForwardingProcess = new ProcessBuilder("/bin/sh", "-c", _pfwStartCmd).start();
+                String socatCmd = "socat /dev/ttyGS0,raw,echo=0,crnl /dev/ttyUSB0,raw,echo=0,crnl";
+                _portForwardingProcess = new ProcessBuilder("/bin/sh", "-c", socatCmd).start();
 
                 SmartLogger.getLogger().severe("Running Port Forwarding command.");
             } catch (IOException ioe)
@@ -84,7 +83,7 @@ public class CmdSerialBridge extends ClientCommand
             {
                 // stop the process (port forwarding)
                 // NOTE: calling destroy() on Process instance does not stop "socat"...
-                Process killingSocatProcess = new ProcessBuilder("/bin/sh", "-c", _pfwEndCmd).start();
+                Process killingSocatProcess = new ProcessBuilder("/bin/sh", "-c", "pkill -f socat").start();
                 killingSocatProcess.waitFor();
 
                 _portForwardingProcess = null;

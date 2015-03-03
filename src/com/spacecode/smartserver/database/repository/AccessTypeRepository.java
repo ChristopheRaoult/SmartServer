@@ -17,7 +17,7 @@ public class AccessTypeRepository extends Repository<AccessTypeEntity>
 {
     private static final Map<String, AccessTypeEntity> TYPE_TO_ENTITY = new HashMap<>();
 
-    protected AccessTypeRepository(Dao<AccessTypeEntity, Integer> dao)
+    AccessTypeRepository(Dao<AccessTypeEntity, Integer> dao)
     {
         super(dao);
     }
