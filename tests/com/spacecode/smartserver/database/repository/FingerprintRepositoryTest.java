@@ -20,7 +20,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 
 /**
- * JUnit "InventoryRepository" testing class.
+ * JUnit "FingerprintRepository" testing class.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ SmartServer.class, DbManager.class })
@@ -33,6 +33,7 @@ public class FingerprintRepositoryTest
     {
         // required to avoid an initialization exception, as SmartServer has some static initialization
         mockStatic(SmartServer.class);
+
         mockStatic(DbManager.class, Mockito.CALLS_REAL_METHODS);
 
         String username = "Vincent";
@@ -41,7 +42,7 @@ public class FingerprintRepositoryTest
     }
 
     @After
-    public void free() throws Exception
+    public void tearDown() throws Exception
     {
         DbManager.close();
     }
@@ -134,19 +135,6 @@ public class FingerprintRepositoryTest
     }
 
     @Test
-    public void testDeleteUnknownUser() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:deleteFpUnknownUser").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // get the repository
-        FingerprintRepository fpRepo = (FingerprintRepository) DbManager.getRepository(FingerprintEntity.class);
-
-        assertFalse(fpRepo.delete("UnknownUser", 4));
-    }
-
-    @Test
     public void testDelete() throws Exception
     {
         // create an in-memory db using H2, for the purpose of this test
@@ -155,6 +143,9 @@ public class FingerprintRepositoryTest
 
         // get the repository
         FingerprintRepository fpRepo = (FingerprintRepository) DbManager.getRepository(FingerprintEntity.class);
+
+        // check it fails for an unknown user
+        assertFalse(fpRepo.delete("UnknownUser", 4));
 
         // get the dao's, create the fixtures
         int fingerIndex = FingerIndex.LEFT_INDEX.getIndex();
@@ -173,14 +164,17 @@ public class FingerprintRepositoryTest
     }
 
     @Test
-    public void testPersistUnknownUser() throws Exception
+    public void testPersist() throws Exception
     {
         // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:persistFpUnknownUser").when(DbManager.class, "getConnectionString");
+        doReturn("jdbc:h2:mem:persistFp").when(DbManager.class, "getConnectionString");
         assertTrue(DbManager.initializeDatabase());
 
         // get the repository
         FingerprintRepository fpRepo = (FingerprintRepository) DbManager.getRepository(FingerprintEntity.class);
+
+        // assert it fails for an unknown user
+        assertFalse(fpRepo.persist("UnknownUser", 4, "fake_template"));
 
         // get the DAO's and add the fixtures
         Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
@@ -190,17 +184,5 @@ public class FingerprintRepositoryTest
         long entriesCount = daoFp.countOf();
         assertTrue(fpRepo.persist(_userEntity.getUsername(), 4, "fake_template"));
         assertEquals(entriesCount + 1, daoFp.countOf());
-    }
-
-    @Test
-    public void testPersist() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:persistFp").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // get the repository
-        FingerprintRepository fpRepo = (FingerprintRepository) DbManager.getRepository(FingerprintEntity.class);
-        assertFalse(fpRepo.persist("UnknownUser", 4, "fake_template"));
     }
 }

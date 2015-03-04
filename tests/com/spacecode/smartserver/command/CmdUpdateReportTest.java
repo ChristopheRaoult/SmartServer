@@ -2,6 +2,7 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.smartserver.SmartServer;
 import io.netty.channel.ChannelHandlerContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +32,13 @@ public class CmdUpdateReportTest
         _command = PowerMockito.mock(CmdUpdateReport.class, Mockito.CALLS_REAL_METHODS);
 
         PowerMockito.mockStatic(SmartServer.class);
+    }
+
+    @After
+    public void tearDown()
+    {
+        _ctx = null;
+        _command = null;
     }
 
     @Test

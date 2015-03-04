@@ -57,22 +57,12 @@ public class InventoryRepositoryTest
     }
 
     @After
-    public void free() throws Exception
+    public void tearDown() throws Exception
     {
         DbManager.close();
-    }
-
-    @Test
-    public void testGetLastInventoryEmptyTable() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:lastInventoryEmptyTable").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // make sure the result is "null" when there is no inventory
-        InventoryRepository invRepo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
-        Inventory lastInventory = invRepo.getLastInventory();
-        assertNull(lastInventory);
+        _devEntity = null;
+        _userEntity = null;
+        _device = null;
     }
 
     @Test
@@ -156,22 +146,6 @@ public class InventoryRepositoryTest
         assertNotNull(lastInventory);
         assertEquals(lastInventory.getUsername(), _userEntity.getUsername());
         assertEquals(lastInventory.getAccessType(), AccessType.BADGE);
-    }
-
-    @Test
-    public void testGetInventoriesEmptyTable() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:inventoriesEmptyTable").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // get the repository
-        InventoryRepository invRepo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
-
-        // ask for the inventories from all time and make sure there isn't any result
-        List<Inventory> allInventories = invRepo.getInventories(new Date(1), new Date());
-        assertNotNull(allInventories);
-        assertTrue(allInventories.isEmpty());
     }
 
     @Test

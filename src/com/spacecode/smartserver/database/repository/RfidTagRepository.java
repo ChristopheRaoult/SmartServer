@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 /**
- * InventoryRfidTag Repository
+ * RfidTag Repository
  */
 public class RfidTagRepository extends Repository<RfidTagEntity>
 {
@@ -58,6 +58,11 @@ public class RfidTagRepository extends Repository<RfidTagEntity>
      */
     public RfidTagEntity getByUid(String uid)
     {
+        if(uid == null || uid.trim().isEmpty())
+        {
+            return null;
+        }
+
         try
         {
             return _dao.queryForFirst(

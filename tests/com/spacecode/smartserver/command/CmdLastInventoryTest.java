@@ -9,6 +9,7 @@ import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,17 @@ public class CmdLastInventoryTest
         PowerMockito.mockStatic(SmartServer.class);
         PowerMockito.mockStatic(DeviceHandler.class);
         PowerMockito.mockStatic(DbManager.class);
+    }
+
+    @After
+    public void tearDown()
+    {
+        _ctx = null;
+        _command = null;
+        _device = null;
+        _repository = null;
+        _inventory1 = null;
+        _inventory2 = null;
     }
 
     @Test

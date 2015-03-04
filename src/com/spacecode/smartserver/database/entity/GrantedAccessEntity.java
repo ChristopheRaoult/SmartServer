@@ -56,4 +56,10 @@ public final class GrantedAccessEntity extends Entity
     {
         return _device;
     }
+
+    /** @return GrantTypeEntity instance (attached GrantTypeEntity). */
+    public GrantTypeEntity getGrantType()
+    {
+        return _grantType;
+    }
 }

@@ -13,6 +13,7 @@ import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +62,17 @@ public class CmdAddUserTest
 
         PowerMockito.mockStatic(DeviceHandler.class);
         PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(_device);
+    }
+
+    @After
+    public void tearDown()
+    {
+        _ctx = null;
+        _command = null;
+        _device = null;
+        _usersService = null;
+        _userRepository = null;
+        _serializedUser = null;
     }
 
     @Test

@@ -34,11 +34,18 @@ public class UserRepository extends Repository<UserEntity>
 
     /**
      * Allow looking for a UserEntity by its username.
+     *
      * @param username  Desired user's name.
+     *
      * @return          UserEntity instance, or null if any error occurs (SQLException, user not found...).
      */
     public UserEntity getByUsername(String username)
     {
+        if(username == null || username.trim().isEmpty())
+        {
+            return null;
+        }
+
         try
         {
             return _dao.queryForFirst(
@@ -61,7 +68,13 @@ public class UserRepository extends Repository<UserEntity>
      */
     public boolean deleteByName(String username)
     {
+        if(username == null || username.trim().isEmpty())
+        {
+            return false;
+        }
+
         UserEntity gue = getEntityBy(UserEntity.USERNAME, username);
+
         return gue != null && delete(gue);
     }
 
@@ -73,6 +86,11 @@ public class UserRepository extends Repository<UserEntity>
     @Override
     public boolean delete(UserEntity entity)
     {
+        if(entity == null)
+        {
+            return false;
+        }
+
         try
         {
             Repository<FingerprintEntity> fpRepo = DbManager.getRepository(FingerprintEntity.class);
@@ -308,7 +326,6 @@ public class UserRepository extends Repository<UserEntity>
         // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
         String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
 
-        // TODO: Try to get rid of RAW sql...
         // raw query to get all users with their fingerprints and their access type (on this device)
         StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
         sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");

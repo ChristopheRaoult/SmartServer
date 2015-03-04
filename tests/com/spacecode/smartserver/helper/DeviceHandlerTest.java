@@ -21,6 +21,7 @@ import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.database.repository.AuthenticationRepository;
 import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.database.repository.UserRepository;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,6 +85,14 @@ public class DeviceHandlerTest
         doReturn(_devType).when(_device).getDeviceType();
 
         _eventHandler = PowerMockito.mock(DeviceHandler.SmartEventHandler.class, CALLS_REAL_METHODS);
+    }
+
+    @After
+    public void tearDown()
+    {
+        _device = null;
+        _smartLogger = null;
+        _eventHandler = null;
     }
 
     @Test

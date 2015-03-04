@@ -153,6 +153,7 @@ public class DbManager
         try
         {
             _pooledConnectionSrc.close();
+            _pooledConnectionSrc = null;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.WARNING, "Unable to close connection pool.", sqle);
@@ -200,7 +201,7 @@ public class DbManager
             // create the table if it does not exist
             if(!dao.isTableExists())
             {
-                // use dao.isTableExists() first, as createTableIfNotExists() fails with postgreSQL 9.1 (OrmLite 4.48)
+                // use dao.isTableExists() first, as TableUtils.createTableIfNotExists() fails @ pgSQL 9.1
                 TableUtils.createTableIfNotExists(_pooledConnectionSrc, entityClass);
 
                 // check if there is any operation to perform on this class

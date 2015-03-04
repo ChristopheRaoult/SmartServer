@@ -25,3 +25,9 @@ AlertCenter, TemperatureCenter, DeviceHandler, DbManager...
 "Boot" sequence, mandatory parameters (db initialized and connected etc) to start the server,
 
 <br/>
+
+## Tests
+----
+
+Unit tests of Repositories use a lot of memory for H2 In-memory Databases, thus, in case of OutOfMemoryError when
+executing the test suit, add this additional parameter to the tests JVM: "-XX:MaxPermSize=128m".
