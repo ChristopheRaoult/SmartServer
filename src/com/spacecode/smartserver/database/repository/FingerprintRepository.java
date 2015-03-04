@@ -113,7 +113,6 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
     public boolean persist(String username, int fingerIndex, String fpTpl)
     {
         Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
-
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
         return gue != null && update(new FingerprintEntity(gue, fingerIndex, fpTpl));

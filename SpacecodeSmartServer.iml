@@ -21,6 +21,7 @@
     <orderEntry type="library" name="powermock-mockito-1.5.6" level="project" />
     <orderEntry type="library" exported="" name="postgresql-connector-java" level="project" />
     <orderEntry type="library" exported="" name="sqlserver-connector-java" level="project" />
+    <orderEntry type="library" name="h2-connector-java" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">

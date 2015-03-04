@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="h2-connector-java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/h2-connector-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
