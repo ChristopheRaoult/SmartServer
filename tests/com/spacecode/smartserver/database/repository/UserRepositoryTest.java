@@ -258,12 +258,29 @@ public class UserRepositoryTest
     @Test
     public void testRemovePermission() throws Exception
     {
+        // create an in-memory db using H2, for the purpose of this test
+        doReturn("jdbc:h2:mem:removePermission").when(DbManager.class, "getConnectionString");
+        assertTrue(DbManager.initializeDatabase());
 
+        // get the repositories
+        UserRepository userRepo = (UserRepository) DbManager.getRepository(UserEntity.class);
+        GrantTypeRepository gtRepo = (GrantTypeRepository) DbManager.getRepository(GrantTypeEntity.class);
+
+        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
+        Dao<GrantedAccessEntity, Integer> daoGa = DbManager.getDao(GrantedAccessEntity.class);
+
+        daoUser.create(_userEntity);
+
+        assertEquals(daoGa.countOf(), 0);
+        daoGa.create(new GrantedAccessEntity(_userEntity, gtRepo.fromGrantType(GrantType.MASTER)));
+        assertEquals(daoGa.countOf(), 1);
+
+        assertTrue(userRepo.removePermission(_userEntity.getUsername()));
+        assertEquals(daoGa.countOf(), 0);
     }
 
     @Test
     public void testGetAuthorizedUsers() throws Exception
     {
-
     }
 }

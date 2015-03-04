@@ -38,13 +38,13 @@ public class TemperatureMeasurementRepository extends Repository<TemperatureMeas
 
             qb.orderBy(TemperatureMeasurementEntity.CREATED_AT, true);
 
-            return _dao.query(qb
-                    .where()
+            return _dao.query(
+                    qb.where()
                     .eq(TemperatureMeasurementEntity.DEVICE_ID, DbManager.getDevEntity().getId())
-                                    .and()
-                                    .between(TemperatureMeasurementEntity.CREATED_AT, from, to)
-                                    .prepare()
-                    );
+                    .and()
+                    .between(TemperatureMeasurementEntity.CREATED_AT, from, to)
+                    .prepare()
+            );
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting temperature measures.", sqle);

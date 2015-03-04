@@ -38,7 +38,7 @@ public class AlertRepository extends Repository<AlertEntity>
         try
         {
             // first, remove the attached AlertTemperature, if any.
-            if(AlertTypeRepository.toAlertType(entity.getAlertType()) == AlertType.TEMPERATURE)
+            if(AlertTypeRepository.asAlertType(entity.getAlertType()) == AlertType.TEMPERATURE)
             {
                 Repository<AlertTemperatureEntity> atRepo =
                         DbManager.getRepository(AlertTemperatureEntity.class);

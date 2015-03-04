@@ -359,8 +359,7 @@ public final class DeviceHandler
         @Override
         public void scanCompleted()
         {
-            // todo: thread this operation? At worst, user can call getLastInventory on ScanCompleted, but
-            // the instance returned will be the one in Device's memory... So if it's risk-free, do it.
+            // todo: thread this operation? The point is about "getLastInventory" command, which MUST return the VERY last
             ((InventoryRepository)DbManager.getRepository(InventoryEntity.class)).persist(_device.getLastInventory());
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);

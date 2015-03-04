@@ -29,6 +29,11 @@ public class GrantTypeRepository extends Repository<GrantTypeEntity>
      */
     public static GrantType asGrantType(GrantTypeEntity gte)
     {
+        if(gte == null)
+        {
+            return null;
+        }
+
         try
         {
             return GrantType.valueOf(gte.getType());

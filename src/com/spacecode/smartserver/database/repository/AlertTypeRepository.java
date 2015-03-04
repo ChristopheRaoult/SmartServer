@@ -59,7 +59,7 @@ public class AlertTypeRepository extends Repository<AlertTypeEntity>
      *
      * @return  AlertType [SDK] enum value.
      */
-    public static AlertType toAlertType(AlertTypeEntity ate)
+    public static AlertType asAlertType(AlertTypeEntity ate)
     {
         if(ate == null)
         {

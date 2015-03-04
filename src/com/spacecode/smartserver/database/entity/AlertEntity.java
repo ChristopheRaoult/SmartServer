@@ -159,7 +159,7 @@ public final class AlertEntity extends Entity
     public static Alert toAlert(AlertEntity ae)
     {
         return new Alert(ae.getId(),
-                AlertTypeRepository.toAlertType(ae.getAlertType()),
+                AlertTypeRepository.asAlertType(ae.getAlertType()),
                 ae._toList,
                 ae._ccList,
                 ae._bccList,

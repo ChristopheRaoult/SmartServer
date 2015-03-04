@@ -46,17 +46,7 @@ public class UserRepository extends Repository<UserEntity>
             return null;
         }
 
-        try
-        {
-            return _dao.queryForFirst(
-                    _dao.queryBuilder().where()
-                            .eq(UserEntity.USERNAME, username)
-                            .prepare());
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while getting user by name.", sqle);
-            return null;
-        }
+        return getEntityBy(UserEntity.USERNAME, username);
     }
 
     /**
@@ -73,7 +63,7 @@ public class UserRepository extends Repository<UserEntity>
             return false;
         }
 
-        UserEntity gue = getEntityBy(UserEntity.USERNAME, username);
+        UserEntity gue = getByUsername(username);
 
         return gue != null && delete(gue);
     }
@@ -217,7 +207,7 @@ public class UserRepository extends Repository<UserEntity>
      */
     public boolean removePermission(String username)
     {
-        UserEntity gue = getEntityBy(UserEntity.USERNAME, username);
+        UserEntity gue = getByUsername(username);
 
         if(gue == null)
         {
@@ -255,7 +245,7 @@ public class UserRepository extends Repository<UserEntity>
         public Void call() throws Exception
         {
             // try to get the user if he already exists
-            UserEntity gue = getEntityBy(UserEntity.USERNAME, _newUser.getUsername());
+            UserEntity gue = getByUsername(_newUser.getUsername());
 
             // if he doesn't exist
             if(gue == null)
