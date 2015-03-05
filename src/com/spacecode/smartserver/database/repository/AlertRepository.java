@@ -26,7 +26,7 @@ public class AlertRepository extends Repository<AlertEntity>
     }
 
     /**
-     * Remove an alert from the database (including the row in AlertTemperature, if any).
+     * Remove an alert from the database (including the attached AlertTemperature, if any).
      *
      * @param entity    Alert to be removed from the table.
      *
@@ -35,6 +35,11 @@ public class AlertRepository extends Repository<AlertEntity>
     @Override
     public boolean delete(AlertEntity entity)
     {
+        if(entity == null)
+        {
+            return false;
+        }
+
         try
         {
             // first, remove the attached AlertTemperature, if any.
@@ -175,6 +180,11 @@ public class AlertRepository extends Repository<AlertEntity>
      */
     public boolean delete(Alert alert)
     {
+        if(alert == null)
+        {
+            return false;
+        }
+
         AlertEntity gue = getEntityById(alert.getId());
 
         return gue != null && delete(gue);

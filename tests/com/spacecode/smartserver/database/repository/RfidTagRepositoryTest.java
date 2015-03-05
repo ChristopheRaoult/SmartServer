@@ -5,7 +5,6 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.RfidTagEntity;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,11 +36,6 @@ public class RfidTagRepositoryTest
     public void tearDown() throws Exception
     {
         DbManager.close();
-    }
-
-    @AfterClass
-    public static void clear() throws Exception
-    {
         DbManager.close();
     }
 

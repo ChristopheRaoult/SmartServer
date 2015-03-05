@@ -42,7 +42,7 @@ public class GrantTypeRepositoryTest
     public void testAsGrantType() throws Exception
     {
         // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:asGrantType").when(DbManager.class, "getConnectionString");
+        doReturn("jdbc:h2:mem:").when(DbManager.class, "getConnectionString");
         assertTrue(DbManager.initializeDatabase());
 
         GrantTypeRepository gtRepo = (GrantTypeRepository) DbManager.getRepository(GrantTypeEntity.class);
