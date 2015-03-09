@@ -127,6 +127,9 @@ public final class AlertCenter
 
     /**
      * Use SMTP server information (from database) to send an email according to alert settings.
+     * Email addresses are divided in three fields: To, Cc, Bcc. Each field can contain one or many addresses (separated
+     * by commas).
+     *
      * @param alertEntity Alert containing the emailing information.
      */
     private static void sendEmail(AlertEntity alertEntity)
@@ -142,6 +145,8 @@ public final class AlertCenter
             String recipientsCc = alertEntity.getCcList();
             String recipientsBcc = alertEntity.getBccList();
 
+            // InternetAddress.parse: "Parse the given comma separated sequence of addresses
+            // into InternetAddress objects. Addresses must follow RFC822 syntax."
             InternetAddress[] toList = InternetAddress.parse(recipientsTo == null ? "" : recipientsTo);
             InternetAddress[] ccList = InternetAddress.parse(recipientsCc == null ? "" : recipientsCc);
             InternetAddress[] bccList = InternetAddress.parse(recipientsBcc == null ? "" : recipientsBcc);

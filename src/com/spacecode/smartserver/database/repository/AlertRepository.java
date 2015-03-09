@@ -180,7 +180,7 @@ public class AlertRepository extends Repository<AlertEntity>
      */
     public boolean delete(Alert alert)
     {
-        if(alert == null)
+        if(alert == null || alert.getId() == 0)
         {
             return false;
         }
