@@ -43,6 +43,11 @@ public class TemperatureCenter
         @Override
         public void temperatureMeasure(double value)
         {
+            if(value == TemperatureProbe.ERROR_VALUE)
+            {
+                return;
+            }
+            
             // keep only one decimal place (ie 4.57 => 4.6 // 4.22 => 4.2)
             double roundedValue = (double) Math.round(value * 10) / 10;
 
