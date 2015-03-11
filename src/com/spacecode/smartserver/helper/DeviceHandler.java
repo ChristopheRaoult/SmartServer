@@ -147,7 +147,6 @@ public final class DeviceHandler
 
     /**
      * Connect the modules (fingerprint / badge readers, temperature probe).
-     * TODO: Retry many times if any module couldn't be initialized/connected
      */
     public static void connectModules()
     {

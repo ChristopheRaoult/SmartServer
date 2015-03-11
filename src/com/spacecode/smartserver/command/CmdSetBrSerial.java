@@ -1,6 +1,5 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.ConfManager;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,14 +24,14 @@ public class CmdSetBrSerial extends ClientCommand
         // waiting for 2 parameters: serial and isMaster (true/false)
         if (parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, RequestCode.SET_BR_SERIAL, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_BR_SERIAL, FALSE);
             throw new ClientCommandException("Invalid number of parameters [SetBrSerial].");
         }
 
-        String serial = parameters[0];
+        String serial = parameters[0] == null ? "" : parameters[0].trim();
         boolean isMaster = Boolean.parseBoolean(parameters[1]);
         boolean result = isMaster ? ConfManager.setDevBrMaster(serial) : ConfManager.setDevBrSlave(serial);
 
-        SmartServer.sendMessage(ctx, RequestCode.SET_BR_SERIAL, result ? TRUE : FALSE);
+        SmartServer.sendMessage(ctx, ClientCommandRegister.SET_BR_SERIAL, result ? TRUE : FALSE);
     }
 }

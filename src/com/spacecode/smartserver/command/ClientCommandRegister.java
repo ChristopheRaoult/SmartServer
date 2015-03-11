@@ -19,17 +19,17 @@ public final class ClientCommandRegister extends ClientCommand
     private final Map<String, ClientCommand> _commands = new HashMap<>();
 
     // delay (ms) allowed between 2 executions of a same request (same request code, param count, and first param)
-    private static final int DELAY_BETWEEN_EXEC = 500;
+    static final int DELAY_BETWEEN_EXEC = 500;
     private long _lastExecTimestamp;
-    private String _lastExecRequestCode;
-    private int _lastExecParamCount;
-    private String _lastExecFirstParam;
+    private String[] _lastExecPackets = new String[] { "" };
 
     /** RequestCode only used by the SmartApp to flash the Firmware */
     static final String FLASH_FIRMWARE = "flashfirmware";
     /** RequestCode only used by the SmartApp to get the device's Hostname */
     static final String HOSTNAME = "hostname";
     /** RequestCode only used by the "serialbridge.sh" script to switch ON/OFF the "Serial Bridge" */
+    static final String SET_BR_SERIAL = "setbrserial";
+    static final String SET_FPR_SERIAL = "setfprserial";
     static final String SERIAL_BRIDGE = "serialbridge";
     /** RequestCode only used by the SmartApp to start the update script */
     static final String START_UPDATE = "startupdate";
@@ -66,9 +66,9 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.REMOVE_USER,          new CmdRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,          new CmdRewriteUid());
         _commands.put(RequestCode.SCAN,                 new CmdScan());
-        _commands.put(RequestCode.SET_BR_SERIAL,        new CmdSetBrSerial());
+        _commands.put(SET_BR_SERIAL,                    new CmdSetBrSerial());
         _commands.put(RequestCode.SET_DB_SETTINGS,      new CmdSetDbSettings());
-        _commands.put(RequestCode.SET_FPR_SERIAL,       new CmdSetFprSerial());
+        _commands.put(SET_FPR_SERIAL,                   new CmdSetFprSerial());
         _commands.put(RequestCode.SET_PROBE_SETTINGS,   new CmdSetProbeSettings());
         _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
         _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
@@ -136,29 +136,35 @@ public final class ClientCommandRegister extends ClientCommand
         boolean executeCommand = true;
 
         long currentTimestamp = System.currentTimeMillis();
-        int paramCount = parameters.length - 1;
 
-        if(requestCode.equals(_lastExecRequestCode))
+        // if the previous request code was the same
+        if(requestCode.equals(_lastExecPackets[0]))
         {
-            if(paramCount > 0 && _lastExecParamCount == paramCount)
-            {
-                if(parameters[1].equals(_lastExecFirstParam))
+            // if the number of parameters is the same
+            if(parameters.length > 0 && _lastExecPackets.length == parameters.length)
+            { 
+                executeCommand = false;
+
+                // if any packet is different: consider this is not the same request: execute it
+                for(int i = 1; i < parameters.length; ++i)
                 {
-                    if(currentTimestamp - _lastExecTimestamp < DELAY_BETWEEN_EXEC)
+                    if(!parameters[i].equals(_lastExecPackets[i]))
                     {
-                        // if the last cmd executed had the same request code & first param,
-                        // and was executed less than DELAY_BETWEEN_EXEC milliseconds, then skip the request
-                        executeCommand = false;
+                        executeCommand = true;
+                        break;
                     }
                 }
-
+                
+                // if the packets are the same BUT the anti-flood delay has passed, execute it 
+                if(!executeCommand)
+                {
+                    executeCommand = currentTimestamp - _lastExecTimestamp > DELAY_BETWEEN_EXEC;    
+                }                
             }
         }
 
-        _lastExecRequestCode = requestCode;
         _lastExecTimestamp = currentTimestamp;
-        _lastExecParamCount = paramCount;
-        _lastExecFirstParam = paramCount > 0 ? parameters[1] : null;
+        _lastExecPackets = Arrays.copyOfRange(parameters, 0, parameters.length);
 
         if(executeCommand)
         {
