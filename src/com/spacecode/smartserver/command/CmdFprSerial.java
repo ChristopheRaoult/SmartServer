@@ -1,6 +1,5 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.ConfManager;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,13 +21,13 @@ public class CmdFprSerial extends ClientCommand
         // waiting for 1 parameter: true (master reader) or false (slave reader).
         if(parameters.length != 1)
         {
-            SmartServer.sendMessage(ctx, RequestCode.FPR_SERIAL);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.FPR_SERIAL);
             throw new ClientCommandException("Invalid number of parameters [FprSerial].");
         }
 
         boolean isMaster = Boolean.parseBoolean(parameters[0]);
         String serialPortNumber = isMaster ? ConfManager.getDevFprMaster() : ConfManager.getDevFprSlave();
 
-        SmartServer.sendMessage(ctx, RequestCode.FPR_SERIAL, serialPortNumber);
+        SmartServer.sendMessage(ctx, ClientCommandRegister.FPR_SERIAL, serialPortNumber);
     }
 }
