@@ -34,7 +34,7 @@ public class CmdStartLighting extends ClientCommand
 
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING);
+            SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING, FALSE);
             return;
         }
 

@@ -26,19 +26,19 @@ public class CmdFlashFirmware extends ClientCommand
     {
         if(parameters.length != 1)
         {
-            SmartServer.sendMessage(ctx, ClientCommandRegister.FLASH_FIRMWARE, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);
             throw new ClientCommandException("Invalid number of parameters [FlashFirmware].");
         }
 
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendAllClients(ClientCommandRegister.FLASH_FIRMWARE, FALSE);
+            SmartServer.sendAllClients(ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);
             return;
         }
 
         List<String> firmwareLines = Arrays.asList(parameters[0].split("[\\r\\n]+"));
         boolean result = DeviceHandler.getDevice().flashFirmware(firmwareLines);
 
-        SmartServer.sendMessage(ctx, ClientCommandRegister.FLASH_FIRMWARE, result ? TRUE : FALSE);
+        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.FLASH_FIRMWARE, result ? TRUE : FALSE);
     }
 }

@@ -33,7 +33,7 @@ public class CmdHostname extends ClientCommand
         if(osName == null)
         {
             SmartLogger.getLogger().severe("Property os.name is null. Is the JVM fine?");
-            SmartServer.sendMessage(ctx, ClientCommandRegister.HOSTNAME, "[Null]");
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.HOSTNAME, "[Null]");
             return;
         }
 
@@ -54,7 +54,7 @@ public class CmdHostname extends ClientCommand
 
                 if (hostname != null)
                 {
-                    SmartServer.sendMessage(ctx, ClientCommandRegister.HOSTNAME, hostname);
+                    SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.HOSTNAME, hostname);
                     return;
                 }
             } catch (IOException ioe)
@@ -67,7 +67,7 @@ public class CmdHostname extends ClientCommand
         {
             try
             {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.HOSTNAME,
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.HOSTNAME,
                         java.net.InetAddress.getLocalHost().getHostName());
                 return;
             } catch (UnknownHostException uhe)
@@ -81,6 +81,6 @@ public class CmdHostname extends ClientCommand
             SmartLogger.getLogger().severe("Unknown OS: could not get Hostname");
         }
 
-        SmartServer.sendMessage(ctx, ClientCommandRegister.HOSTNAME, "[Null]");
+        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.HOSTNAME, "[Null]");
     }
 }

@@ -38,7 +38,7 @@ public class CmdNetworkSettings extends ClientCommand
         if(osName == null)
         {
             SmartLogger.getLogger().severe("Property os.name is null. Is the JVM fine?");
-            SmartServer.sendMessage(ctx, ClientCommandRegister.NETWORK_SETTINGS, "null");
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS, "null");
             return;
         }
 
@@ -63,7 +63,7 @@ public class CmdNetworkSettings extends ClientCommand
                     
                     if(line.contains("inet dhcp"))
                     {
-                        SmartServer.sendMessage(ctx, ClientCommandRegister.NETWORK_SETTINGS, "dhcp");
+                        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS, "dhcp");
                         return;
                     }
                     
@@ -83,7 +83,7 @@ public class CmdNetworkSettings extends ClientCommand
                     }
                 }
 
-                SmartServer.sendMessage(ctx, ClientCommandRegister.NETWORK_SETTINGS, 
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS, 
                         netConf.get("address"), netConf.get("netmask"), netConf.get("gateway"));
                 return;
             } catch (IOException ioe)
@@ -139,7 +139,7 @@ public class CmdNetworkSettings extends ClientCommand
                     line = bufferedReader.readLine();
                 }
 
-                SmartServer.sendMessage(ctx, ClientCommandRegister.NETWORK_SETTINGS,
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS,
                         netConf.get("ip address"), netConf.get("subnet"), netConf.get("gateway"));
                 return;
             } catch (IOException ioe)
@@ -153,6 +153,6 @@ public class CmdNetworkSettings extends ClientCommand
             SmartLogger.getLogger().severe("Unknown OS: Unable to get the network settings.");
         }
 
-        SmartServer.sendMessage(ctx, ClientCommandRegister.NETWORK_SETTINGS, "null");
+        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS, "null");
     }
 }

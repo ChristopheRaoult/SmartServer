@@ -24,7 +24,7 @@ public class CmdSetBrSerial extends ClientCommand
         // waiting for 2 parameters: serial and isMaster (true/false)
         if (parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_BR_SERIAL, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_BR_SERIAL, FALSE);
             throw new ClientCommandException("Invalid number of parameters [SetBrSerial].");
         }
 
@@ -32,6 +32,6 @@ public class CmdSetBrSerial extends ClientCommand
         boolean isMaster = Boolean.parseBoolean(parameters[1]);
         boolean result = isMaster ? ConfManager.setDevBrMaster(serial) : ConfManager.setDevBrSlave(serial);
 
-        SmartServer.sendMessage(ctx, ClientCommandRegister.SET_BR_SERIAL, result ? TRUE : FALSE);
+        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_BR_SERIAL, result ? TRUE : FALSE);
     }
 }

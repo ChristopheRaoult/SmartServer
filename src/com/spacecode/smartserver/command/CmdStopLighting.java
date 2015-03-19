@@ -1,6 +1,5 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -23,12 +22,6 @@ public class CmdStopLighting extends ClientCommand
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         if(DeviceHandler.getDevice() == null)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
-            return;
-        }
-
-        if(DeviceHandler.getDevice().getStatus() != DeviceStatus.LED_ON)
         {
             SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
             return;

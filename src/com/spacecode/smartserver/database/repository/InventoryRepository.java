@@ -39,7 +39,10 @@ public class InventoryRepository extends Repository<InventoryEntity>
         {
             InventoryEntity lastEntity = _dao.queryForFirst(
                     _dao.queryBuilder()
-                            .orderBy(InventoryEntity.CREATED_AT, false)
+                            // Should be ordered by creation date but the system date is not reliable (RTC battery lifespan)
+                            // Should not use primary key as a sorting criteria but as it is open to SDK/API users, it
+                            // does not matter.
+                            .orderBy(InventoryEntity.ID, false)
                             .limit(1L)
                             .where()
                             .eq(InventoryEntity.DEVICE_ID, DbManager.getDevEntity().getId())
@@ -48,7 +51,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
             return lastEntity != null ? lastEntity.asInventory() : null;
         } catch (SQLException sqle)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity where field not equal.", sqle);
+            SmartLogger.getLogger().log(Level.SEVERE, 
+                    "Exception occurred while getting entity where field not equal.", sqle);
             return null;
         }
     }

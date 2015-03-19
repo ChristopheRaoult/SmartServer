@@ -24,7 +24,7 @@ public class CmdSetFprSerial extends ClientCommand
         // waiting for 2 parameters: serial and isMaster (true/false)
         if (parameters.length != 2)
         {
-            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_FPR_SERIAL, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_FPR_SERIAL, FALSE);
             throw new ClientCommandException("Invalid number of parameters [SetFprSerial].");
         }
         
@@ -32,6 +32,6 @@ public class CmdSetFprSerial extends ClientCommand
         boolean isMaster = Boolean.parseBoolean(parameters[1]);
         boolean result = isMaster ? ConfManager.setDevFprMaster(serial) : ConfManager.setDevFprSlave(serial);
 
-        SmartServer.sendMessage(ctx, ClientCommandRegister.SET_FPR_SERIAL, result ? TRUE : FALSE);
+        SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_FPR_SERIAL, result ? TRUE : FALSE);
     }
 }

@@ -35,7 +35,7 @@ public class CmdSetNetworkSettings extends ClientCommand
         if( (parameters.length < 1 || parameters.length > 3) || 
             (parameters.length == 1 && !parameters[0].toLowerCase().equals("dhcp")) )
         {
-            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
             throw new ClientCommandException("Invalid number of parameters [SetNetworkSettings].");
         }
 
@@ -45,7 +45,7 @@ public class CmdSetNetworkSettings extends ClientCommand
         if(osName == null)
         {
             SmartLogger.getLogger().severe("Property os.name is null. Is the JVM fine?");
-            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
             return;
         }
 
@@ -61,13 +61,13 @@ public class CmdSetNetworkSettings extends ClientCommand
             
             if(!VALID_IPV4_PATTERN.matcher(ipDevice).matches())
             {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
                 throw new ClientCommandException("Invalid IP Address provided [SetNetworkSettings].");
             }
             
             if(!VALID_IPV4_PATTERN.matcher(ipSubnet).matches())
             {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
                 throw new ClientCommandException("Invalid Subnet Mask provided [SetNetworkSettings].");
             }
             
@@ -78,7 +78,7 @@ public class CmdSetNetworkSettings extends ClientCommand
                 
                 if(!ipGateway.isEmpty() && !VALID_IPV4_PATTERN.matcher(ipGateway).matches())
                 {
-                    SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+                    SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
                     throw new ClientCommandException("Invalid Gateway provided [SetNetworkSettings].");
                 }
             }
@@ -174,12 +174,12 @@ public class CmdSetNetworkSettings extends ClientCommand
             else
             {
                 SmartLogger.getLogger().severe("Property os.name contains an unhandled value. IP cannot be changed.");
-                SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
             }
         } catch(IOException | InterruptedException e)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Unable to apply the provided network settings.", e);
-            SmartServer.sendMessage(ctx, ClientCommandRegister.SET_NETWORK, FALSE);
+            SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_NETWORK, FALSE);
         }
     }
 }

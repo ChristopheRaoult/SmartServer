@@ -23,7 +23,10 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +49,8 @@ public final class SmartServer
     private static final ChannelHandler TCP_IP_HANDLER = new SmartServerHandler();
     private static final int WS_PORT = 8081;
     private static final ChannelHandler WS_HANDLER = new WebSocketHandler();
+    
+    private static final List<SocketAddress> ADMINISTRATORS = new ArrayList<>();
 
     private static Channel _channel;
     private static Channel _wsChannel;
@@ -393,5 +398,20 @@ public final class SmartServer
         WS_CHAN_GROUP.flush();
 
         return result;
+    }
+
+    public static void addAdministrator(SocketAddress socketAddress)
+    {
+        ADMINISTRATORS.add(socketAddress);
+    }
+
+    public static void removeAdministrator(SocketAddress socketAddress)
+    {
+        ADMINISTRATORS.remove(socketAddress);
+    }
+    
+    public static boolean isAdministrator(SocketAddress socketAddress)
+    {
+        return ADMINISTRATORS.contains(socketAddress);
     }
 }
