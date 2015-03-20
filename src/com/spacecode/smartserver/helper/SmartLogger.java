@@ -49,7 +49,9 @@ public final class SmartLogger extends Logger
     {
         try
         {
-            ConsoleHandler consoleHandler = new ConsoleHandler();
+            LogManager.getLogManager().reset();
+            
+            ConsoleHandler consoleHandler = new SmartConsoleHandler();
             FileHandler fileHandler = new FileHandler(LOG_FILE, true);
 
             ShortFormatter formatter = new ShortFormatter();
@@ -57,13 +59,14 @@ public final class SmartLogger extends Logger
             fileHandler.setLevel(Level.WARNING);
             fileHandler.setFormatter(formatter);
 
+            consoleHandler.setLevel(Level.INFO);
             consoleHandler.setFormatter(formatter);
-
+            
             LOGGER.addHandler(fileHandler);
             LOGGER.addHandler(consoleHandler);
-        } catch (IOException ioe)
+        } catch (IOException | SecurityException e)
         {
-            LOGGER.log(Level.SEVERE, "Unable to initialize log file.", ioe);
+            LOGGER.log(Level.SEVERE, "Unable to initialize SmartLogger.", e);
         }
     }
 
@@ -101,6 +104,17 @@ public final class SmartLogger extends Logger
             }
 
             return builder.toString();
+        }
+    }
+
+    /**
+     * Custom ConsoleHandler used to redirect logs to STDOUT.
+     */
+    static class SmartConsoleHandler extends ConsoleHandler
+    {
+        public SmartConsoleHandler()
+        {
+            super.setOutputStream(System.out);
         }
     }
 }

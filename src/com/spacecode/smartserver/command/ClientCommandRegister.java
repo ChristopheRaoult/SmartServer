@@ -24,8 +24,7 @@ public final class ClientCommandRegister extends ClientCommand
     private String[] _lastExecPackets = new String[] { "" };
 
     /**
-     * Initialize command register.
-     * Add an entry to "_commands" HashMap with request code & command instance for each known request.
+     * Initialize a command register: Build the map "RequestCode to Command".
      */
     public ClientCommandRegister()
     {
@@ -34,41 +33,29 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.ALERTS_LIST,          new CmdAlertsList());
         _commands.put(RequestCode.ALERT_REPORTS,        new CmdAlertReports());
         _commands.put(RequestCode.AUTHENTICATIONS_LIST, new CmdAuthenticationsList());
-        _commands.put(AppCode.BR_SERIAL,                new CmdBrSerial());
         _commands.put(RequestCode.DB_SETTINGS,          new CmdDbSettings());
         _commands.put(RequestCode.DEVICE_STATUS,        new CmdDeviceStatus());
         _commands.put(RequestCode.DISCONNECT,           new CmdDisconnect());
         _commands.put(RequestCode.ENROLL_FINGER,        new CmdEnrollFinger());
-        _commands.put(AppCode.FLASH_FIRMWARE,           new CmdFlashFirmware());
-        _commands.put(AppCode.HOSTNAME,                 new CmdHostname());
-        _commands.put(AppCode.FPR_SERIAL,               new CmdFprSerial());
         _commands.put(RequestCode.INITIALIZATION,       new CmdInitialization());
         _commands.put(RequestCode.INVENTORIES_LIST,     new CmdInventoriesList());
         _commands.put(RequestCode.INVENTORY_BY_ID,      new CmdInventoryById());
         _commands.put(RequestCode.LAST_ALERT,           new CmdLastAlert());
         _commands.put(RequestCode.LAST_INVENTORY,       new CmdLastInventory());
-        _commands.put(AppCode.NETWORK_SETTINGS,         new CmdNetworkSettings());
         _commands.put(RequestCode.PROBE_SETTINGS,       new CmdProbeSettings());
         _commands.put(RequestCode.REMOVE_ALERT,         new CmdRemoveAlert());
         _commands.put(RequestCode.REMOVE_FINGERPRINT,   new CmdRemoveFingerprint());
         _commands.put(RequestCode.REMOVE_USER,          new CmdRemoveUser());
         _commands.put(RequestCode.REWRITE_UID,          new CmdRewriteUid());
         _commands.put(RequestCode.SCAN,                 new CmdScan());
-        _commands.put(AppCode.SET_BR_SERIAL,            new CmdSetBrSerial());
         _commands.put(RequestCode.SET_DB_SETTINGS,      new CmdSetDbSettings());
-        _commands.put(AppCode.SET_FPR_SERIAL,           new CmdSetFprSerial());
-        _commands.put(AppCode.SET_NETWORK,              new CmdSetNetworkSettings());
         _commands.put(RequestCode.SET_PROBE_SETTINGS,   new CmdSetProbeSettings());
         _commands.put(RequestCode.SET_SMTP_SERVER,      new CmdSetSmtpServer());
         _commands.put(RequestCode.SET_THIEF_FINGER,     new CmdSetThiefFinger());
-        _commands.put(AppCode.SERIAL_BRIDGE,            new CmdSerialBridge());
-        _commands.put(AppCode.SIGN_IN_ADMIN,            new CmdSignInAdmin());
         _commands.put(RequestCode.SMTP_SERVER,          new CmdSmtpServer());
         _commands.put(RequestCode.START_LIGHTING,       new CmdStartLighting());
-        _commands.put(AppCode.START_UPDATE,             new CmdStartUpdate());
         _commands.put(RequestCode.STOP_LIGHTING,        new CmdStopLighting());
         _commands.put(RequestCode.STOP_SCAN,            new CmdStopScan());
-        _commands.put(AppCode.UPDATE_REPORT,            new CmdUpdateReport());
         _commands.put(RequestCode.UPDATE_PERMISSION,    new CmdUpdatePermission());
         _commands.put(RequestCode.UPDATE_ALERT,         new CmdUpdateAlert());
         _commands.put(RequestCode.UPDATE_BADGE,         new CmdUpdateBadge());
@@ -76,6 +63,24 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.USERS_LIST,           new CmdUsersList());
         _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CmdTemperatureCurrent());
         _commands.put(RequestCode.TEMPERATURE_LIST,     new CmdTemperatureList());
+
+        // RequestCodes not open to SDK/API users: Spacecode's internal usage only
+        _commands.put(AppCode.BR_SERIAL,                new CmdBrSerial());
+        _commands.put(AppCode.FLASH_FIRMWARE,           new CmdFlashFirmware());
+        _commands.put(AppCode.HOSTNAME,                 new CmdHostname());
+        _commands.put(AppCode.FPR_SERIAL,               new CmdFprSerial());
+        _commands.put(AppCode.NETWORK_SETTINGS,         new CmdNetworkSettings());
+        _commands.put(AppCode.SIGN_IN_ADMIN,            new CmdSignInAdmin());
+        _commands.put(AppCode.SERIAL_BRIDGE,            new CmdSerialBridge());
+        _commands.put(AppCode.SET_BR_SERIAL,            new CmdSetBrSerial());
+        _commands.put(AppCode.SET_FPR_SERIAL,           new CmdSetFprSerial());
+        _commands.put(AppCode.SET_NETWORK,              new CmdSetNetworkSettings());
+        _commands.put(AppCode.START_UPDATE,             new CmdStartUpdate());
+        _commands.put(AppCode.UPDATE_REPORT,            new CmdUpdateReport());
+        // Requires the User to be authenticated
+        _commands.put(AppCode.RFID_THRESHOLD,           new CmdRfidThreshold());
+        _commands.put(AppCode.RFID_SET_THRESHOLD,       new CmdRfidSetThreshold());
+        _commands.put(AppCode.RFID_THRESHOLD_SAMPLING,  new CmdRfidThresholdSampling());
     }
 
     /**
@@ -161,32 +166,53 @@ public final class ClientCommandRegister extends ClientCommand
             cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
         }
     }
-    
+
+    /** Internal RequestCode, used by the SmartApp or the embedded shell scripts. */
     static class AppCode
     {
-        /** RequestCode used by SmartApp to get the badge reader serial port name */
+        /** Get the badge reader serial port name */
         static final String BR_SERIAL = "brserial";
-        /** RequestCode used by SmartApp to get the fingerprint reader serial number */
+        
+        /** Get the fingerprint reader serial number */
         static final String FPR_SERIAL = "fprserial";
-        /** RequestCode used by SmartApp to flash the Firmware */
+        
+        /** Flash the Firmware */
         static final String FLASH_FIRMWARE = "flashfirmware";
-        /** RequestCode used by SmartApp to get the device's Hostname */
+        
+        /** Get the device's Hostname */
         static final String HOSTNAME = "hostname";
-        /** RequestCode used by SmartApp to get the device's network config */
+        
+        /** Get the device's network config */
         static final String NETWORK_SETTINGS = "networksettings";
-        /** RequestCode used by SmartApp to set the badge reader serial port name */
+        
+        /** Set the badge reader serial port name */
         static final String SET_BR_SERIAL   = "setbrserial";
-        /** RequestCode used by SmartApp to set the fingerprint reader serial number */
+        
+        /** Set the fingerprint reader serial number */
         static final String SET_FPR_SERIAL  = "setfprserial";
-        /** RequestCode used by SmartApp to (re)set the network settings */
+        
+        /** Set the network settings */
         static final String SET_NETWORK     = "setnetworksettings";
-        /** RequestCode used by the "serialbridge.sh" script to switch ON/OFF the "Serial Bridge" */
-        static final String SERIAL_BRIDGE   = "serialbridge";
-        /** RequestCode used by SmartApp to authenticate an user as an administrator */
+        
+        /** Switch ON/OFF the "Serial Bridge" */
+        static final String SERIAL_BRIDGE   = "serialbridge";        
+        
+        /** Authenticate a user as an administrator */
         static final String SIGN_IN_ADMIN   = "signinadmin";
-        /** RequestCode used by SmartApp to start the update script */
+        
+        /** Start the update script */
         static final String START_UPDATE    = "startupdate";
-        /** RequestCode used by the "update.py" script to inform SmartServer of the progress of Updates */
+        
+        /** Inform SmartServer of the progress of Updates (update script) */
         static final String UPDATE_REPORT   = "updatereport";
+
+        /** Test RFID: Get Correlation Threshold */
+        static final String RFID_THRESHOLD  = "rfidthreshold";
+        
+        /** Test RFID: Set Correlation Threshold */
+        static final String RFID_SET_THRESHOLD  = "rfidsetthreshold";
+
+        /** Test RFID: Start the threshold sampling. An Event will be raised to by the RFID board when data is ready. */
+        static final String RFID_THRESHOLD_SAMPLING  = "rfidthresholdsampling";
     }
 }

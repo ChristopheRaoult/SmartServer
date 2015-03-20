@@ -55,8 +55,8 @@ public final class SmartServer
     private static Channel _channel;
     private static Channel _wsChannel;
 
-    // default is 65536 (most of the time). Increase this value.
-    public static final int MAX_FRAME_LENGTH = 262144;
+    // default is 65536 (2^16), most of the time. Increase this value to 2^22. Max supported is Integer limit: 2^31-1
+    public static final int MAX_FRAME_LENGTH = 4194304;
 
     /** Must not be instantiated. */
     private SmartServer()
@@ -105,9 +105,10 @@ public final class SmartServer
      */
     public static void main(String[] args) throws IOException, SQLException
     {
-        // SDK use Global logger. Only display its SEVERE logs.
-        Logger.getGlobal().setLevel(Level.SEVERE);
-
+        // SDK: Only display its SEVERE logs.
+        com.spacecode.sdk.SmartLogger.getLogger().setLevel(Level.SEVERE);
+        
+        // SmartServer: initialize the Server's logger.
         SmartLogger.initialize();
 
         initializeShutdownHook();
@@ -400,18 +401,42 @@ public final class SmartServer
         return result;
     }
 
-    public static void addAdministrator(SocketAddress socketAddress)
+    /**
+     * Register a socket address as an administrator (a user authenticated with "SignInAdmin" command).
+     * 
+     * @param socketAddress Channel's socket address to be registered as administrator.
+     *
+     * @return True if the socket address has been added to the list of administrators.
+     */
+    public static boolean addAdministrator(SocketAddress socketAddress)
     {
-        ADMINISTRATORS.add(socketAddress);
+        return socketAddress != null && ADMINISTRATORS.add(socketAddress);
+
     }
 
-    public static void removeAdministrator(SocketAddress socketAddress)
+    /**
+     * Remove a socket address from the administrators (users authenticated with "SignInAdmin" command).
+     *
+     * @param socketAddress Channel's socket address to be removed from the administrators.
+     *
+     * @return True if the socket address has been removed from the list of administrators.
+     */
+    public static boolean removeAdministrator(SocketAddress socketAddress)
     {
-        ADMINISTRATORS.remove(socketAddress);
+        return socketAddress != null && ADMINISTRATORS.remove(socketAddress);
+
     }
-    
+
+    /**
+     * Allows knowing, for a given Socket Address (ip address + TCP port), if the channel is own by an Administrator
+     * (a user authenticated with "SignInAdmin" command). 
+     * 
+     * @param socketAddress Channel's socket address to be checked.
+     * 
+     * @return True if the remote socket address is known in the administrator group. False otherwise.
+     */
     public static boolean isAdministrator(SocketAddress socketAddress)
     {
-        return ADMINISTRATORS.contains(socketAddress);
+        return socketAddress != null && ADMINISTRATORS.contains(socketAddress);
     }
 }

@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.smartserver.SmartServer;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -18,6 +19,7 @@ public class CmdDisconnect extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
+        SmartServer.removeAdministrator(ctx.channel().remoteAddress());
         ctx.channel().close();
     }
 }

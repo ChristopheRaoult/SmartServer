@@ -471,5 +471,44 @@ public final class DeviceHandler
                     String.valueOf(rowNumber),
                     String.valueOf(rowCount));
         }
+        
+        @Override
+        public void correlationSample(int correlation, int phaseShift)
+        {
+            
+        }
+
+        @Override
+        public void correlationSampleSeries(short[] presentSamples, short[] missingSamples)
+        {
+            SmartLogger.getLogger().info("New Samples!");
+            
+            if(presentSamples == null || missingSamples == null)
+            {
+                return;
+            }
+            
+            // TODO: Raise an event with the data
+            List<String> responsePackets = new ArrayList<>();
+            
+            responsePackets.add("event_correlation_series");
+            
+            responsePackets.add("present");
+            
+            for(short presentSample : presentSamples)
+            {
+                responsePackets.add(String.valueOf(presentSample));    
+            }
+            
+            responsePackets.add("missing");
+
+            for(short missingSample : missingSamples)
+            {
+                responsePackets.add(String.valueOf(missingSample));
+            }
+
+            SmartLogger.getLogger().info("SENDING New Samples!");
+            SmartServer.sendAllClients(responsePackets.toArray(new String[responsePackets.size()]));
+        }
     }
 }

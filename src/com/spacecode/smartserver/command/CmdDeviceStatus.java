@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -22,6 +23,7 @@ public class CmdDeviceStatus extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
+            SmartServer.sendMessage(ctx, RequestCode.DEVICE_STATUS, DeviceStatus.ERROR.name());
             return;
         }
 
