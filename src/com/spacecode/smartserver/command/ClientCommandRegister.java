@@ -78,8 +78,14 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(AppCode.START_UPDATE,             new CmdStartUpdate());
         _commands.put(AppCode.UPDATE_REPORT,            new CmdUpdateReport());
         // Requires the User to be authenticated
-        _commands.put(AppCode.RFID_THRESHOLD,           new CmdRfidThreshold());
+        _commands.put(AppCode.RFID_DEC_FREQUENCY,       new CmdRfidDecFrequency());
+        _commands.put(AppCode.RFID_DUTY_CYCLE,          new CmdRfidDutyCycle());
+        _commands.put(AppCode.RFID_FREQUENCY,           new CmdRfidFrequency());
+        _commands.put(AppCode.RFID_INC_FREQUENCY,       new CmdRfidIncFrequency());
+        _commands.put(AppCode.RFID_SAVE_DUTY_CYCLE,     new CmdRfidSaveDutyCycle());
+        _commands.put(AppCode.RFID_SET_DUTY_CYCLE,      new CmdRfidSetDutyCycle());
         _commands.put(AppCode.RFID_SET_THRESHOLD,       new CmdRfidSetThreshold());
+        _commands.put(AppCode.RFID_THRESHOLD,           new CmdRfidThreshold());
         _commands.put(AppCode.RFID_THRESHOLD_SAMPLING,  new CmdRfidThresholdSampling());
     }
 
@@ -206,11 +212,29 @@ public final class ClientCommandRegister extends ClientCommand
         /** Inform SmartServer of the progress of Updates (update script) */
         static final String UPDATE_REPORT   = "updatereport";
 
-        /** Test RFID: Get Correlation Threshold */
-        static final String RFID_THRESHOLD  = "rfidthreshold";
+        /** Test RFID: Decrease the period of the carrier signal (results in decreasing the frequency) */
+        static final String RFID_DEC_FREQUENCY = "rfiddecfrequency";
+
+        /** Test RFID: Get the value of the Duty Cycle for both types of bridge, and the current type of bridge. */
+        static final String RFID_DUTY_CYCLE = "rfiddutycycle";
+        
+        /** Test RFID: Get the value of the current carrier period and antenna voltage. */
+        static final String RFID_FREQUENCY  = "rfidfrequency";
+        
+        /** Test RFID: Save the current Duty Cycle "bridge type" and values in the ROM of the RFID board. */
+        static final String RFID_SAVE_DUTY_CYCLE = "rfidsavedutycycle";
+        
+        /** Test RFID: Set Duty Cycle "bridge type" and values */
+        static final String RFID_SET_DUTY_CYCLE  = "rfidsetdutycycle";
+        
+        /** Test RFID: Increase the period of the carrier signal (results in increasing the frequency) */
+        static final String RFID_INC_FREQUENCY = "rfidincfrequency";
         
         /** Test RFID: Set Correlation Threshold */
-        static final String RFID_SET_THRESHOLD  = "rfidsetthreshold";
+        static final String RFID_SET_THRESHOLD   = "rfidsetthreshold";
+
+        /** Test RFID: Get Correlation Threshold */
+        static final String RFID_THRESHOLD       = "rfidthreshold";
 
         /** Test RFID: Start the threshold sampling. An Event will be raised to by the RFID board when data is ready. */
         static final String RFID_THRESHOLD_SAMPLING  = "rfidthresholdsampling";

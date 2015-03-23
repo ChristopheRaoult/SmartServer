@@ -480,9 +480,7 @@ public final class DeviceHandler
 
         @Override
         public void correlationSampleSeries(short[] presentSamples, short[] missingSamples)
-        {
-            SmartLogger.getLogger().info("New Samples!");
-            
+        {            
             if(presentSamples == null || missingSamples == null)
             {
                 return;
@@ -507,7 +505,6 @@ public final class DeviceHandler
                 responsePackets.add(String.valueOf(missingSample));
             }
 
-            SmartLogger.getLogger().info("SENDING New Samples!");
             SmartServer.sendAllClients(responsePackets.toArray(new String[responsePackets.size()]));
         }
     }
