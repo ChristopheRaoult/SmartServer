@@ -23,13 +23,13 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 public class CmdUpdateReportTest
 {
     private ChannelHandlerContext _ctx;
-    private CmdUpdateReport _command;
+    private ScAdmin.CmdUpdateReport _command;
 
     @Before
     public void setUp() throws Exception
     {
         _ctx = PowerMockito.mock(ChannelHandlerContext.class);
-        _command = PowerMockito.mock(CmdUpdateReport.class, Mockito.CALLS_REAL_METHODS);
+        _command = PowerMockito.mock(ScAdmin.CmdUpdateReport.class, Mockito.CALLS_REAL_METHODS);
 
         PowerMockito.mockStatic(SmartServer.class);
     }
@@ -57,7 +57,7 @@ public class CmdUpdateReportTest
         _command.execute(_ctx, new String[] { "-1" });
 
         verifyStatic();
-        SmartServer.sendAllClients(CmdUpdateReport.EVENT_CODE_ENDED, ClientCommand.FALSE);
+        SmartServer.sendAllClients(ScAdmin.CmdUpdateReport.EVENT_CODE_ENDED, ClientCommand.FALSE);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class CmdUpdateReportTest
         _command.execute(_ctx, new String[] { "0" });
 
         verifyStatic();
-        SmartServer.sendAllClients(CmdUpdateReport.EVENT_CODE_ENDED, ClientCommand.TRUE);
+        SmartServer.sendAllClients(ScAdmin.CmdUpdateReport.EVENT_CODE_ENDED, ClientCommand.TRUE);
     }
 
     @Test
@@ -77,10 +77,10 @@ public class CmdUpdateReportTest
         _command.execute(_ctx, new String[] { "3" });
 
         verifyStatic();
-        SmartServer.sendAllClients(CmdUpdateReport.EVENT_CODE_STARTED);
+        SmartServer.sendAllClients(ScAdmin.CmdUpdateReport.EVENT_CODE_STARTED);
         verifyStatic();
-        SmartServer.sendAllClients(CmdUpdateReport.EVENT_CODE_PROGRESS, "7", "8");
+        SmartServer.sendAllClients(ScAdmin.CmdUpdateReport.EVENT_CODE_PROGRESS, "7", "8");
         verifyStatic();
-        SmartServer.sendAllClients(CmdUpdateReport.EVENT_CODE_PROGRESS, "3", "8");
+        SmartServer.sendAllClients(ScAdmin.CmdUpdateReport.EVENT_CODE_PROGRESS, "3", "8");
     }
 }

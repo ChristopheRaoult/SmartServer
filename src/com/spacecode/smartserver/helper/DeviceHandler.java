@@ -486,7 +486,6 @@ public final class DeviceHandler
                 return;
             }
             
-            // TODO: Raise an event with the data
             List<String> responsePackets = new ArrayList<>();
             
             responsePackets.add("event_correlation_series");

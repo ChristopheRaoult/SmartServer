@@ -65,28 +65,32 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.TEMPERATURE_LIST,     new CmdTemperatureList());
 
         // RequestCodes not open to SDK/API users: Spacecode's internal usage only
-        _commands.put(AppCode.BR_SERIAL,                new CmdBrSerial());
-        _commands.put(AppCode.FLASH_FIRMWARE,           new CmdFlashFirmware());
-        _commands.put(AppCode.HOSTNAME,                 new CmdHostname());
-        _commands.put(AppCode.FPR_SERIAL,               new CmdFprSerial());
-        _commands.put(AppCode.NETWORK_SETTINGS,         new CmdNetworkSettings());
-        _commands.put(AppCode.SIGN_IN_ADMIN,            new CmdSignInAdmin());
-        _commands.put(AppCode.SERIAL_BRIDGE,            new CmdSerialBridge());
-        _commands.put(AppCode.SET_BR_SERIAL,            new CmdSetBrSerial());
-        _commands.put(AppCode.SET_FPR_SERIAL,           new CmdSetFprSerial());
-        _commands.put(AppCode.SET_NETWORK,              new CmdSetNetworkSettings());
-        _commands.put(AppCode.START_UPDATE,             new CmdStartUpdate());
-        _commands.put(AppCode.UPDATE_REPORT,            new CmdUpdateReport());
-        // Requires the User to be authenticated
-        _commands.put(AppCode.RFID_DEC_FREQUENCY,       new CmdRfidDecFrequency());
-        _commands.put(AppCode.RFID_DUTY_CYCLE,          new CmdRfidDutyCycle());
-        _commands.put(AppCode.RFID_FREQUENCY,           new CmdRfidFrequency());
-        _commands.put(AppCode.RFID_INC_FREQUENCY,       new CmdRfidIncFrequency());
-        _commands.put(AppCode.RFID_SAVE_DUTY_CYCLE,     new CmdRfidSaveDutyCycle());
-        _commands.put(AppCode.RFID_SET_DUTY_CYCLE,      new CmdRfidSetDutyCycle());
-        _commands.put(AppCode.RFID_SET_THRESHOLD,       new CmdRfidSetThreshold());
-        _commands.put(AppCode.RFID_THRESHOLD,           new CmdRfidThreshold());
-        _commands.put(AppCode.RFID_THRESHOLD_SAMPLING,  new CmdRfidThresholdSampling());
+        _commands.put(AppCode.BR_SERIAL,                new ScAdmin.CmdBrSerial());
+        _commands.put(AppCode.FLASH_FIRMWARE,           new ScAdmin.CmdFlashFirmware());
+        _commands.put(AppCode.HOSTNAME,                 new ScAdmin.CmdHostname());
+        _commands.put(AppCode.FPR_SERIAL,               new ScAdmin.CmdFprSerial());
+        _commands.put(AppCode.NETWORK_SETTINGS,         new ScAdmin.CmdNetworkSettings());
+        _commands.put(AppCode.SIGN_IN_ADMIN,            new ScAdmin.CmdSignInAdmin());
+        _commands.put(AppCode.SERIAL_BRIDGE,            new ScAdmin.CmdSerialBridge());
+        _commands.put(AppCode.SET_BR_SERIAL,            new ScAdmin.CmdSetBrSerial());
+        _commands.put(AppCode.SET_FPR_SERIAL,           new ScAdmin.CmdSetFprSerial());
+        _commands.put(AppCode.SET_NETWORK,              new ScAdmin.CmdSetNetworkSettings());
+        _commands.put(AppCode.START_UPDATE,             new ScAdmin.CmdStartUpdate());
+        _commands.put(AppCode.UPDATE_REPORT,            new ScAdmin.CmdUpdateReport());
+        // Requires the User to be authenticated, "TestRFID" part
+        _commands.put(AppCode.RFID_AXIS_COUNT,          new ScRfid.CmdRfidAxisCount());
+        _commands.put(AppCode.RFID_CALIBRATE,           new ScRfid.CmdRfidCalibrate());
+        _commands.put(AppCode.RFID_DEC_FREQUENCY,       new ScRfid.CmdRfidDecFrequency());
+        _commands.put(AppCode.RFID_DUTY_CYCLE,          new ScRfid.CmdRfidDutyCycle());
+        _commands.put(AppCode.RFID_FREQUENCY,           new ScRfid.CmdRfidFrequency());
+        _commands.put(AppCode.RFID_INC_FREQUENCY,       new ScRfid.CmdRfidIncFrequency());
+        _commands.put(AppCode.RFID_SAVE_DUTY_CYCLE,     new ScRfid.CmdRfidSaveDutyCycle());
+        _commands.put(AppCode.RFID_SELECT_AXIS,         new ScRfid.CmdRfidSelectAxis());
+        _commands.put(AppCode.RFID_SET_DOOR_STATE,      new ScRfid.CmdRfidSetDoorState());
+        _commands.put(AppCode.RFID_SET_DUTY_CYCLE,      new ScRfid.CmdRfidSetDutyCycle());
+        _commands.put(AppCode.RFID_SET_THRESHOLD,       new ScRfid.CmdRfidSetThreshold());
+        _commands.put(AppCode.RFID_THRESHOLD,           new ScRfid.CmdRfidThreshold());
+        _commands.put(AppCode.RFID_THRESHOLD_SAMPLING,  new ScRfid.CmdRfidThresholdSampling());
     }
 
     /**
@@ -212,6 +216,12 @@ public final class ClientCommandRegister extends ClientCommand
         /** Inform SmartServer of the progress of Updates (update script) */
         static final String UPDATE_REPORT   = "updatereport";
 
+        /** Test RFID: Provide the number of axis used (known) by the Device */
+        static final String RFID_AXIS_COUNT = "rfidaxiscount";
+
+        /** Test RFID: Get a full "image" (256 values) of the Carrier Signal (users want to know Min/Max/PeakToPeak) */
+        static final String RFID_CALIBRATE = "rfidcalibrate";
+
         /** Test RFID: Decrease the period of the carrier signal (results in decreasing the frequency) */
         static final String RFID_DEC_FREQUENCY = "rfiddecfrequency";
 
@@ -220,15 +230,21 @@ public final class ClientCommandRegister extends ClientCommand
         
         /** Test RFID: Get the value of the current carrier period and antenna voltage. */
         static final String RFID_FREQUENCY  = "rfidfrequency";
+
+        /** Test RFID: Increase the period of the carrier signal (results in increasing the frequency) */
+        static final String RFID_INC_FREQUENCY = "rfidincfrequency";
         
         /** Test RFID: Save the current Duty Cycle "bridge type" and values in the ROM of the RFID board. */
         static final String RFID_SAVE_DUTY_CYCLE = "rfidsavedutycycle";
         
+        /** Test RFID: Select another axis */
+        static final String RFID_SELECT_AXIS  = "rfidselectaxis";
+        
+        /** Test RFID: Set Door State ("true": master door / "false": salve door, "true": open it / "false": close it. */
+        static final String RFID_SET_DOOR_STATE  = "rfidsetdoorstate";
+                
         /** Test RFID: Set Duty Cycle "bridge type" and values */
         static final String RFID_SET_DUTY_CYCLE  = "rfidsetdutycycle";
-        
-        /** Test RFID: Increase the period of the carrier signal (results in increasing the frequency) */
-        static final String RFID_INC_FREQUENCY = "rfidincfrequency";
         
         /** Test RFID: Set Correlation Threshold */
         static final String RFID_SET_THRESHOLD   = "rfidsetthreshold";
