@@ -427,12 +427,14 @@ public final class DeviceHandler
         public void tagPresence()
         {
             SmartLogger.getLogger().info("Tag presence.");
+            SmartServer.sendAllClients(EventCode.TAG_PRESENCE);
         }
 
         @Override
         public void scanCancelledByDoor()
         {
             SmartLogger.getLogger().info("Scan has been cancelled because someone opened the door.");
+            SmartServer.sendAllClients(EventCode.SCAN_CANCELLED_BY_DOOR);
         }
 
         @Override
