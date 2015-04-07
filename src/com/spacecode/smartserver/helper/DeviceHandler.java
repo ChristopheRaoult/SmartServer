@@ -13,12 +13,12 @@ import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAuthentication;
+import com.spacecode.smartserver.database.dao.DaoInventory;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.AuthenticationRepository;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
-import com.spacecode.smartserver.database.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -277,7 +277,7 @@ public final class DeviceHandler
             return false;
         }
 
-        UserRepository userRepo = (UserRepository) DbManager.getRepository(UserEntity.class);
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
         List<User> notAddedUsers = _device.getUsersService().addUsers(userRepo.getAuthorizedUsers());
 
         if(!notAddedUsers.isEmpty())
@@ -295,7 +295,7 @@ public final class DeviceHandler
      */
     public static boolean loadLastInventory()
     {
-        Inventory lastInventoryRecorded = ((InventoryRepository)DbManager.getRepository(InventoryEntity.class))
+        Inventory lastInventoryRecorded = ((DaoInventory) DbManager.getDao(InventoryEntity.class))
             .getLastInventory();
 
         if(lastInventoryRecorded == null)
@@ -359,7 +359,7 @@ public final class DeviceHandler
         public void scanCompleted()
         {
             // todo: thread this operation? The point is about "getLastInventory" command, which MUST return the VERY last
-            ((InventoryRepository)DbManager.getRepository(InventoryEntity.class)).persist(_device.getLastInventory());
+            ((DaoInventory)DbManager.getDao(InventoryEntity.class)).persist(_device.getLastInventory());
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }
@@ -382,7 +382,7 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
-            ((AuthenticationRepository)DbManager.getRepository(AuthenticationEntity.class))
+            ((DaoAuthentication)DbManager.getDao(AuthenticationEntity.class))
                     .persist(grantedUser, accessType);
         }
 

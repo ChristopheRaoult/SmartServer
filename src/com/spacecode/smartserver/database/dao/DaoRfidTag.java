@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.smartserver.database.entity.RfidTagEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
@@ -10,11 +10,11 @@ import java.util.logging.Level;
 /**
  * RfidTag Repository
  */
-public class RfidTagRepository extends Repository<RfidTagEntity>
+public class DaoRfidTag extends DaoEntity<RfidTagEntity, Integer>
 {
-    protected RfidTagRepository(Dao<RfidTagEntity, Integer> dao)
+    public DaoRfidTag(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, RfidTagEntity.class);
     }
 
     /**
@@ -41,7 +41,7 @@ public class RfidTagRepository extends Repository<RfidTagEntity>
         try
         {
             RfidTagEntity newRte = new RfidTagEntity(uid);
-            _dao.create(newRte);
+            create(newRte);
 
             return newRte;
         } catch (SQLException sqle)
@@ -65,8 +65,8 @@ public class RfidTagRepository extends Repository<RfidTagEntity>
 
         try
         {
-            return _dao.queryForFirst(
-                    _dao.queryBuilder()
+            return queryForFirst(
+                    queryBuilder()
                             .where()
                             .eq(RfidTagEntity.UID, uid)
                             .prepare()

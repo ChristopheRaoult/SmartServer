@@ -5,13 +5,14 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.user.User;
+import com.spacecode.smartserver.database.dao.DaoUser;
 
 import java.util.Date;
 
 /**
  * GrantedUser Entity
  */
-@DatabaseTable(tableName = UserEntity.TABLE_NAME)
+@DatabaseTable(tableName = UserEntity.TABLE_NAME, daoClass = DaoUser.class)
 public final class UserEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_granted_user";

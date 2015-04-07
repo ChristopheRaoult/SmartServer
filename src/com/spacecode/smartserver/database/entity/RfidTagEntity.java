@@ -2,11 +2,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoRfidTag;
 
 /**
  * RfidTag Entity
  */
-@DatabaseTable(tableName = RfidTagEntity.TABLE_NAME)
+@DatabaseTable(tableName = RfidTagEntity.TABLE_NAME, daoClass = DaoRfidTag.class)
 public final class RfidTagEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_rfid_tag";

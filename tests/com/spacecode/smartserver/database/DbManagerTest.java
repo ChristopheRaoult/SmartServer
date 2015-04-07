@@ -6,10 +6,10 @@ import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.device.Device;
 import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.database.dao.DaoDevice;
+import com.spacecode.smartserver.database.dao.DaoEntity;
 import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.Entity;
-import com.spacecode.smartserver.database.repository.DeviceRepository;
-import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.helper.ConfManager;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -39,7 +39,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DbManager.class, ConfManager.class, SmartServer.class, JdbcPooledConnectionSource.class,
-        SmartLogger.class, DaoManager.class, DeviceHandler.class, Device.class, DeviceEntity.class, Repository.class })
+        SmartLogger.class, DaoManager.class, DeviceHandler.class, Device.class, DeviceEntity.class, DaoEntity.class })
 public class DbManagerTest
 {
     private String _defaultConnectionString = Whitebox.getInternalState(DbManager.class, "CONNECTION_STRING");
@@ -322,9 +322,9 @@ public class DbManagerTest
         doReturn(device).when(DeviceHandler.class, "getDevice");
 
         DeviceEntity devEntity = PowerMockito.mock(DeviceEntity.class);
-        DeviceRepository devRepo = PowerMockito.mock(DeviceRepository.class);
+        DaoDevice devRepo = PowerMockito.mock(DaoDevice.class);
         doReturn(devEntity).when(devRepo).getEntityBy(DeviceEntity.SERIAL_NUMBER, serialNumber);
-        doReturn(devRepo).when(DbManager.class, "getRepository", DeviceEntity.class);
+        doReturn(devRepo).when(DbManager.class, "getDao", DeviceEntity.class);
 
         Whitebox.setInternalState(DbManager.class, "_deviceEntity", (Object) null);
         when(DbManager.class, "getDevEntity").thenCallRealMethod();
@@ -332,7 +332,7 @@ public class DbManagerTest
         assertEquals(DbManager.getDevEntity(), devEntity);
 
         verifyStatic();
-        DbManager.getRepository(DeviceEntity.class);
+        DbManager.getDao(DeviceEntity.class);
         verify(devRepo).getEntityBy(DeviceEntity.SERIAL_NUMBER, serialNumber);
     }
 
@@ -348,9 +348,9 @@ public class DbManagerTest
         mockStatic(DeviceHandler.class);
         doReturn(device).when(DeviceHandler.class, "getDevice");
 
-        DeviceRepository devRepo = PowerMockito.mock(DeviceRepository.class);
+        DaoDevice devRepo = PowerMockito.mock(DaoDevice.class);
         doReturn(null).when(devRepo).getEntityBy(DeviceEntity.SERIAL_NUMBER, serialNumber);
-        doReturn(devRepo).when(DbManager.class, "getRepository", DeviceEntity.class);
+        doReturn(devRepo).when(DbManager.class, "getDao", DeviceEntity.class);
 
         Whitebox.setInternalState(DbManager.class, "_deviceEntity", (Object) null);
         when(DbManager.class, "getDevEntity").thenCallRealMethod();
@@ -358,7 +358,7 @@ public class DbManagerTest
         assertNull(DbManager.getDevEntity());
 
         verifyStatic();
-        DbManager.getRepository(DeviceEntity.class);
+        DbManager.getDao(DeviceEntity.class);
         verify(devRepo).getEntityBy(DeviceEntity.SERIAL_NUMBER, serialNumber);
     }
 
@@ -372,8 +372,8 @@ public class DbManagerTest
         String serialNumber = "AA777201";
         doReturn(null).when(DbManager.class, "getDevEntity");
 
-        DeviceRepository devRepo = PowerMockito.mock(DeviceRepository.class);
-        doReturn(devRepo).when(DbManager.class, "getRepository", DeviceEntity.class);
+        DaoDevice devRepo = PowerMockito.mock(DaoDevice.class);
+        doReturn(devRepo).when(DbManager.class, "getDao", DeviceEntity.class);
 
         DeviceEntity devEntity = PowerMockito.mock(DeviceEntity.class);
         whenNew(DeviceEntity.class).withArguments(serialNumber).thenReturn(devEntity);

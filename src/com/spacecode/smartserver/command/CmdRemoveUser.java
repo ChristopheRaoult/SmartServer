@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -43,7 +43,7 @@ public class CmdRemoveUser extends ClientCommand
             return;
         }
 
-        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).removePermission(username))
+        if(!((DaoUser)DbManager.getDao(UserEntity.class)).removePermission(username))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;

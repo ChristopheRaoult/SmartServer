@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoSmtpServer;
 import com.spacecode.smartserver.database.entity.SmtpServerEntity;
-import com.spacecode.smartserver.database.repository.SmtpServerRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -24,7 +24,7 @@ public class CmdSmtpServer extends ClientCommand
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         SmtpServerEntity sse =
-                ((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class)).getSmtpServerConfig();
+                ((DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class)).getSmtpServerConfig();
 
         if(sse == null)
         {

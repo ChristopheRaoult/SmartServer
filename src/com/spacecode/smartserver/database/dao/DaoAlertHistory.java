@@ -1,7 +1,7 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
@@ -16,11 +16,11 @@ import java.util.logging.Level;
 /**
  * AlertHistory Repository
  */
-public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
+public class DaoAlertHistory extends DaoEntity<AlertHistoryEntity, Integer>
 {
-    AlertHistoryRepository(Dao<AlertHistoryEntity, Integer> dao)
+    public DaoAlertHistory(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, AlertHistoryEntity.class);
     }
 
     /**
@@ -36,9 +36,9 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
             QueryBuilder<AlertEntity, Integer> alertQb = DbManager.getDao(AlertEntity.class).queryBuilder();
             alertQb.where().eq(AlertEntity.DEVICE_ID, DbManager.getDevEntity().getId());
 
-            return _dao.queryForFirst(_dao.queryBuilder()
+            return queryForFirst(queryBuilder()
                             .join(alertQb)
-                            // order DESC
+                                    // order DESC
                             .orderBy(AlertHistoryEntity.CREATED_AT, false)
                             .limit(1L)
                             .prepare()
@@ -65,7 +65,7 @@ public class AlertHistoryRepository extends Repository<AlertHistoryEntity>
             QueryBuilder<AlertEntity, Integer> alertQb = DbManager.getDao(AlertEntity.class).queryBuilder();
             alertQb.where().eq(AlertEntity.DEVICE_ID, DbManager.getDevEntity().getId());
 
-            return _dao.query(_dao.queryBuilder()
+            return query(queryBuilder()
                             .orderBy(AlertHistoryEntity.CREATED_AT, true)
                             .join(alertQb)
                             .where()

@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
@@ -12,11 +12,11 @@ import java.util.logging.Level;
 /**
  * FingerprintEntity Repository
  */
-public class FingerprintRepository extends Repository<FingerprintEntity>
+public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
 {
-    protected FingerprintRepository(Dao<FingerprintEntity, Integer> dao)
+    public DaoFingerprint(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, FingerprintEntity.class);
     }
 
     /**
@@ -29,8 +29,8 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
     {
         try
         {
-            return _dao.queryForFirst(
-                    _dao.queryBuilder().where()
+            return queryForFirst(
+                    queryBuilder().where()
                             .eq(FingerprintEntity.GRANTED_USER_ID, gue.getId())
                             .and()
                             .eq(FingerprintEntity.FINGER_INDEX, index)
@@ -48,12 +48,12 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
      * @return          True if success, false otherwise (unknown fingerprint
      */
     @Override
-    public boolean update(FingerprintEntity fpEntity)
+    public boolean updateEntity(FingerprintEntity fpEntity)
     {
         try
         {
-            FingerprintEntity fpEnt = _dao.queryForFirst(
-                    _dao.queryBuilder().where()
+            FingerprintEntity fpEnt = queryForFirst(
+                    queryBuilder().where()
                             .eq(FingerprintEntity.GRANTED_USER_ID, fpEntity.getGrantedUser().getId())
                             .and()
                             .eq(FingerprintEntity.FINGER_INDEX, fpEntity.getFingerIndex())
@@ -61,21 +61,17 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
 
             if(fpEnt == null)
             {
-                _dao.create(fpEntity);
+                return insert(fpEntity);
             }
-
-            else
-            {
-                fpEnt.setTemplate(fpEntity.getTemplate());
-                _dao.update(fpEnt);
-            }
+            
+            fpEnt.setTemplate(fpEntity.getTemplate());
+            return super.updateEntity(fpEnt);
+            
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while updating Fingerprint.", sqle);
             return false;
         }
-
-        return true;
     }
 
     /**
@@ -88,7 +84,7 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
      */
     public boolean delete(String username, int index)
     {
-        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
 
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
@@ -98,7 +94,7 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
         }
 
         FingerprintEntity fpe = getFingerprint(gue, index);
-        return fpe != null && delete(fpe);
+        return fpe != null && deleteEntity(fpe);
     }
 
     /**
@@ -112,9 +108,9 @@ public class FingerprintRepository extends Repository<FingerprintEntity>
      */
     public boolean persist(String username, int fingerIndex, String fpTpl)
     {
-        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
-        return gue != null && update(new FingerprintEntity(gue, fingerIndex, fpTpl));
+        return gue != null && updateEntity(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }
 }

@@ -13,8 +13,8 @@ import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.*;
 import com.spacecode.smartserver.database.entity.*;
-import com.spacecode.smartserver.database.repository.*;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -34,9 +34,9 @@ public final class AlertCenter
     private static boolean _isSmtpServerSet;
     private static String _lastAuthenticatedUsername;
 
-    private static AlertRepository _alertRepository;
-    private static Repository<AlertHistoryEntity> _alertHistoryRepository;
-    private static AlertTypeRepository _alertTypeRepository;
+    private static DaoAlert _daoAlert;
+    private static DaoAlertHistory _daoAlertHistory;
+    private static DaoAlertType _daoAlertType;
 
     /** Must not be instantiated */
     private AlertCenter()
@@ -78,7 +78,7 @@ public final class AlertCenter
     private static boolean initializeSmtpServer()
     {
         final SmtpServerEntity sse =
-                ((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class)).getSmtpServerConfig();
+                ((DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class)).getSmtpServerConfig();
 
         if(sse == null)
         {
@@ -115,14 +115,13 @@ public final class AlertCenter
      */
     private static boolean initializeRepositories()
     {
-        _alertRepository = (AlertRepository) DbManager.getRepository(AlertEntity.class);
-        _alertHistoryRepository = DbManager.getRepository(AlertHistoryEntity.class);
-        _alertTypeRepository = (AlertTypeRepository) DbManager.getRepository(AlertTypeEntity.class);
+        _daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
+        _daoAlertHistory = (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
+        _daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
 
-        return  _alertRepository != null &&
-                _alertHistoryRepository != null &&
-                _alertHistoryRepository instanceof AlertHistoryRepository &&
-                _alertTypeRepository != null;
+        return  _daoAlert != null &&
+                _daoAlertHistory != null &&
+                _daoAlertType != null;
     }
 
     /**
@@ -189,7 +188,7 @@ public final class AlertCenter
             SmartLogger.getLogger().info("Raising an Alert (id: "+ae.getId()+")!");
         }
 
-        if(!_alertHistoryRepository.insert(alertHistoryEntities))
+        if(!_daoAlertHistory.insert(alertHistoryEntities))
         {
             SmartLogger.getLogger().severe("Unable to insert AlertHistory entities.");
         }
@@ -206,7 +205,7 @@ public final class AlertCenter
         @Override
         public void deviceDisconnected()
         {
-            AlertTypeEntity alertTypeDisconnected = _alertTypeRepository.fromAlertType(AlertType.DEVICE_DISCONNECTED);
+            AlertTypeEntity alertTypeDisconnected = _daoAlertType.fromAlertType(AlertType.DEVICE_DISCONNECTED);
 
             if(alertTypeDisconnected == null)
             {
@@ -214,7 +213,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDisconnected);
+                    _daoAlert.getEnabledAlerts(alertTypeDisconnected);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -228,7 +227,7 @@ public final class AlertCenter
         @Override
         public void doorOpenDelay()
         {
-            AlertTypeEntity alertTypeDoorDelay = _alertTypeRepository.fromAlertType(AlertType.DOOR_OPEN_DELAY);
+            AlertTypeEntity alertTypeDoorDelay = _daoAlertType.fromAlertType(AlertType.DOOR_OPEN_DELAY);
 
             if(alertTypeDoorDelay == null)
             {
@@ -236,7 +235,7 @@ public final class AlertCenter
             }
 
             List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeDoorDelay);
+                    _daoAlert.getEnabledAlerts(alertTypeDoorDelay);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -259,7 +258,7 @@ public final class AlertCenter
                 return;
             }
 
-            Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
+            DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
             UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
             // no matching user, or user has no "finger thief" index set.
@@ -270,15 +269,14 @@ public final class AlertCenter
 
             // get the FingerIndex value of the last fingerprint scanned
             FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastVerifiedFingerIndex(isMaster);
-            AlertTypeEntity alertTypeThiefFinger = _alertTypeRepository.fromAlertType(AlertType.THIEF_FINGER);
+            AlertTypeEntity alertTypeThiefFinger = _daoAlertType.fromAlertType(AlertType.THIEF_FINGER);
 
             if(index == null || alertTypeThiefFinger == null || index.getIndex() != gue.getThiefFingerIndex())
             {
                 return;
             }
 
-            List<AlertEntity> matchingAlerts =
-                    _alertRepository.getEnabledAlerts(alertTypeThiefFinger);
+            List<AlertEntity> matchingAlerts = _daoAlert.getEnabledAlerts(alertTypeThiefFinger);
 
             // notify alerts (event)
             List<Entity> notifiableAlerts = new ArrayList<>();
@@ -297,7 +295,7 @@ public final class AlertCenter
                 return;
             }
 
-            AlertTypeEntity alertTypeTemperature = _alertTypeRepository.fromAlertType(AlertType.TEMPERATURE);
+            AlertTypeEntity alertTypeTemperature = _daoAlertType.fromAlertType(AlertType.TEMPERATURE);
 
             if(alertTypeTemperature == null)
             {
@@ -305,7 +303,7 @@ public final class AlertCenter
             }
 
             // get enabled Temperature Alerts
-            List<AlertEntity> alerts = _alertRepository.getEnabledAlerts(alertTypeTemperature);
+            List<AlertEntity> alerts = _daoAlert.getEnabledAlerts(alertTypeTemperature);
 
             if(alerts.isEmpty())
             {
@@ -321,7 +319,7 @@ public final class AlertCenter
             }
 
             // get the attached AlertTemperature entities
-            Repository<AlertTemperatureEntity> atRepo = DbManager.getRepository(AlertTemperatureEntity.class);
+            DaoAlertTemperature atRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
             List<AlertTemperatureEntity> atList = atRepo.getAllWhereFieldIn(AlertTemperatureEntity.ALERT_ID, alertIds);
 
             Map<Entity, AlertEntity> matchingAlerts = new HashMap<>();

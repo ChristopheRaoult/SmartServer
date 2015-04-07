@@ -2,11 +2,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoDevice;
 
 /**
  * DeviceConfiguration Entity
  */
-@DatabaseTable(tableName = DeviceEntity.TABLE_NAME)
+@DatabaseTable(tableName = DeviceEntity.TABLE_NAME, daoClass = DaoDevice.class)
 public final class DeviceEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_device";

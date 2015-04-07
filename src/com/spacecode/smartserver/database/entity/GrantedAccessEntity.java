@@ -3,11 +3,12 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoGrantedAccess;
 
 /**
  * GrantedAccess Entity
  */
-@DatabaseTable(tableName = GrantedAccessEntity.TABLE_NAME)
+@DatabaseTable(tableName = GrantedAccessEntity.TABLE_NAME, daoClass = DaoGrantedAccess.class)
 public final class GrantedAccessEntity extends Entity
 {
     public static final String TABLE_NAME =  "sc_granted_access";

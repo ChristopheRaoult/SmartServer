@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.smartserver.database.entity.AlertTypeEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -13,13 +13,13 @@ import java.util.logging.Level;
 /**
  * AlertType Repository
  */
-public class AlertTypeRepository extends Repository<AlertTypeEntity>
+public class DaoAlertType extends DaoEntity<AlertTypeEntity, Integer>
 {
     private static final Map<String, AlertTypeEntity> TYPE_TO_ENTITY = new HashMap<>();
 
-    protected AlertTypeRepository(Dao<AlertTypeEntity, Integer> dao)
+    public DaoAlertType(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, AlertTypeEntity.class);
     }
 
     /**
@@ -37,7 +37,7 @@ public class AlertTypeRepository extends Repository<AlertTypeEntity>
         {
             try
             {
-                AlertTypeEntity ate = _dao.queryForFirst(_dao.queryBuilder().where()
+                AlertTypeEntity ate = queryForFirst(queryBuilder().where()
                         .eq(AlertTypeEntity.TYPE, alertType.name())
                         .prepare());
 

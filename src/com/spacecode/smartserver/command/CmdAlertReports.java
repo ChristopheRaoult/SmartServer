@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAlertHistory;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
-import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -58,8 +58,8 @@ public class CmdAlertReports extends ClientCommand
             return;
         }
 
-        AlertHistoryRepository repo =
-                (AlertHistoryRepository) DbManager.getRepository(AlertHistoryEntity.class);
+        DaoAlertHistory repo =
+                (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
 
         List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),  new Date(timestampEnd));
 

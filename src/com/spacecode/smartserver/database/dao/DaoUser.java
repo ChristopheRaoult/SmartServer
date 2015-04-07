@@ -1,8 +1,8 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.misc.TransactionManager;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.sdk.user.data.GrantType;
@@ -21,15 +21,11 @@ import java.util.logging.Level;
 /**
  * UserEntity Repository
  */
-public class UserRepository extends Repository<UserEntity>
+public class DaoUser extends DaoEntity<UserEntity, Integer>
 {
-    /**
-     * Default constructor.
-     * @param dao   Dao (UserEntity, Integer) to be used by the Repository.
-     */
-    public UserRepository(Dao<UserEntity, Integer> dao)
+    public DaoUser(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, UserEntity.class);
     }
 
     /**
@@ -65,7 +61,7 @@ public class UserRepository extends Repository<UserEntity>
 
         UserEntity gue = getByUsername(username);
 
-        return gue != null && delete(gue);
+        return gue != null && deleteEntity(gue);
     }
 
     /**
@@ -74,31 +70,22 @@ public class UserRepository extends Repository<UserEntity>
      * @return          True if successful, false otherwise (SQLException).
      */
     @Override
-    public boolean delete(UserEntity entity)
+    public boolean deleteEntity(UserEntity entity)
     {
         if(entity == null)
         {
             return false;
         }
+        
+        DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+        DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
 
-        try
-        {
-            Repository<FingerprintEntity> fpRepo = DbManager.getRepository(FingerprintEntity.class);
-            Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
+        // first, remove the foreign dependencies
+        fpRepo.deleteEntity(entity.getFingerprints());
+        gaRepo.deleteEntity(entity.getGrantedAccesses());
 
-            // first, remove the foreign dependencies
-            fpRepo.delete(entity.getFingerprints());
-            gaRepo.delete(entity.getGrantedAccesses());
-
-            // then, remove the user
-            _dao.delete(entity);
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while deleting GrantedUser.", sqle);
-            return false;
-        }
-
-        return true;
+        // then, remove the user
+        return super.deleteEntity(entity);
     }
 
     /**
@@ -107,11 +94,11 @@ public class UserRepository extends Repository<UserEntity>
      * @return          True if successfully removed all users, false otherwise (SQLException).
      */
     @Override
-    public boolean delete(Collection<UserEntity> entities)
+    public boolean deleteEntity(Collection<UserEntity> entities)
     {
         for(UserEntity user : entities)
         {
-            if(!delete(user))
+            if(!deleteEntity(user))
             {
                 return false;
             }
@@ -137,15 +124,8 @@ public class UserRepository extends Repository<UserEntity>
             return false;
         }
 
-        try
-        {
-            gue.setBadgeNumber(badgeNumber);
-            return _dao.update(gue) == 1;
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Unable to update badge number.", sqle);
-            return false;
-        }
+        gue.setBadgeNumber(badgeNumber);
+        return updateEntity(gue);
     }
 
     /**
@@ -164,16 +144,9 @@ public class UserRepository extends Repository<UserEntity>
         {
             return false;
         }
-
-        try
-        {
-            gue.setThiefFingerIndex(fingerIndex);
-            return _dao.update(gue) == 1;
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Unable to update thief finger index.", sqle);
-            return false;
-        }
+    
+        gue.setThiefFingerIndex(fingerIndex);
+        return updateEntity(gue);
     }
 
     /**
@@ -214,7 +187,7 @@ public class UserRepository extends Repository<UserEntity>
             return false;
         }
 
-        Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
+        DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
         Collection<GrantedAccessEntity> gaesList = gue.getGrantedAccesses();
         Collection<GrantedAccessEntity> gaesOndevice = new ArrayList<>();
 
@@ -226,7 +199,7 @@ public class UserRepository extends Repository<UserEntity>
             }
         }
 
-        return gaRepo.delete(gaesOndevice);
+        return gaRepo.deleteEntity(gaesOndevice);
     }
 
     /**
@@ -259,7 +232,7 @@ public class UserRepository extends Repository<UserEntity>
                     throw new SQLException("Failed when inserting new user.");
                 }
 
-                Repository<FingerprintEntity> fpRepo = DbManager.getRepository(FingerprintEntity.class);
+                DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
 
                 // add his fingerprints
                 for(FingerIndex index : _newUser.getEnrolledFingersIndexes())
@@ -274,8 +247,8 @@ public class UserRepository extends Repository<UserEntity>
             }
 
             // get GrantTypeEntity instance corresponding to newUser grant type
-            Repository grantTypeRepo = DbManager.getRepository(GrantTypeEntity.class);
-            GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo).fromGrantType(_newUser.getPermission());
+            DaoGrantType grantTypeRepo =(DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
+            GrantTypeEntity gte = grantTypeRepo.fromGrantType(_newUser.getPermission());
 
             if(gte == null)
             {
@@ -283,7 +256,7 @@ public class UserRepository extends Repository<UserEntity>
             }
 
             // create & persist access
-            Repository<GrantedAccessEntity> gaRepo = DbManager.getRepository(GrantedAccessEntity.class);
+            DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
 
             GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);
 
@@ -345,7 +318,7 @@ public class UserRepository extends Repository<UserEntity>
         {
             // get one line per user having a granted access on this device
             // one more line (with repeated user information) for each user's fingerprint.
-            GenericRawResults results = _dao.queryRaw(sb.toString());
+            GenericRawResults results = queryRaw(sb.toString());
 
             // fill the Maps with results from Raw SQL query
             for (String[] result : (Iterable<String[]>) results)

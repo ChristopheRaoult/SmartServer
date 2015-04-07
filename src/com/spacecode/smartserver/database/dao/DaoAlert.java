@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.sdk.network.alert.AlertType;
@@ -18,11 +18,11 @@ import java.util.logging.Level;
 /**
  * Alert Repository
  */
-public class AlertRepository extends Repository<AlertEntity>
+public class DaoAlert extends DaoEntity<AlertEntity, Integer>
 {
-    AlertRepository(Dao<AlertEntity, Integer> dao)
+    public DaoAlert(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, AlertEntity.class);
     }
 
     /**
@@ -33,35 +33,24 @@ public class AlertRepository extends Repository<AlertEntity>
      * @return          True if successful, false otherwise (SQLException).
      */
     @Override
-    public boolean delete(AlertEntity entity)
+    public boolean deleteEntity(AlertEntity entity)
     {
         if(entity == null)
         {
             return false;
         }
 
-        try
+        // first, remove the attached AlertTemperature, if any.
+        if(DaoAlertType.asAlertType(entity.getAlertType()) == AlertType.TEMPERATURE)
         {
-            // first, remove the attached AlertTemperature, if any.
-            if(AlertTypeRepository.asAlertType(entity.getAlertType()) == AlertType.TEMPERATURE)
-            {
-                Repository<AlertTemperatureEntity> atRepo =
-                        DbManager.getRepository(AlertTemperatureEntity.class);
-                AlertTemperatureEntity ate =
-                        atRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, entity.getId());
+            DaoAlertTemperature atRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
+            AlertTemperatureEntity ate = atRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, entity.getId());
 
-                atRepo.delete(ate);
-            }
-
-            // then, remove the alert
-            _dao.delete(entity);
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while deleting Alert.", sqle);
-            return false;
+            atRepo.deleteEntity(ate);
         }
 
-        return true;
+        // then, remove the alert
+        return super.deleteEntity(entity);
     }
 
     /**
@@ -81,8 +70,8 @@ public class AlertRepository extends Repository<AlertEntity>
 
         try
         {
-            return _dao.query(
-                    _dao.queryBuilder()
+            return query(
+                    queryBuilder()
                             .where()
                             .eq(AlertEntity.ALERT_TYPE_ID, ate.getId())
                             .and()
@@ -107,7 +96,7 @@ public class AlertRepository extends Repository<AlertEntity>
      */
     public boolean persist(Alert alert)
     {
-        AlertTypeRepository aTypeRepo = (AlertTypeRepository) DbManager.getRepository(AlertTypeEntity.class);
+        DaoAlertType aTypeRepo = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
 
         AlertTypeEntity ate = aTypeRepo.fromAlertType(alert.getType());
 
@@ -130,7 +119,7 @@ public class AlertRepository extends Repository<AlertEntity>
 
         else
         {
-            if(!update(newAlertEntity))
+            if(!updateEntity(newAlertEntity))
             {
                 // if we fail updating the alert
                 return false;
@@ -152,8 +141,7 @@ public class AlertRepository extends Repository<AlertEntity>
 
         AlertTemperature alertTemperature = (AlertTemperature) alert;
 
-        AlertTemperatureRepository aTempRepo =
-                (AlertTemperatureRepository) DbManager.getRepository(AlertTemperatureEntity.class);
+        DaoAlertTemperature aTempRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
 
         // if the Alert is already known: update the attached AlertTemperature
         if(alert.getId() != 0)
@@ -161,7 +149,7 @@ public class AlertRepository extends Repository<AlertEntity>
             AlertTemperatureEntity atEntity = aTempRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, alert.getId());
             atEntity.setTemperatureMin(alertTemperature.getTemperatureMin());
             atEntity.setTemperatureMax(alertTemperature.getTemperatureMax());
-            return aTempRepo.update(atEntity);
+            return aTempRepo.updateEntity(atEntity);
         }
 
         // else create a new AlertTemperature
@@ -178,7 +166,7 @@ public class AlertRepository extends Repository<AlertEntity>
      *
      * @return      True if successful, false otherwise (unknown alert, SQLException...).
      */
-    public boolean delete(Alert alert)
+    public boolean deleteFromAlert(Alert alert)
     {
         if(alert == null || alert.getId() == 0)
         {
@@ -187,6 +175,6 @@ public class AlertRepository extends Repository<AlertEntity>
 
         AlertEntity gue = getEntityById(alert.getId());
 
-        return gue != null && delete(gue);
+        return gue != null && deleteEntity(gue);
     }
 }

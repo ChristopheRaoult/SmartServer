@@ -5,8 +5,8 @@ import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
-import com.spacecode.smartserver.database.repository.Repository;
 
 /**
  * Handle persistence of temperature measures in database.
@@ -56,8 +56,8 @@ public class TemperatureCenter
                 return;
             }
 
-            Repository<TemperatureMeasurementEntity> repo = DbManager
-                    .getRepository(TemperatureMeasurementEntity.class);
+            DaoTemperatureMeasurement repo = 
+                    (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
 
             if(!repo.insert(
                     new TemperatureMeasurementEntity(roundedValue)))

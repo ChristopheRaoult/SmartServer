@@ -15,12 +15,12 @@ import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAuthentication;
+import com.spacecode.smartserver.database.dao.DaoInventory;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.AuthenticationRepository;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -339,13 +339,13 @@ public class DeviceHandlerTest
         List<User> notAddedUsers = Arrays.asList(user1);
 
         UsersService usersService = PowerMockito.mock(UsersService.class);
-        UserRepository userRepo = PowerMockito.mock(UserRepository.class);
+        DaoUser userRepo = PowerMockito.mock(DaoUser.class);
         // get a fake list of users from DB
         doReturn(authorizedUsers).when(userRepo).getAuthorizedUsers();
         // assume that addUsers() returns a list (not empty) of "not added" users
         doReturn(notAddedUsers).when(usersService).addUsers(authorizedUsers);
         doReturn(usersService).when(_device).getUsersService();
-        doReturn(userRepo).when(DbManager.class, "getRepository", UserEntity.class);
+        doReturn(userRepo).when(DbManager.class, "getDao", UserEntity.class);
 
         assertTrue(DeviceHandler.loadAuthorizedUsers());
         verify(usersService).addUsers(authorizedUsers);
@@ -356,9 +356,9 @@ public class DeviceHandlerTest
     @Test
     public void testLoadLastInventoryNull() throws Exception
     {
-        InventoryRepository inventoryRepo = PowerMockito.mock(InventoryRepository.class);
+        DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
         doReturn(null).when(inventoryRepo).getLastInventory();
-        doReturn(inventoryRepo).when(DbManager.class, "getRepository", InventoryEntity.class);
+        doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
 
         assertFalse(DeviceHandler.loadLastInventory());
     }
@@ -367,9 +367,9 @@ public class DeviceHandlerTest
     public void testLoadLastInventory() throws Exception
     {
         Inventory lastInv = PowerMockito.mock(Inventory.class);
-        InventoryRepository inventoryRepo = PowerMockito.mock(InventoryRepository.class);
+        DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
         doReturn(lastInv).when(inventoryRepo).getLastInventory();
-        doReturn(inventoryRepo).when(DbManager.class, "getRepository", InventoryEntity.class);
+        doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
 
         assertTrue(DeviceHandler.loadLastInventory());
         verify(_device).setLastInventory(lastInv);
@@ -436,8 +436,8 @@ public class DeviceHandlerTest
     @Test
     public void testEventHandlerScanCompleted() throws Exception
     {
-        InventoryRepository inventoryRepo = PowerMockito.mock(InventoryRepository.class);
-        doReturn(inventoryRepo).when(DbManager.class, "getRepository", InventoryEntity.class);
+        DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
+        doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
 
         _eventHandler.scanCompleted();
 
@@ -469,8 +469,8 @@ public class DeviceHandlerTest
     @Test
     public void testEventHandlerAuthenticationSuccess() throws Exception
     {
-        AuthenticationRepository authenticationRepo = PowerMockito.mock(AuthenticationRepository.class);
-        doReturn(authenticationRepo).when(DbManager.class, "getRepository", AuthenticationEntity.class);
+        DaoAuthentication authenticationRepo = PowerMockito.mock(DaoAuthentication.class);
+        doReturn(authenticationRepo).when(DbManager.class, "getDao", AuthenticationEntity.class);
 
         AccessType accessType = AccessType.BADGE;
         User user = new User("Vincent", GrantType.MASTER);

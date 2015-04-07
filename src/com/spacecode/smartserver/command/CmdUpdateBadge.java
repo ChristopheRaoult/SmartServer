@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,7 +39,7 @@ public class CmdUpdateBadge extends ClientCommand
         String username = parameters[0];
         String badgeNumber = parameters.length > 1 ? parameters[1] : "";
 
-        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).updateBadgeNumber(username, badgeNumber))
+        if(!((DaoUser)DbManager.getDao(UserEntity.class)).updateBadgeNumber(username, badgeNumber))
         {
             SmartLogger.getLogger().warning("Unable to update badge number: DB operation failed.");
             SmartLogger.getLogger().warning("Make sure that the user "+username+" exists.");

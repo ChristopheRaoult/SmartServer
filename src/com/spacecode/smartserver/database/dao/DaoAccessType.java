@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.database.entity.AccessTypeEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -13,13 +13,13 @@ import java.util.logging.Level;
 /**
  * AccessTypeEntity Repository
  */
-public class AccessTypeRepository extends Repository<AccessTypeEntity>
+public class DaoAccessType extends DaoEntity<AccessTypeEntity, Integer>
 {
     private static final Map<String, AccessTypeEntity> TYPE_TO_ENTITY = new HashMap<>();
 
-    AccessTypeRepository(Dao<AccessTypeEntity, Integer> dao)
+    public DaoAccessType(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, AccessTypeEntity.class);
     }
 
     /**
@@ -59,7 +59,7 @@ public class AccessTypeRepository extends Repository<AccessTypeEntity>
         {
             try
             {
-                AccessTypeEntity ate = _dao.queryForFirst(_dao.queryBuilder().where()
+                AccessTypeEntity ate = queryForFirst(queryBuilder().where()
                         .eq(AccessTypeEntity.TYPE, accessType.name())
                         .prepare());
 

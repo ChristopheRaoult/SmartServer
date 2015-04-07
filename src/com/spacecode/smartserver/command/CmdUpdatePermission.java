@@ -5,8 +5,8 @@ import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoGrantedAccess;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
-import com.spacecode.smartserver.database.repository.GrantedAccessRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
@@ -64,7 +64,7 @@ public class CmdUpdatePermission extends ClientCommand
             return;
         }
 
-        if(!((GrantedAccessRepository) DbManager.getRepository(GrantedAccessEntity.class)).persist(username, grantType))
+        if(!((DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class)).persist(username, grantType))
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;

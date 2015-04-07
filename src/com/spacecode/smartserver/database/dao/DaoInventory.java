@@ -1,7 +1,7 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.misc.TransactionManager;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.*;
@@ -16,11 +16,11 @@ import java.util.logging.Level;
 /**
  * Inventory Repository
  */
-public class InventoryRepository extends Repository<InventoryEntity>
+public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
 {
-    protected InventoryRepository(Dao<InventoryEntity, Integer> dao)
+    public DaoInventory(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, InventoryEntity.class);
     }
 
     /**
@@ -37,8 +37,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
         try
         {
-            InventoryEntity lastEntity = _dao.queryForFirst(
-                    _dao.queryBuilder()
+            InventoryEntity lastEntity = queryForFirst(
+                    queryBuilder()
                             // Should be ordered by creation date but the system date is not reliable (RTC battery lifespan)
                             // Should not use primary key as a sorting criteria but as it is open to SDK/API users, it
                             // does not matter.
@@ -72,8 +72,8 @@ public class InventoryRepository extends Repository<InventoryEntity>
 
         try
         {
-            queryResult = _dao.query(
-                    _dao.queryBuilder()
+            queryResult = query(
+                    queryBuilder()
                             .orderBy(InventoryEntity.CREATED_AT, true)
                             .where()
                             .eq(InventoryEntity.DEVICE_ID, DbManager.getDevEntity().getId())
@@ -135,10 +135,10 @@ public class InventoryRepository extends Repository<InventoryEntity>
         @Override
         public Void call() throws Exception
         {
-            Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
-            Repository accessTypeRepo = DbManager.getRepository(AccessTypeEntity.class);
-            Repository rfidTagRepo = DbManager.getRepository(RfidTagEntity.class);
-            Repository<InventoryRfidTag> inventTagRepo = DbManager.getRepository(InventoryRfidTag.class);
+            DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+            DaoEntity accessTypeRepo = DbManager.getDao(AccessTypeEntity.class);
+            DaoEntity rfidTagRepo = DbManager.getDao(RfidTagEntity.class);
+            DaoEntity inventTagRepo = DbManager.getDao(InventoryRfidTag.class);
 
             UserEntity gue = null;
 
@@ -149,7 +149,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
                 gue = userRepo.getEntityBy(UserEntity.USERNAME, _inventory.getUsername());
             }
 
-            AccessTypeEntity ate = ((AccessTypeRepository) accessTypeRepo).fromAccessType(_inventory.getAccessType());
+            AccessTypeEntity ate = ((DaoAccessType) accessTypeRepo).fromAccessType(_inventory.getAccessType());
 
             if(ate == null)
             {
@@ -173,7 +173,7 @@ public class InventoryRepository extends Repository<InventoryEntity>
             // browse all UID's (tags added, present, removed) to fill the map with entities
             for(String tagUid : allUids)
             {
-                RfidTagEntity rte = ((RfidTagRepository) rfidTagRepo).createIfNotExists(tagUid);
+                RfidTagEntity rte = ((DaoRfidTag) rfidTagRepo).createIfNotExists(tagUid);
 
                 if(rte == null)
                 {

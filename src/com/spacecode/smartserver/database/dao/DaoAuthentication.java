@@ -1,7 +1,7 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.database.DbManager;
@@ -19,11 +19,11 @@ import java.util.logging.Level;
 /**
  * Authentication Repository
  */
-public class AuthenticationRepository extends Repository<AuthenticationEntity>
+public class DaoAuthentication extends DaoEntity<AuthenticationEntity, Integer>
 {
-    AuthenticationRepository(Dao<AuthenticationEntity, Integer> dao)
+    public DaoAuthentication(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, AuthenticationEntity.class);
     }
 
     /**
@@ -38,9 +38,9 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
     {
         try
         {
-            QueryBuilder<AuthenticationEntity, Integer> qb = _dao.queryBuilder();
+            QueryBuilder<AuthenticationEntity, Integer> qb = queryBuilder();
 
-            return _dao.query(qb
+            return query(qb
                             .orderBy(AuthenticationEntity.CREATED_AT, true)
                             .where()
                             .eq(AuthenticationEntity.DEVICE_ID, DbManager.getDevEntity().getId())
@@ -65,8 +65,8 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
      */
     public boolean persist(User grantedUser, AccessType accessType)
     {
-        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
-        Repository accessTypeRepo = DbManager.getRepository(AccessTypeEntity.class);
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoAccessType accessTypeRepo = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
 
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
@@ -76,7 +76,7 @@ public class AuthenticationRepository extends Repository<AuthenticationEntity>
             return false;
         }
 
-        AccessTypeEntity ate = ((AccessTypeRepository)accessTypeRepo).fromAccessType(accessType);
+        AccessTypeEntity ate = accessTypeRepo.fromAccessType(accessType);
 
         if(ate == null)
         {

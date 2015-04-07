@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoEntity;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
-import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -43,8 +43,8 @@ public class CmdInventoryById extends ClientCommand
         try
         {
             int id = Integer.parseInt(inventoryId);
-            Repository<InventoryEntity> repoInventory = DbManager.getRepository(InventoryEntity.class);
-            InventoryEntity invEntity = repoInventory.getEntityById(id);
+            DaoEntity repoInventory = DbManager.getDao(InventoryEntity.class);
+            InventoryEntity invEntity = (InventoryEntity) repoInventory.getEntityById(id);
 
             if(invEntity == null)
             {

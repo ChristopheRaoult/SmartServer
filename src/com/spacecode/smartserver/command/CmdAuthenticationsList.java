@@ -4,10 +4,10 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.data.AccessType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAccessType;
+import com.spacecode.smartserver.database.dao.DaoAuthentication;
 import com.spacecode.smartserver.database.entity.AuthenticationEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.AccessTypeRepository;
-import com.spacecode.smartserver.database.repository.AuthenticationRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -60,8 +60,8 @@ public class CmdAuthenticationsList extends ClientCommand
             return;
         }
 
-        AuthenticationRepository repo =
-                (AuthenticationRepository) DbManager.getRepository(AuthenticationEntity.class);
+        DaoAuthentication repo =
+                (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);
 
         List<AuthenticationEntity> authentications =
                 repo.getAuthentications(new Date(timestampStart), new Date(timestampEnd));
@@ -71,7 +71,7 @@ public class CmdAuthenticationsList extends ClientCommand
 
         for(AuthenticationEntity authentication : authentications)
         {
-            AccessType accessType = AccessTypeRepository.asAccessType(authentication.getAccessType());
+            AccessType accessType = DaoAccessType.asAccessType(authentication.getAccessType());
             String accessTypePacket =
                     accessType == AccessType.BADGE
                     ? "B"

@@ -3,11 +3,13 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.network.alert.SmtpServer;
+import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoSmtpServer;
 
 /**
  * SmtpServer Entity
  */
-@DatabaseTable(tableName = SmtpServerEntity.TABLE_NAME)
+@DatabaseTable(tableName = SmtpServerEntity.TABLE_NAME, daoClass = DaoSmtpServer.class)
 public final class SmtpServerEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_smtp_server";
@@ -55,6 +57,7 @@ public final class SmtpServerEntity extends Entity
      */
     public SmtpServerEntity(String address, int port, String username, String password, boolean sslEnabled)
     {
+        _device = DbManager.getDevEntity();
         _address = address;
         _port = port;
         _username = username;

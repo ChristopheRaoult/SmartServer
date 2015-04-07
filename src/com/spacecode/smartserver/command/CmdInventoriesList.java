@@ -4,8 +4,8 @@ import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoInventory;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -58,7 +58,7 @@ public class CmdInventoriesList extends ClientCommand
             return;
         }
 
-        InventoryRepository repo = (InventoryRepository) DbManager.getRepository(InventoryEntity.class);
+        DaoInventory repo = (DaoInventory) DbManager.getDao(InventoryEntity.class);
 
         List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd));
 

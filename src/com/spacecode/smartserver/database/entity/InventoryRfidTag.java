@@ -3,11 +3,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoInventoryRfidTag;
 
 /**
  * InventoryRfidTag Entity (table linking InventoryEntity and RfidTagEntity (many-to-many relationship)).
  */
-@DatabaseTable(tableName = InventoryRfidTag.TABLE_NAME)
+@DatabaseTable(tableName = InventoryRfidTag.TABLE_NAME, daoClass = DaoInventoryRfidTag.class)
 public final class InventoryRfidTag extends Entity
 {
     public static final String TABLE_NAME = "sc_inventory_rfid_tag";

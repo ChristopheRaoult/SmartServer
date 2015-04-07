@@ -8,9 +8,9 @@ import com.spacecode.sdk.user.UsersService;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.After;
@@ -39,7 +39,7 @@ public class CmdAddUserTest
     private CmdAddUser _command;
     private Device _device;
     private UsersService _usersService;
-    private UserRepository _userRepository;
+    private DaoUser _daoUser;
 
     private String _serializedUser;
     public String _username = "Vincent";
@@ -51,7 +51,7 @@ public class CmdAddUserTest
         _command = PowerMockito.mock(CmdAddUser.class, Mockito.CALLS_REAL_METHODS);
         _device = PowerMockito.mock(Device.class);
         _usersService = PowerMockito.mock(UsersService.class);
-        _userRepository = PowerMockito.mock(UserRepository.class);
+        _daoUser = PowerMockito.mock(DaoUser.class);
 
         _serializedUser = new User(_username, GrantType.ALL, "BBC019575").serialize();
 
@@ -71,7 +71,7 @@ public class CmdAddUserTest
         _command = null;
         _device = null;
         _usersService = null;
-        _userRepository = null;
+        _daoUser = null;
         _serializedUser = null;
     }
 
@@ -113,7 +113,7 @@ public class CmdAddUserTest
     @Test
     public void testExecuteUserWithSameNameExists() throws Exception
     {
-        PowerMockito.when(DbManager.class, "getRepository", UserEntity.class).thenReturn(_userRepository);
+        PowerMockito.when(DbManager.class, "getDao", UserEntity.class).thenReturn(_daoUser);
 
         String existingBadge = "123456";
         int fingerIndex = 1;
@@ -134,7 +134,7 @@ public class CmdAddUserTest
         PowerMockito.doReturn(fpEntities).when(existingUserEntity).getFingerprints();
 
         // mock the user repo to return the desired user entity
-        PowerMockito.doReturn(existingUserEntity).when(_userRepository).getByUsername(_username);
+        PowerMockito.doReturn(existingUserEntity).when(_daoUser).getByUsername(_username);
 
         // Step 1 - UsersService fails
         PowerMockito.doReturn(false).when(_usersService).addUser(Matchers.any(User.class));
@@ -148,15 +148,15 @@ public class CmdAddUserTest
         // Step 2 - UsersService succeeds, but UserRepository fails persisting
         PowerMockito.doReturn(true).when(_usersService).addUser(Matchers.any(User.class));
         _command.execute(_ctx, new String[]{_serializedUser});
-        PowerMockito.doReturn(false).when(_userRepository).persist(Matchers.any(User.class));
+        PowerMockito.doReturn(false).when(_daoUser).persist(Matchers.any(User.class));
         // check the user is removed from UsersService
         Mockito.verify(_usersService).removeUser(_username);
         // check that False is returned to user [times(2) because the mock already registered the first time above]
         PowerMockito.verifyStatic(Mockito.times(2));
         SmartServer.sendMessage(_ctx, RequestCode.ADD_USER, ClientCommand.FALSE);
 
-        // Step 3 - UserRepository succeeds in persisting user
-        PowerMockito.doReturn(true).when(_userRepository).persist(Matchers.any(User.class));
+        // Step 3 - DaoUser succeeds in persisting user
+        PowerMockito.doReturn(true).when(_daoUser).persist(Matchers.any(User.class));
         _command.execute(_ctx, new String[]{_serializedUser});
         // check that True is returned to user
         PowerMockito.verifyStatic();

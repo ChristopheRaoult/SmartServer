@@ -2,11 +2,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoGrantType;
 
 /**
  * GrantType Entity
  */
-@DatabaseTable(tableName = GrantTypeEntity.TABLE_NAME)
+@DatabaseTable(tableName = GrantTypeEntity.TABLE_NAME, daoClass = DaoGrantType.class)
 public final class GrantTypeEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_grant_type";

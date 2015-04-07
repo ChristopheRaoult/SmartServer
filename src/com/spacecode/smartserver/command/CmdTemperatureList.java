@@ -3,8 +3,8 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
-import com.spacecode.smartserver.database.repository.TemperatureMeasurementRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
@@ -64,8 +64,8 @@ public class CmdTemperatureList extends ClientCommand
             return;
         }
 
-        TemperatureMeasurementRepository repo =
-                (TemperatureMeasurementRepository) DbManager.getRepository(TemperatureMeasurementEntity.class);
+        DaoTemperatureMeasurement repo =
+                (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
 
         List<TemperatureMeasurementEntity> entities =
                 repo.getTemperatureMeasures(new Date(timestampStart), new Date(timestampEnd));

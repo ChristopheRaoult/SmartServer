@@ -6,8 +6,8 @@ import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAlert;
 import com.spacecode.smartserver.database.entity.AlertEntity;
-import com.spacecode.smartserver.database.repository.AlertRepository;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -47,7 +47,7 @@ public class CmdAddAlert extends ClientCommand
             return;
         }
 
-        if(!((AlertRepository)DbManager.getRepository(AlertEntity.class)).persist(newAlert))
+        if(!((DaoAlert)DbManager.getDao(AlertEntity.class)).persist(newAlert))
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;

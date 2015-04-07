@@ -2,13 +2,14 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoAlertHistory;
 
 import java.util.Date;
 
 /**
  * AlertHistory Entity
  */
-@DatabaseTable(tableName = AlertHistoryEntity.TABLE_NAME)
+@DatabaseTable(tableName = AlertHistoryEntity.TABLE_NAME, daoClass = DaoAlertHistory.class)
 public final class AlertHistoryEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_alert_history";

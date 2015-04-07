@@ -5,9 +5,9 @@ import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -31,8 +31,8 @@ public class CmdAddUser extends ClientCommand
     @Override
     public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // waiting for only 1 parameter: serialized User
-        if(parameters.length != 1)
+        // waiting for only 1 parameter: serialized User, and OPTIONAL 2nd parameter: true/false ("override template").
+        if(parameters.length < 1)
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             throw new ClientCommandException("Invalid number of parameters [AddUser].");
@@ -53,8 +53,8 @@ public class CmdAddUser extends ClientCommand
         }
 
         // check if the user already exist in DB. In that case, we take HIS badge number and fingerprints
-        UserRepository userRepository = (UserRepository) DbManager.getRepository(UserEntity.class);
-        UserEntity currentUser = userRepository.getByUsername(newUser.getUsername());
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        UserEntity currentUser = daoUser.getByUsername(newUser.getUsername());
 
         if(currentUser != null)
         {
@@ -80,7 +80,7 @@ public class CmdAddUser extends ClientCommand
             return;
         }
 
-        if(!userRepository.persist(newUser))
+        if(!daoUser.persist(newUser))
         {
             // if insert in db failed, remove user from local users.
             DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());

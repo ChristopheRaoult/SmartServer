@@ -2,11 +2,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoAccessType;
 
 /**
  * AccessType Entity
  */
-@DatabaseTable(tableName = AccessTypeEntity.TABLE_NAME)
+@DatabaseTable(tableName = AccessTypeEntity.TABLE_NAME, daoClass = DaoAccessType.class)
 public final class AccessTypeEntity extends Entity
 {
     public static final String TABLE_NAME =  "sc_access_type";

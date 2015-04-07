@@ -5,7 +5,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="file://$PROJECT_DIR$/../SpacecodeSDK/src" />
+      <root url="file://$PROJECT_DIR$/../SmartSDK/src" />
     </SOURCES>
   </library>
 </component>

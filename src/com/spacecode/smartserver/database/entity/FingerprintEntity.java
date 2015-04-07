@@ -3,11 +3,12 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoFingerprint;
 
 /**
  * Fingerprint Entity
  */
-@DatabaseTable(tableName = FingerprintEntity.TABLE_NAME)
+@DatabaseTable(tableName = FingerprintEntity.TABLE_NAME, daoClass = DaoFingerprint.class)
 public final class FingerprintEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_fingerprint";

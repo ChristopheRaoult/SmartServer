@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -13,13 +13,13 @@ import java.util.logging.Level;
 /**
  * GrantTypeEntity Repository
  */
-public class GrantTypeRepository extends Repository<GrantTypeEntity>
+public class DaoGrantType extends DaoEntity<GrantTypeEntity, Integer>
 {
     private static final Map<String, GrantTypeEntity> TYPE_TO_ENTITY = new HashMap<>();
 
-    protected GrantTypeRepository(Dao<GrantTypeEntity, Integer> dao)
+    public DaoGrantType(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, GrantTypeEntity.class);
     }
 
     /**
@@ -59,7 +59,7 @@ public class GrantTypeRepository extends Repository<GrantTypeEntity>
         {
             try
             {
-                GrantTypeEntity gte = _dao.queryForFirst(_dao.queryBuilder().where()
+                GrantTypeEntity gte = queryForFirst(queryBuilder().where()
                         .eq(GrantTypeEntity.TYPE, grantType.name())
                         .prepare());
 

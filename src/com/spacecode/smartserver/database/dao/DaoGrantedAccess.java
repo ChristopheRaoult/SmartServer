@@ -1,6 +1,6 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
@@ -8,16 +8,17 @@ import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
+import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
  * GrantedAccess Repository
  */
-public class GrantedAccessRepository extends Repository<GrantedAccessEntity>
+public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
 {
-    protected GrantedAccessRepository(Dao<GrantedAccessEntity, Integer> dao)
+    public DaoGrantedAccess(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, GrantedAccessEntity.class);
     }
 
     /**
@@ -30,8 +31,8 @@ public class GrantedAccessRepository extends Repository<GrantedAccessEntity>
      */
     public boolean persist(String username, GrantType grantType)
     {
-        Repository<UserEntity> userRepo = DbManager.getRepository(UserEntity.class);
-        Repository grantTypeRepo = DbManager.getRepository(GrantTypeEntity.class);
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoGrantType grantTypeRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
 
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
@@ -40,7 +41,7 @@ public class GrantedAccessRepository extends Repository<GrantedAccessEntity>
             return false;
         }
 
-        GrantTypeEntity gte = ((GrantTypeRepository) grantTypeRepo).fromGrantType(grantType);
+        GrantTypeEntity gte = grantTypeRepo.fromGrantType(grantType);
 
         if(gte == null)
         {

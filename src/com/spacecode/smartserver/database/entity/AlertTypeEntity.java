@@ -2,11 +2,12 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoAlertType;
 
 /**
  * AlertType Entity
  */
-@DatabaseTable(tableName = AlertTypeEntity.TABLE_NAME)
+@DatabaseTable(tableName = AlertTypeEntity.TABLE_NAME, daoClass = DaoAlertType.class)
 public final class AlertTypeEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_alert_type";

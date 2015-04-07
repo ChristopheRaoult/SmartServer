@@ -3,11 +3,11 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAlertHistory;
+import com.spacecode.smartserver.database.dao.DaoAlertTemperature;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
-import com.spacecode.smartserver.database.repository.AlertHistoryRepository;
-import com.spacecode.smartserver.database.repository.Repository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -34,10 +34,10 @@ public class CmdLastAlert extends ClientCommand
             return;
         }
 
-        AlertHistoryRepository histoRepo = (AlertHistoryRepository)
-                DbManager.getRepository(AlertHistoryEntity.class);
-        Repository<AlertTemperatureEntity> alertTempRepo =
-                DbManager.getRepository(AlertTemperatureEntity.class);
+        DaoAlertHistory histoRepo = (DaoAlertHistory)
+                DbManager.getDao(AlertHistoryEntity.class);
+        DaoAlertTemperature alertTempRepo = (DaoAlertTemperature)
+                DbManager.getDao(AlertTemperatureEntity.class);
 
         AlertHistoryEntity alertHisto = histoRepo.getLastAlertHistory();
 

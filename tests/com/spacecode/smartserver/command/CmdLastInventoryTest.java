@@ -5,8 +5,8 @@ import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoInventory;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.After;
@@ -30,13 +30,13 @@ import static org.powermock.api.mockito.PowerMockito.*;
  * JUnit "CmdLastInventory" testing class.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ CmdLastInventory.class, SmartServer.class, DbManager.class, InventoryRepository.class,
+@PrepareForTest({ CmdLastInventory.class, SmartServer.class, DbManager.class, DaoInventory.class,
         DeviceHandler.class, Device.class, Inventory.class })
 public class CmdLastInventoryTest
 {
     private ChannelHandlerContext _ctx;
     private CmdLastInventory _command;
-    private InventoryRepository _repository;
+    private DaoInventory _daoInventory;
 
     private Device _device;
     private Inventory _inventory1;
@@ -47,7 +47,7 @@ public class CmdLastInventoryTest
     {
         _ctx = PowerMockito.mock(ChannelHandlerContext.class);
         _command = PowerMockito.mock(CmdLastInventory.class, Mockito.CALLS_REAL_METHODS);
-        _repository = PowerMockito.mock(InventoryRepository.class);
+        _daoInventory = PowerMockito.mock(DaoInventory.class);
 
         _device = PowerMockito.mock(Device.class);
         _inventory1 = PowerMockito.mock(Inventory.class);
@@ -64,7 +64,7 @@ public class CmdLastInventoryTest
         _ctx = null;
         _command = null;
         _device = null;
-        _repository = null;
+        _daoInventory = null;
         _inventory1 = null;
         _inventory2 = null;
     }
@@ -88,8 +88,8 @@ public class CmdLastInventoryTest
 
         String serializedInventory = "serialized_inventory";
         doReturn(serializedInventory).when(_inventory1).serialize();
-        doReturn(_inventory1).when(_repository).getLastInventory();
-        doReturn(_repository).when(DbManager.class, "getRepository", InventoryEntity.class);
+        doReturn(_inventory1).when(_daoInventory).getLastInventory();
+        doReturn(_daoInventory).when(DbManager.class, "getDao", InventoryEntity.class);
 
         _command.execute(_ctx, null);
 
@@ -138,8 +138,8 @@ public class CmdLastInventoryTest
         Whitebox.setInternalState(_command, "_lastInventory", _inventory1);
         doReturn(_inventory2).when(_device).getLastInventory();
         doReturn(_device).when(DeviceHandler.class, "getDevice");
-        doReturn(_inventory2).when(_repository).getLastInventory();
-        doReturn(_repository).when(DbManager.class, "getRepository", InventoryEntity.class);
+        doReturn(_inventory2).when(_daoInventory).getLastInventory();
+        doReturn(_daoInventory).when(DbManager.class, "getDao", InventoryEntity.class);
 
         _command.execute(_ctx, null);
 

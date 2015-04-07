@@ -1,7 +1,7 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
-import com.spacecode.smartserver.database.entity.Entity;
+import com.j256.ormlite.dao.BaseDaoImpl;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
@@ -11,22 +11,13 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Generic Repository for all entities. To be inherited/specified for more getting methods.
- * @param <E> Generic type for the Entity class.
+ * Intermediate implementation of BaseDaoImpl for DAO's classes: add some useful/generic methods.
  */
-public abstract class Repository<E extends Entity>
+public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
 {
-    protected final Dao<E, Integer> _dao;
-
-    protected Repository(Dao<E, Integer> dao)
+    protected DaoEntity(ConnectionSource connectionSource, Class<T> dataClass) throws SQLException
     {
-        _dao = dao;
-    }
-
-    /** @return Dao instance currently used by this repository. */
-    public final Dao<E, Integer> getDao()
-    {
-        return _dao;
+        super(connectionSource, dataClass);
     }
 
     /**
@@ -36,11 +27,11 @@ public abstract class Repository<E extends Entity>
      *
      * @return      E instance or null if something went wrong (no result, sql exception).
      */
-    public final E getEntityById(int value)
+    public final T getEntityById(ID value)
     {
         try
         {
-            return _dao.queryForId(value);
+            return queryForId(value);
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting entity with Id.", sqle);
@@ -56,12 +47,12 @@ public abstract class Repository<E extends Entity>
      *
      * @return      Instance of E, or null if not result (or sql exception).
      */
-    public final E getEntityBy(String field, Object value)
+    public final T getEntityBy(String field, Object value)
     {
         try
         {
-            return _dao.queryForFirst(
-                    _dao.queryBuilder().where()
+            return queryForFirst(
+                    queryBuilder().where()
                             .eq(field, value)
                             .prepare());
         } catch (SQLException sqle)
@@ -79,12 +70,12 @@ public abstract class Repository<E extends Entity>
      *
      * @return  List of E containing all matching results (could be empty if no results, or SQL Exception).
      */
-    public final List<E> getEntitiesBy(String field, Object value)
+    public final List<T> getEntitiesBy(String field, Object value)
     {
         try
         {
-            return _dao.query(
-                    _dao.queryBuilder().where()
+            return query(
+                    queryBuilder().where()
                             .eq(field, value)
                             .prepare());
         } catch (SQLException sqle)
@@ -102,12 +93,12 @@ public abstract class Repository<E extends Entity>
      *
      * @return      Instance of E, or null if not result (or sql exception).
      */
-    public final E getEntityWhereNotEqual(String field, Object value)
+    public final T getEntityWhereNotEqual(String field, Object value)
     {
         try
         {
-            return _dao.queryForFirst(
-                    _dao.queryBuilder().where()
+            return queryForFirst(
+                    queryBuilder().where()
                             .ne(field, value)
                             .prepare());
         } catch (SQLException sqle)
@@ -125,12 +116,12 @@ public abstract class Repository<E extends Entity>
      *
      * @return      List of E provided by the query (could be empty if no results, or SQL Exception).
      */
-    public final List<E> getEntitiesWhereNotEqual(String field, Object value)
+    public final List<T> getEntitiesWhereNotEqual(String field, Object value)
     {
         try
         {
-            return _dao.query(
-                    _dao.queryBuilder().where()
+            return query(
+                    queryBuilder().where()
                             .ne(field, value)
                             .prepare());
         } catch (SQLException sqle)
@@ -141,24 +132,22 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Default method to insert a new row in the repository table.
+     * Default method to insert a new row in the dao table.
      *
      * @param newEntity New entity to be inserted in the table (as a new row).
      *
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean insert(E newEntity)
+    public boolean insert(T newEntity)
     {
         try
         {
-            _dao.create(newEntity);
+            return create(newEntity) == 1;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while inserting new entity.", sqle);
             return false;
         }
-
-        return true;
     }
 
     /**
@@ -168,9 +157,9 @@ public abstract class Repository<E extends Entity>
      *
      * @return True if successful, false otherwise (SQLException).
      */
-    public boolean insert(Collection<E> newEntities)
+    public boolean insert(Collection<T> newEntities)
     {
-        for(E entity : newEntities)
+        for(T entity : newEntities)
         {
             if(!insert(entity))
             {
@@ -182,77 +171,81 @@ public abstract class Repository<E extends Entity>
     }
 
     /**
-     * Default method to update an entity in the repository table.
+     * Default method to update an entity in the dao table.
      * Update is made according to entity's Id.
      *
      * @param entity    Entity to be updated in the table.
      *
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean update(E entity)
+    public boolean updateEntity(T entity)
     {
         try
         {
-            _dao.update(entity);
+            return update(entity) > 0;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while updating entity.", sqle);
             return false;
         }
-
-        return true;
     }
 
     /**
-     * Default method to delete an entity in the repository table.
+     * Default method to delete an entity in the dao table.
      * Deletion is made according to entity's Id.
      *
      * @param entity    Entity to be removed from the table.
      *
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean delete(E entity)
+    public boolean deleteEntity(T entity)
     {
         try
         {
-            _dao.delete(entity);
+            return delete(entity) > 0;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while deleting an entity.", sqle);
             return false;
         }
-
-        return true;
     }
 
     /**
-     * Default method to delete a collection of entities in the repository table.
+     * Default method to delete a collection of entities in the dao table.
      * Deletion is made according to entity's Id.
      *
      * @param entities  Collection to be removed from the table.
      *
      * @return          True if successful, false otherwise (SQLException).
      */
-    public boolean delete(Collection<E> entities)
+    public boolean deleteEntity(Collection<T> entities)
     {
+        if(entities == null)
+        {
+            return false;
+        }
+        
+        if(entities.isEmpty())
+        {
+            return true;
+        }
+        
         try
         {
-            _dao.delete(entities);
+            return delete(entities) == entities.size();
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while deleting entities.", sqle);
             return false;
         }
-
-        return true;
     }
 
     /** @return List of all entities available in the table (empty if any SQLException occurred). */
-    public final List<E> getAll()
+    public final List<T> getAll()
     {
         try
         {
-            return _dao.queryForAll();
+            return queryForAll();
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting all entities.", sqle);
@@ -268,11 +261,11 @@ public abstract class Repository<E extends Entity>
      *
      * @return List of all entities matching the condition (empty if any SQLException occurred).
      */
-    public final  List<E> getAllWhereFieldIn(String field, Iterable<?> values)
+    public final  List<T> getAllWhereFieldIn(String field, Iterable<?> values)
     {
         try
         {
-            return _dao.query(_dao.queryBuilder()
+            return query(queryBuilder()
                     .where()
                     .in(field, values)
                     .prepare()
@@ -292,11 +285,11 @@ public abstract class Repository<E extends Entity>
      *
      * @return List of all entities returned by NOT IN query (empty if any SQLException occurred).
      */
-    public final List<E> getAllWhereFieldNotIn(String field, Iterable<?> values)
+    public final List<T> getAllWhereFieldNotIn(String field, Iterable<?> values)
     {
         try
         {
-            return _dao.query(_dao.queryBuilder()
+            return query(queryBuilder()
                     .where()
                     .notIn(field, values)
                     .prepare()

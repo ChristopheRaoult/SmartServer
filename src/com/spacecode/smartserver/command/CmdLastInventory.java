@@ -4,8 +4,8 @@ import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoInventory;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
-import com.spacecode.smartserver.database.repository.InventoryRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -60,7 +60,7 @@ public class CmdLastInventory extends ClientCommand
 
     private void getAndSendLastInventory(ChannelHandlerContext ctx)
     {
-        _lastInventory = ((InventoryRepository) DbManager.getRepository(InventoryEntity.class)).getLastInventory();
+        _lastInventory = ((DaoInventory) DbManager.getDao(InventoryEntity.class)).getLastInventory();
 
         // if we got an inventory from DB, send it, otherwise, send an empty response
         SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY,

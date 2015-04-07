@@ -2,13 +2,14 @@ package com.spacecode.smartserver.database.entity;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.spacecode.smartserver.database.dao.DaoAuthentication;
 
 import java.util.Date;
 
 /**
  * Authentication Entity
  */
-@DatabaseTable(tableName = AuthenticationEntity.TABLE_NAME)
+@DatabaseTable(tableName = AuthenticationEntity.TABLE_NAME, daoClass = DaoAuthentication.class)
 public final class AuthenticationEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_authentication";

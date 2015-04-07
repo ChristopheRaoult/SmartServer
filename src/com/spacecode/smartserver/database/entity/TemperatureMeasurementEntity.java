@@ -3,13 +3,14 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 
 import java.util.Date;
 
 /**
  * TemperatureMeasurement Entity
  */
-@DatabaseTable(tableName = TemperatureMeasurementEntity.TABLE_NAME)
+@DatabaseTable(tableName = TemperatureMeasurementEntity.TABLE_NAME, daoClass = DaoTemperatureMeasurement.class)
 public final class TemperatureMeasurementEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_temperature";

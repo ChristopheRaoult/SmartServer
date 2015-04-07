@@ -1,7 +1,7 @@
-package com.spacecode.smartserver.database.repository;
+package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -15,11 +15,11 @@ import java.util.logging.Level;
 /**
  * TemperatureMeasurement Repository
  */
-public class TemperatureMeasurementRepository extends Repository<TemperatureMeasurementEntity>
+public class DaoTemperatureMeasurement extends DaoEntity<TemperatureMeasurementEntity, Integer>
 {
-    protected TemperatureMeasurementRepository(Dao<TemperatureMeasurementEntity, Integer> dao)
+    public DaoTemperatureMeasurement(ConnectionSource connectionSource) throws SQLException
     {
-        super(dao);
+        super(connectionSource, TemperatureMeasurementEntity.class);
     }
 
     /**
@@ -34,11 +34,11 @@ public class TemperatureMeasurementRepository extends Repository<TemperatureMeas
     {
         try
         {
-            QueryBuilder<TemperatureMeasurementEntity, Integer> qb = _dao.queryBuilder();
+            QueryBuilder<TemperatureMeasurementEntity, Integer> qb = queryBuilder();
 
             qb.orderBy(TemperatureMeasurementEntity.CREATED_AT, true);
 
-            return _dao.query(
+            return query(
                     qb.where()
                     .eq(TemperatureMeasurementEntity.DEVICE_ID, DbManager.getDevEntity().getId())
                     .and()

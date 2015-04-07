@@ -5,12 +5,13 @@ import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.network.alert.Alert;
 import com.spacecode.sdk.network.alert.AlertTemperature;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.database.repository.AlertTypeRepository;
+import com.spacecode.smartserver.database.dao.DaoAlert;
+import com.spacecode.smartserver.database.dao.DaoAlertType;
 
 /**
  * Alert Entity
  */
-@DatabaseTable(tableName = AlertEntity.TABLE_NAME)
+@DatabaseTable(tableName = AlertEntity.TABLE_NAME, daoClass = DaoAlert.class)
 public final class AlertEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_alert";
@@ -159,7 +160,7 @@ public final class AlertEntity extends Entity
     public static Alert toAlert(AlertEntity ae)
     {
         return new Alert(ae.getId(),
-                AlertTypeRepository.asAlertType(ae.getAlertType()),
+                DaoAlertType.asAlertType(ae.getAlertType()),
                 ae._toList,
                 ae._ccList,
                 ae._bccList,

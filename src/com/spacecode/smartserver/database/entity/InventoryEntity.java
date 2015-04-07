@@ -6,7 +6,8 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.database.repository.AccessTypeRepository;
+import com.spacecode.smartserver.database.dao.DaoAccessType;
+import com.spacecode.smartserver.database.dao.DaoInventory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Inventory Entity
  */
-@DatabaseTable(tableName = InventoryEntity.TABLE_NAME)
+@DatabaseTable(tableName = InventoryEntity.TABLE_NAME, daoClass = DaoInventory.class)
 public final class InventoryEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_inventory";
@@ -164,7 +165,7 @@ public final class InventoryEntity extends Entity
                tagsPresent,
                tagsRemoved,
                _grantedUser != null ? _grantedUser.getUsername() : "",
-               AccessTypeRepository.asAccessType(_accessType),
+               DaoAccessType.asAccessType(_accessType),
                _createdAt);
     }
 }

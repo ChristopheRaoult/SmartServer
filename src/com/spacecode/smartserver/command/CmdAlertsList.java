@@ -5,10 +5,10 @@ import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAlertType;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
 import com.spacecode.smartserver.database.entity.AlertTypeEntity;
-import com.spacecode.smartserver.database.repository.AlertTypeRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -30,7 +30,7 @@ public class CmdAlertsList extends ClientCommand
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
         AlertTypeEntity alertTypeTemperature =
-                ((AlertTypeRepository) DbManager.getRepository(AlertTypeEntity.class))
+                ((DaoAlertType) DbManager.getDao(AlertTypeEntity.class))
                         .fromAlertType(AlertType.TEMPERATURE);
 
         List<String> responsePackets = new ArrayList<>();
@@ -44,11 +44,11 @@ public class CmdAlertsList extends ClientCommand
 
         // first, get the simple alerts (made with only an AlertEntity instance)
         List<AlertEntity> simpleAlertsFromDb =
-                DbManager.getRepository(AlertEntity.class)
+                DbManager.getDao(AlertEntity.class)
                         .getEntitiesWhereNotEqual(AlertEntity.ALERT_TYPE_ID, alertTypeTemperature.getId());
         // then get all AlertTemperature ~
         List<AlertTemperatureEntity> alertsTemperatureFromDb =
-                DbManager.getRepository(AlertTemperatureEntity.class).getAll();
+                DbManager.getDao(AlertTemperatureEntity.class).getAll();
 
 
         List<Alert> serializableAlerts = new ArrayList<>();

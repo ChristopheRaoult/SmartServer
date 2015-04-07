@@ -4,8 +4,8 @@ import com.spacecode.sdk.network.alert.SmtpServer;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoSmtpServer;
 import com.spacecode.smartserver.database.entity.SmtpServerEntity;
-import com.spacecode.smartserver.database.repository.SmtpServerRepository;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -54,7 +54,7 @@ public class CmdSetSmtpServer extends ClientCommand
         {
             SmtpServer smtpServer = new SmtpServer(address, port, username, password, sslEnabled);
 
-            if (!((SmtpServerRepository) DbManager.getRepository(SmtpServerEntity.class))
+            if (!((DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class))
                     .persist(smtpServer))
             {
                 SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);

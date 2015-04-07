@@ -3,11 +3,12 @@ package com.spacecode.smartserver.database.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.spacecode.sdk.network.alert.AlertTemperature;
+import com.spacecode.smartserver.database.dao.DaoAlertTemperature;
 
 /**
  * AlertTemperature Entity
  */
-@DatabaseTable(tableName = AlertTemperatureEntity.TABLE_NAME)
+@DatabaseTable(tableName = AlertTemperatureEntity.TABLE_NAME, daoClass = DaoAlertTemperature.class)
 public final class AlertTemperatureEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_alert_temperature";

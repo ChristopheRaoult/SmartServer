@@ -4,8 +4,8 @@ import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoUser;
 import com.spacecode.smartserver.database.entity.UserEntity;
-import com.spacecode.smartserver.database.repository.UserRepository;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -55,7 +55,7 @@ public class CmdSetThiefFinger extends ClientCommand
             return;
         }
 
-        if(!((UserRepository)DbManager.getRepository(UserEntity.class)).updateThiefFingerIndex(username, fingerIndex))
+        if(!((DaoUser)DbManager.getDao(UserEntity.class)).updateThiefFingerIndex(username, fingerIndex))
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
             return;
