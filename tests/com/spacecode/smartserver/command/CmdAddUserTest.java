@@ -62,6 +62,7 @@ public class CmdAddUserTest
 
         PowerMockito.mockStatic(DeviceHandler.class);
         PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(_device);
+        PowerMockito.when(DbManager.class, "getDao", UserEntity.class).thenReturn(_daoUser);
     }
 
     @After
@@ -113,8 +114,6 @@ public class CmdAddUserTest
     @Test
     public void testExecuteUserWithSameNameExists() throws Exception
     {
-        PowerMockito.when(DbManager.class, "getDao", UserEntity.class).thenReturn(_daoUser);
-
         String existingBadge = "123456";
         int fingerIndex = 1;
         String fingerTpl = "fake_template";
@@ -135,14 +134,20 @@ public class CmdAddUserTest
 
         // mock the user repo to return the desired user entity
         PowerMockito.doReturn(existingUserEntity).when(_daoUser).getByUsername(_username);
+        _command.execute(_ctx, new String[]{_serializedUser});
+        Mockito.verify(_usersService, Mockito.never()).addUser(Matchers.any(User.class));
+        PowerMockito.verifyStatic();
+        SmartServer.sendMessage(_ctx, RequestCode.ADD_USER, ClientCommand.FALSE);
 
+        // mock the user repo to return null (= there is no user with the same name)
+        PowerMockito.doReturn(null).when(_daoUser).getByUsername(_username);
+        
         // Step 1 - UsersService fails
         PowerMockito.doReturn(false).when(_usersService).addUser(Matchers.any(User.class));
         _command.execute(_ctx, new String[]{_serializedUser});
-        Mockito.verify(_device).getUsersService();
         Mockito.verify(_usersService).addUser(Matchers.any(User.class));
-        // check that False is returned to user
-        PowerMockito.verifyStatic();
+        // check that False is returned to user [times(2) because the mock already registered the two calls above]
+        PowerMockito.verifyStatic(Mockito.times(2));
         SmartServer.sendMessage(_ctx, RequestCode.ADD_USER, ClientCommand.FALSE);
 
         // Step 2 - UsersService succeeds, but UserRepository fails persisting
@@ -151,8 +156,8 @@ public class CmdAddUserTest
         PowerMockito.doReturn(false).when(_daoUser).persist(Matchers.any(User.class));
         // check the user is removed from UsersService
         Mockito.verify(_usersService).removeUser(_username);
-        // check that False is returned to user [times(2) because the mock already registered the first time above]
-        PowerMockito.verifyStatic(Mockito.times(2));
+        // check that False is returned to user [times(3) because the mock already registered the two calls above]
+        PowerMockito.verifyStatic(Mockito.times(3));
         SmartServer.sendMessage(_ctx, RequestCode.ADD_USER, ClientCommand.FALSE);
 
         // Step 3 - DaoUser succeeds in persisting user

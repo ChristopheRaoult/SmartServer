@@ -14,13 +14,13 @@ public final class GrantedAccessEntity extends Entity
     public static final String TABLE_NAME =  "sc_granted_access";
 
     public static final String DEVICE_ID = "device_id";
-    public static final String GRANTED_USER_ID = "granted_user_id";
+    public static final String USER_ID = "granted_user_id";
     public static final String GRANT_TYPE_ID = "grant_type_id";
 
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
 
-    @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
+    @DatabaseField(foreign = true, columnName = USER_ID, canBeNull = false, foreignAutoRefresh = true)
     private UserEntity _grantedUser;
 
     @DatabaseField(foreign = true, columnName = GRANT_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
@@ -47,7 +47,7 @@ public final class GrantedAccessEntity extends Entity
     }
 
     /** @return UserEntity instance (attached user). */
-    public UserEntity getGrantedUser()
+    public UserEntity getUser()
     {
         return _grantedUser;
     }

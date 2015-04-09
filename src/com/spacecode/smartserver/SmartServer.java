@@ -140,9 +140,10 @@ public final class SmartServer
     }
 
     /**
-     * Execute the script load_g_serial.sh to load the module G-Serial if it is not already loaded.
+     * Check if the g_serial module is loaded, otherwise load it.
+     * 
      * This method should be called once SmartServer has completely started.
-     * If the device is plugged (via USB) to a computer, the "Serial BRidge" mode should be triggered.
+     * If the device is plugged (via USB) to a computer, the "Serial Bridge" mode should be triggered automatically.
      */
     private static void loadModuleGSerial()
     {
@@ -208,13 +209,13 @@ public final class SmartServer
         }
 
         // Use the configuration to connect/load modules.
-        // TODO: do something if any failure
+        // TODO: do something if any failure (try to reconnect each module which fails to connect, or any other way)
         DeviceHandler.connectModules();
 
         // Load users from DB into Device's UsersService.
-        if(!DeviceHandler.loadAuthorizedUsers())
+        if(!DeviceHandler.loadUsers())
         {
-            SmartLogger.getLogger().severe("Users couldn't be loaded from database. SmartServer won't start.");
+            SmartLogger.getLogger().severe("Users could not be loaded from database. SmartServer won't start.");
             return false;
         }
 
@@ -226,14 +227,14 @@ public final class SmartServer
 
         if(!AlertCenter.initialize())
         {
-            SmartLogger.getLogger().severe("Couldn't start AlertCenter.");
+            SmartLogger.getLogger().severe("Unable to start AlertCenter.");
         }
 
         if(ConfManager.isDevTemperature())
         {
             if(!TemperatureCenter.initialize())
             {
-                SmartLogger.getLogger().severe("Couldn't start TemperatureCenter.");
+                SmartLogger.getLogger().severe("Unable to start TemperatureCenter.");
             }
         }
 

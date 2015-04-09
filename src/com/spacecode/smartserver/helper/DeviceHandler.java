@@ -4,7 +4,7 @@ import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.Inventory;
-import com.spacecode.sdk.device.data.PluggedDeviceInformation;
+import com.spacecode.sdk.device.data.PluggedDevice;
 import com.spacecode.sdk.device.event.*;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.device.module.authentication.FingerprintReaderException;
@@ -53,7 +53,7 @@ public final class DeviceHandler
             return true;
         }
 
-        Map<String, PluggedDeviceInformation> pluggedDevices = Device.getPluggedDevicesInformation();
+        Map<String, PluggedDevice> pluggedDevices = Device.getPluggedDevices();
 
         if(pluggedDevices.isEmpty() || pluggedDevices.size() > 1)
         {
@@ -61,7 +61,7 @@ public final class DeviceHandler
             return false;
         }
 
-        PluggedDeviceInformation deviceInfo = pluggedDevices.entrySet().iterator().next().getValue();
+        PluggedDevice deviceInfo = pluggedDevices.entrySet().iterator().next().getValue();
 
         try
         {
@@ -112,7 +112,7 @@ public final class DeviceHandler
                 // reconnect modules, reload the users and the last inventory
                 connectModules();
 
-                if(!loadAuthorizedUsers())
+                if(!loadUsers())
                 {
                     SmartLogger.getLogger().warning("Failed on loading authorized users when reconnecting the Device.");
                 }
@@ -270,20 +270,47 @@ public final class DeviceHandler
      *
      * @return True if the operation succeeded, false otherwise.
      */
-    public static boolean loadAuthorizedUsers()
+    public static boolean loadUsers()
     {
-        if(_device == null)
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        
+        if(_device == null || userRepo == null)
         {
             return false;
         }
 
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        List<User> notAddedUsers = _device.getUsersService().addUsers(userRepo.getAuthorizedUsers());
+        List<User> authorizedUsers = new ArrayList<>();
+        List<User> unregisteredUsers = new ArrayList<>();
+        
+        if(!userRepo.sortUsersFromDb(authorizedUsers, unregisteredUsers))
+        {
+            SmartLogger.getLogger().severe("An error occurred when getting Authorized/Unregistered users from DB.");
+            return false;
+        }
+        
+        List<User> notAddedUsers = _device.getUsersService().addUsers(authorizedUsers);
 
+        // if an authorized user could not be added...
         if(!notAddedUsers.isEmpty())
         {
-            SmartLogger.getLogger().warning(notAddedUsers.size() + " Users could not be loaded.");
+            SmartLogger.getLogger().warning(notAddedUsers.size() + " Authorized users could not be added.");
+            notAddedUsers.clear();
         }
+
+        // Add all "unregistered" users and then remove them (to put them in the "unregistered" list...)
+        notAddedUsers = _device.getUsersService().addUsers(unregisteredUsers);
+
+        // if an unregistered user could not be added...
+        if(!notAddedUsers.isEmpty())
+        {
+            SmartLogger.getLogger().warning(notAddedUsers.size() + " Unregistered users could not be added.");
+            notAddedUsers.clear();
+        }
+        
+        for(User unregUser : unregisteredUsers)
+        {
+            _device.getUsersService().removeUser(unregUser.getUsername());    
+        }        
 
         return true;
     }

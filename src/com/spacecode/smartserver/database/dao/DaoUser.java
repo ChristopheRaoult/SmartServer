@@ -1,6 +1,5 @@
 package com.spacecode.smartserver.database.dao;
 
-import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.User;
@@ -8,7 +7,6 @@ import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
-import com.spacecode.smartserver.database.entity.GrantTypeEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
@@ -43,68 +41,6 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
         }
 
         return getEntityBy(UserEntity.USERNAME, username);
-    }
-
-    /**
-     * Start the user deletion process (user + permissions + fingerprints).
-     *
-     * @param username  Name of to-be-deleted user.
-     *
-     * @return          True if successful, false otherwise (unknown user, SQLException...).
-     */
-    public boolean deleteByName(String username)
-    {
-        if(username == null || username.trim().isEmpty())
-        {
-            return false;
-        }
-
-        UserEntity gue = getByUsername(username);
-
-        return gue != null && deleteEntity(gue);
-    }
-
-    /**
-     * Remove an user from the database (including all his fingerprints/accesses).
-     * @param entity    User to be removed from the table.
-     * @return          True if successful, false otherwise (SQLException).
-     */
-    @Override
-    public boolean deleteEntity(UserEntity entity)
-    {
-        if(entity == null)
-        {
-            return false;
-        }
-        
-        DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
-        DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
-
-        // first, remove the foreign dependencies
-        fpRepo.deleteEntity(entity.getFingerprints());
-        gaRepo.deleteEntity(entity.getGrantedAccesses());
-
-        // then, remove the user
-        return super.deleteEntity(entity);
-    }
-
-    /**
-     * Remove a collection of users from the database (including all their fingerprints/accesses).
-     * @param entities  Collection of users to be removed from the table.
-     * @return          True if successfully removed all users, false otherwise (SQLException).
-     */
-    @Override
-    public boolean deleteEntity(Collection<UserEntity> entities)
-    {
-        for(UserEntity user : entities)
-        {
-            if(!deleteEntity(user))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -203,7 +139,109 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
     }
 
     /**
-     * Callable subclass called when persisting a new user (SQL transaction)
+     * Fill the two lists given in parameter with the users authorized (who have a permission on the device) and
+     * unregistered (who have not).
+     *
+     * @param authorizedUsers   Users with a permission on the device.
+     * @param unregisteredUsers Users without a permission.
+     *
+     * @return True if the operation succeeded, false otherwise.
+     */
+    public boolean sortUsersFromDb(List<User> authorizedUsers, List<User> unregisteredUsers)
+    {
+        if(authorizedUsers == null || unregisteredUsers == null)
+        {
+            return false;
+        }
+
+        authorizedUsers.clear();
+        unregisteredUsers.clear();
+
+        // use getDevEntity to initialize devEntity, in case it was null. If still null, stop: no device available.
+        if (DbManager.getDevEntity() == null)
+        {
+            return false;
+        }
+
+        DaoGrantedAccess daoAccess = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
+
+        if(daoAccess == null)
+        {
+            return false;
+        }
+
+        // IDs of authorized users (used to get, at the opposite, the unregistered users)
+        List<Integer> authorizedIds = new ArrayList<>();
+
+        // get all accesses created on this device
+        List<GrantedAccessEntity> grantedAccesses = daoAccess
+                .getEntitiesBy(GrantedAccessEntity.DEVICE_ID, DbManager.getDevEntity().getId());
+
+        // for each, get: the user, the grant type, create a map for the fingerprints, then add the user to the list
+        for(GrantedAccessEntity gae : grantedAccesses)
+        {
+            Map<FingerIndex, String> fingers = new EnumMap<>(FingerIndex.class);
+            UserEntity userEntity = gae.getUser();
+            GrantType gt = DaoGrantType.asGrantType(gae.getGrantType());
+
+            if(userEntity == null || gt == null)
+            {
+                // null user or grant type: skip
+                SmartLogger.getLogger().warning("Null value on User or GrantType while loading Authorized Users...");
+                continue;
+            }
+
+            authorizedIds.add(userEntity.getId());
+
+            for(FingerprintEntity fpe : userEntity.getFingerprints())
+            {
+                FingerIndex fIndex = FingerIndex.getValueByIndex(fpe.getFingerIndex());
+
+                if(fIndex == null)
+                {
+                    // invalid finger index: skip
+                    SmartLogger.getLogger().warning("Null value on Finger Index while loading Authorized Users...");
+                    continue;
+                }
+
+                fingers.put(fIndex, fpe.getTemplate());
+            }
+
+            authorizedUsers.add(new User(userEntity.getUsername(), gt, userEntity.getBadgeNumber(), fingers));
+        }
+
+        // Now get all the unregistered users: Those whom ID does not appear in the "GrantedAccesses for this device".
+        List<UserEntity> unregEntities = getEntitiesWhereNotIn(UserEntity.ID, authorizedIds);
+
+        for(UserEntity unregEntity : unregEntities)
+        {
+            Map<FingerIndex, String> fingers = new EnumMap<>(FingerIndex.class);
+
+            for(FingerprintEntity fpe : unregEntity.getFingerprints())
+            {
+                FingerIndex fIndex = FingerIndex.getValueByIndex(fpe.getFingerIndex());
+
+                if(fIndex == null)
+                {
+                    // invalid finger index: skip
+                    SmartLogger.getLogger().warning("Null value on Finger Index while loading Unregistered Users...");
+                    continue;
+                }
+
+                fingers.put(fIndex, fpe.getTemplate());
+            }
+
+            unregisteredUsers.add(new User(unregEntity.getUsername(),
+                    GrantType.UNDEFINED,
+                    unregEntity.getBadgeNumber(),
+                    fingers));
+        }
+
+        return true;
+    }
+
+    /**
+     * Callable subclass called when persisting a new user (SQL transaction). 
      */
     private class PersistUserCallable implements Callable<Void>
     {
@@ -233,155 +271,31 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
                 }
 
                 DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
-
-                // add his fingerprints
-                for(FingerIndex index : _newUser.getEnrolledFingersIndexes())
+                
+                if(fpRepo != null)
                 {
-                    if(!fpRepo.insert(
-                            new FingerprintEntity(gue, index.getIndex(), _newUser.getFingerprintTemplate(index))
-                    ))
+                    // insert or update his fingerprints
+                    for (FingerIndex index : _newUser.getEnrolledFingersIndexes())
                     {
-                        throw new SQLException("Failed when inserting new user's fingerprints.");
+                        if (!fpRepo.updateEntity(
+                                new FingerprintEntity(gue, index.getIndex(), _newUser.getFingerprintTemplate(index))
+                        ))
+                        {
+                            throw new SQLException("Failed when inserting new user's fingerprints.");
+                        }
                     }
                 }
             }
 
-            // get GrantTypeEntity instance corresponding to newUser grant type
-            DaoGrantType grantTypeRepo =(DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
-            GrantTypeEntity gte = grantTypeRepo.fromGrantType(_newUser.getPermission());
-
-            if(gte == null)
-            {
-                throw new SQLException("Persisting user: unknown grant type "+ _newUser.getPermission() +".");
-            }
-
             // create & persist access
             DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
-
-            GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);
-
-            // add the access to current device (if any)
-            if(!gaRepo.insert(gae))
+            
+            if(gaRepo == null || !gaRepo.persist(gue, _newUser.getPermission()))
             {
                 throw new SQLException("Failed when inserting new granted access.");
             }
 
             return null;
         }
-    }
-
-    /**
-     * Get all users having a permission of the current device, create corresponding User instances and fill a list.
-     * TODO: Try to get rid of RAW SQL
-     *
-     * @return A list of User instances, or null if any error occurred.
-     */
-    public List<User> getAuthorizedUsers()
-    {
-        // use getDevEntity to initialize devEntity, in case it was null. If still null, stop: no device available.
-        if(DbManager.getDevEntity() == null)
-        {
-            return null;
-        }
-
-        List<User> users = new ArrayList<>();
-
-        // 0: username, 1: badge number, 2: grant type, 3: finger index, 4: finger template
-        String columns = "gue.username, gue.badge_number, gte.type, fpe.finger_index, fpe.template";
-
-        // raw query to get all users with their fingerprints and their access type (on this device)
-        StringBuilder sb = new StringBuilder("SELECT ").append(columns).append(" ");
-        sb.append("FROM ").append(UserEntity.TABLE_NAME).append(" gue ");
-        // join all fingerprints
-        sb.append("LEFT JOIN ").append(FingerprintEntity.TABLE_NAME).append(" fpe ");
-        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
-        sb.append("fpe.").append(FingerprintEntity.GRANTED_USER_ID).append(" ");
-        // join all granted accesses
-        sb.append("LEFT JOIN ").append(GrantedAccessEntity.TABLE_NAME).append(" gae ");
-        sb.append("ON gue.").append(UserEntity.ID).append(" = ");
-        sb.append("gae.").append(GrantedAccessEntity.GRANTED_USER_ID).append(" ");
-        // join grant types to granted accesses
-        sb.append("LEFT JOIN ").append(GrantTypeEntity.TABLE_NAME).append(" gte ");
-        sb.append("ON gae.").append(GrantedAccessEntity.GRANT_TYPE_ID).append(" = ");
-        sb.append("gte.").append(GrantTypeEntity.ID).append(" ");
-        // for the current device only
-        sb.append("WHERE gae.").append(GrantedAccessEntity.DEVICE_ID).append(" = ")
-                .append(DbManager.getDevEntity().getId());
-
-        // username to temporary User instance
-        Map<String, User> usernameToUser = new HashMap<>();
-
-        // username to map of fingerprints
-        Map<String, Map<FingerIndex, String>> usernameToFingersMap = new HashMap<>();
-
-        try
-        {
-            // get one line per user having a granted access on this device
-            // one more line (with repeated user information) for each user's fingerprint.
-            GenericRawResults results = queryRaw(sb.toString());
-
-            // fill the Maps with results from Raw SQL query
-            for (String[] result : (Iterable<String[]>) results)
-            {
-                User user = usernameToUser.get(result[0]);
-
-                // first, create the user if he's not known yet
-                if (user == null)
-                {
-                    user = new User(result[0], GrantType.valueOf(result[2]), result[1]);
-                    usernameToUser.put(result[0], user);
-                }
-
-                // if there isn't any fingerprint [finger_index is null], go on
-                if (result[3] == null)
-                {
-                    continue;
-                }
-
-                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(user.getUsername());
-
-                if(fingersMap == null)
-                {
-                    // if there was no map for current user's fingers, create one
-                    fingersMap = new EnumMap<>(FingerIndex.class);
-                    usernameToFingersMap.put(user.getUsername(), fingersMap);
-                }
-
-                // parse string value (from db) to int. Exception is caught as IllegalArgumentException.
-                int fingerIndexVal = Integer.parseInt(result[3]);
-                FingerIndex fingerIndex = FingerIndex.getValueByIndex(fingerIndexVal);
-
-                // if finger index from db is valid and in the expected range
-                if (fingerIndex != null)
-                {
-                    // add this new fingerprint template to the user
-                    fingersMap.put(fingerIndex, result[4]);
-                }
-            }
-
-            // Maps are filled, now, create the users and fill the results list
-            for(Map.Entry<String, User> e : usernameToUser.entrySet())
-            {
-                String username = e.getKey();
-                Map<FingerIndex, String> fingersMap = usernameToFingersMap.get(username);
-                User tmpUser = e.getValue();
-                User newUser = new User(username, tmpUser.getPermission(), tmpUser.getBadgeNumber(), fingersMap);
-
-                users.add(newUser);
-            }
-
-            results.close();
-
-            return users;
-        } catch (SQLException sqle)
-        {
-            SmartLogger.getLogger().log(Level.SEVERE, "Unable to load users from database.", sqle);
-        } catch(IllegalArgumentException iae)
-        {
-            // invalid fingerIndex or grantType from database
-            SmartLogger.getLogger().log(Level.SEVERE, "Loading users process failed because of corrupted data.", iae);
-        }
-
-        return null;
     }
 }

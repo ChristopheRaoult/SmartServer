@@ -34,7 +34,7 @@ public final class UserEntity extends Entity
     @DatabaseField(columnName = CREATED_AT, index = true)
     private Date _createdAt;
 
-    @ForeignCollectionField(eager = false)
+    @ForeignCollectionField(eager = true)
     private ForeignCollection<FingerprintEntity> _fingerprints;
 
     @ForeignCollectionField(eager = false)

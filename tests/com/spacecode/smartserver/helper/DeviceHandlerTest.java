@@ -5,7 +5,7 @@ import com.spacecode.sdk.device.DeviceCreationException;
 import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.DeviceType;
 import com.spacecode.sdk.device.data.Inventory;
-import com.spacecode.sdk.device.data.PluggedDeviceInformation;
+import com.spacecode.sdk.device.data.PluggedDevice;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.module.authentication.FingerprintReader;
 import com.spacecode.sdk.network.communication.EventCode;
@@ -40,6 +40,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyListOf;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -108,8 +109,8 @@ public class DeviceHandlerTest
         Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
 
         mockStatic(Device.class);
-        doReturn(new TreeMap<String, PluggedDeviceInformation>())
-                .when(Device.class, "getPluggedDevicesInformation");
+        doReturn(new TreeMap<String, PluggedDevice>())
+                .when(Device.class, "getPluggedDevices");
 
         assertFalse(DeviceHandler.connectDevice());
         verify(_smartLogger).warning(anyString());
@@ -122,12 +123,12 @@ public class DeviceHandlerTest
         Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
 
         // information about the mocked connected device
-        Map<String, PluggedDeviceInformation> pluggedDevices = new TreeMap<>();
-        pluggedDevices.put(_devSerial, new PluggedDeviceInformation(_devSerial, _devPort,
+        Map<String, PluggedDevice> pluggedDevices = new TreeMap<>();
+        pluggedDevices.put(_devSerial, new PluggedDevice(_devSerial, _devPort,
                 _swVersion, _hwVersion, _devType));
 
         mockStatic(Device.class);
-        doReturn(pluggedDevices).when(Device.class, "getPluggedDevicesInformation");
+        doReturn(pluggedDevices).when(Device.class, "getPluggedDevices");
 
         whenNew(Device.class).withArguments(any(), eq(_devPort)).thenThrow(new DeviceCreationException(""));
         assertFalse(DeviceHandler.connectDevice());
@@ -141,12 +142,12 @@ public class DeviceHandlerTest
         Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
 
         // information about the mocked connected device
-        Map<String, PluggedDeviceInformation> pluggedDevices = new TreeMap<>();
-        pluggedDevices.put(_devSerial, new PluggedDeviceInformation(_devSerial, _devPort,
+        Map<String, PluggedDevice> pluggedDevices = new TreeMap<>();
+        pluggedDevices.put(_devSerial, new PluggedDevice(_devSerial, _devPort,
                 _swVersion, _hwVersion, _devType));
 
         mockStatic(Device.class);
-        doReturn(pluggedDevices).when(Device.class, "getPluggedDevicesInformation");
+        doReturn(pluggedDevices).when(Device.class, "getPluggedDevices");
 
         whenNew(Device.class).withArguments(any(), eq(_devPort)).thenReturn(_device);
         assertTrue(DeviceHandler.connectDevice());
@@ -166,7 +167,7 @@ public class DeviceHandlerTest
         mockStatic(DeviceHandler.class);
         doReturn(true).when(DeviceHandler.class, "connectDevice");
         doNothing().when(DeviceHandler.class, "connectModules");
-        doReturn(false).when(DeviceHandler.class, "loadAuthorizedUsers");
+        doReturn(false).when(DeviceHandler.class, "loadUsers");
         doReturn(false).when(DeviceHandler.class, "loadLastInventory");
         when(DeviceHandler.class, "reconnectDevice").thenCallRealMethod();
 
@@ -177,7 +178,7 @@ public class DeviceHandlerTest
         verifyStatic();
         DeviceHandler.connectModules();
         verifyStatic();
-        DeviceHandler.loadAuthorizedUsers();
+        DeviceHandler.loadUsers();
         verifyStatic();
         DeviceHandler.loadLastInventory();
         // SmartLogger warned twice: failure of loading authorized users and failure of loading the last inventory
@@ -323,34 +324,23 @@ public class DeviceHandlerTest
     public void testLoadAuthorizedUsersDeviceNull() throws Exception
     {
         Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
-        assertFalse(DeviceHandler.loadAuthorizedUsers());
+        assertFalse(DeviceHandler.loadUsers());
     }
 
     @Test
-    public void testLoadAuthorizedUsers() throws Exception
+    public void testSortUsersFromDbFails() throws Exception
     {
-        User user1 =  new User("Vincent", GrantType.MASTER);
-
-        List<User> authorizedUsers = Arrays.asList(
-                new User("Jean", GrantType.ALL),
-                new User("Mike", GrantType.SLAVE)
-                );
-
-        List<User> notAddedUsers = Arrays.asList(user1);
-
         UsersService usersService = PowerMockito.mock(UsersService.class);
         DaoUser userRepo = PowerMockito.mock(DaoUser.class);
-        // get a fake list of users from DB
-        doReturn(authorizedUsers).when(userRepo).getAuthorizedUsers();
-        // assume that addUsers() returns a list (not empty) of "not added" users
-        doReturn(notAddedUsers).when(usersService).addUsers(authorizedUsers);
+        
+        // get a fake list of authorized and unregistered users from DB
+        doReturn(false).when(userRepo).sortUsersFromDb(anyListOf(User.class), anyListOf(User.class));
+        
         doReturn(usersService).when(_device).getUsersService();
         doReturn(userRepo).when(DbManager.class, "getDao", UserEntity.class);
 
-        assertTrue(DeviceHandler.loadAuthorizedUsers());
-        verify(usersService).addUsers(authorizedUsers);
-        // verify that smartlogger logged a warning because some users couldn't be loaded
-        verify(_smartLogger).warning(anyString());
+        assertFalse(DeviceHandler.loadUsers());
+        verify(_smartLogger).severe(anyString());
     }
 
     @Test

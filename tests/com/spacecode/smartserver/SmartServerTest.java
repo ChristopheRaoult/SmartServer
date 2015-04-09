@@ -165,7 +165,7 @@ public class SmartServerTest
         doReturn(serialNumber).when(device).getSerialNumber();
         doReturn(device).when(DeviceHandler.class, "getDevice");
         doReturn(true).when(DbManager.class, "createDeviceIfNotExists", serialNumber);
-        doReturn(false).when(DeviceHandler.class, "loadAuthorizedUsers");
+        doReturn(false).when(DeviceHandler.class, "loadUsers");
 
         assertFalse((boolean) Whitebox.invokeMethod(SmartServer.class, "init"));
 
@@ -186,7 +186,7 @@ public class SmartServerTest
         doReturn(serialNumber).when(device).getSerialNumber();
         doReturn(device).when(DeviceHandler.class, "getDevice");
         doReturn(true).when(DbManager.class, "createDeviceIfNotExists", serialNumber);
-        doReturn(true).when(DeviceHandler.class, "loadAuthorizedUsers");
+        doReturn(true).when(DeviceHandler.class, "loadUsers");
         doReturn(true).when(AlertCenter.class, "initialize");
         doReturn(true).when(ConfManager.class, "isDevTemperature");
         doReturn(true).when(TemperatureCenter.class, "initialize");
@@ -199,7 +199,7 @@ public class SmartServerTest
         verifyStatic();
         DeviceHandler.connectModules();
         verifyStatic();
-        DeviceHandler.loadAuthorizedUsers();
+        DeviceHandler.loadUsers();
         verifyStatic();
         DeviceHandler.loadLastInventory();
         verifyStatic();

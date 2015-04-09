@@ -180,8 +180,6 @@ public class DbManager
         // for each Entity class
         for(Class entityClass : entityClasses)
         {
-            String className = entityClass.getName();
-
             // create the corresponding DAO and put it in the DAO's cache
             Dao<Entity, Integer> dao = DaoManager.createDao(_pooledConnectionSrc, entityClass);
 

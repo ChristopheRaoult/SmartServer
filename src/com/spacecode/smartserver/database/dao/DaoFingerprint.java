@@ -44,7 +44,9 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
 
     /**
      * (Create or) Update a fingerprint template according to granted_user_id and finger_index.
+     * 
      * @param fpEntity  Entity instance containing user's Id and finger index values.
+     *                  
      * @return          True if success, false otherwise (unknown fingerprint
      */
     @Override
@@ -85,6 +87,11 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
     public boolean delete(String username, int index)
     {
         DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        
+        if(userRepo == null)
+        {
+            return false;
+        }
 
         UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
 
@@ -108,8 +115,14 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
      */
     public boolean persist(String username, int fingerIndex, String fpTpl)
     {
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        
+        if(daoUser == null)
+        {
+            return false;
+        }
+        
+        UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, username);
 
         return gue != null && updateEntity(new FingerprintEntity(gue, fingerIndex, fpTpl));
     }

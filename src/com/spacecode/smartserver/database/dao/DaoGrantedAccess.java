@@ -9,6 +9,7 @@ import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.SmartLogger;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -24,19 +25,30 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
     /**
      * Persist new permission in database.
      *
-     * @param username      User to be updated.
-     * @param grantType     New permission.
+     * @param username  User to be updated.
+     * @param grantType New permission.
      *
-     * @return              True if success, false otherwise (user not known, SQLException, etc).
+     * @return  True if success, false otherwise (user not known, SQLException, etc).
      */
     public boolean persist(String username, GrantType grantType)
     {
         DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        return userRepo != null && persist(userRepo.getEntityBy(UserEntity.USERNAME, username), grantType);
+    }
+
+    /**
+     * Overloaded method. See {@link #persist(String, GrantType)}.
+     * 
+     * @param gue       UserEntity to be granted with a new access.
+     * @param grantType Permission type (of the access).
+     *
+     * @return  True if success, false otherwise (user not known, SQLException, etc).
+     */
+    public boolean persist(UserEntity gue, GrantType grantType)
+    {
         DaoGrantType grantTypeRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
-
-        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
-
-        if(gue == null)
+        
+        if(gue == null || grantTypeRepo == null)
         {
             return false;
         }
@@ -50,8 +62,15 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
         }
 
         GrantedAccessEntity gae = new GrantedAccessEntity(gue, gte);
+        Collection<GrantedAccessEntity> gaesList = gue.getGrantedAccesses();
+        
+        if(gaesList == null)
+        {
+            SmartLogger.getLogger().severe("UserEntity with null collection of GrantedAccess. Not hydrated?");
+            return false;
+        }
 
-        Iterator<GrantedAccessEntity> it = gue.getGrantedAccesses().iterator();
+        Iterator<GrantedAccessEntity> it = gaesList.iterator();
 
         // remove any previous permission on this device
         while(it.hasNext())
@@ -64,6 +83,6 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
         }
 
         // add the new permission
-        return gue.getGrantedAccesses().add(gae);
+        return gaesList.add(gae);
     }
 }

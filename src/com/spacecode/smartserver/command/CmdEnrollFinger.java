@@ -20,16 +20,18 @@ import java.util.logging.Level;
 public class CmdEnrollFinger extends ClientCommand
 {
     /**
-     * Request to start enrollment process for a given user and finger index. Send (string) "true" if succeed, "false" otherwise.
+     * Try to start an enrollment process for a given user and finger index. Sends back "true" if succeed, "false" otherwise.
+     * 
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *                                  
      * @throws ClientCommandException
      */
     @Override
     public synchronized void execute(final ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        // waiting for 3 parameters: username, finger index, "is Master reader?" (boolean)
-        if(parameters.length != 3)
+        // waiting for 3 parameters: username, finger index, "is Master reader?", OPTIONAL 4th: fingerprint template
+        if(parameters.length < 3)
         {
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             throw new ClientCommandException("Invalid number of parameters [EnrollFinger].");
@@ -38,6 +40,7 @@ public class CmdEnrollFinger extends ClientCommand
         final String username = parameters[0];
         final FingerIndex fingerIndex;
         final boolean masterReader = Boolean.parseBoolean(parameters[2]);
+        final String template = parameters.length > 3 ? parameters[3] : null;
 
         try
         {
@@ -56,42 +59,74 @@ public class CmdEnrollFinger extends ClientCommand
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             return;
         }
-
-        // Action needs to be parallelized in order to handle New Enrollment Sample event
-        parallelize(new Runnable()
+        
+        // if no template has been provided: process a "normal" enrollment
+        if(template == null || template.trim().isEmpty())
         {
-            @Override
-            public void run()
+            // Action needs to be parallelized in order to handle New Enrollment Sample event
+            parallelize(new Runnable()
             {
-                try
+                @Override
+                public void run()
                 {
-                    if (!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
+                    try
                     {
+                        if (!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
+                        {
+                            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
+                            return;
+                        }
+                    } catch (TimeoutException te)
+                    {
+                        // enrollment process timeout expired
+                        SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
                         SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
                         return;
                     }
-                } catch (TimeoutException te)
-                {
-                    // enrollment process timeout expired
-                    SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
-                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-                    return;
+
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER,
+                            persistTemplate(username, fingerIndex) ? TRUE : FALSE);
                 }
-
-                // persist the enrolled template in db
-                User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
-                String fpTpl = gu.getFingerprintTemplate(fingerIndex);
-
-                if (!((DaoFingerprint) DbManager.getDao(FingerprintEntity.class))
-                        .persist(username, fingerIndex.getIndex(), fpTpl))
-                {
-                    DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
-                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-                    return;
-                }
-
-                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, TRUE);
+            });
+        }
+        
+        else
+        {
+            // a template has been given by the user: simply override the current fingerprint template and persist it
+            if(!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, template))
+            {
+                SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
+                return;
             }
-        });
+
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER,
+                    persistTemplate(username, fingerIndex) ? TRUE : FALSE);
+        }
+    }
+
+    /**
+     * Persist the fingerprint template of the given user/finger index in the DB. If fails, remove the template from the
+     * local user instance (in order not to let the UsersService use it for authentications).
+     * 
+     * @param username      Name of the user.
+     * @param fingerIndex   Index of the finger to be updated.
+     * 
+     * @return True if the update succeeded, false otherwise.
+     */
+    private boolean persistTemplate(String username, FingerIndex fingerIndex)
+    {
+        // persist the enrolled template in db
+        User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        String fpTpl = gu.getFingerprintTemplate(fingerIndex);
+
+        DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+        
+        if (daoFp == null || !daoFp.persist(username, fingerIndex.getIndex(), fpTpl))
+        {
+            DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
+            return false;
+        }
+
+        return true;
     }
 }

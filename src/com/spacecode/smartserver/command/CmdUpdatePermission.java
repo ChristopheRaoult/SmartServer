@@ -1,7 +1,6 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
@@ -19,9 +18,11 @@ import java.util.logging.Level;
 public class CmdUpdatePermission extends ClientCommand
 {
     /**
-     * Request to update an user's permission type to this device. Return true (if operation succeeded) or false (if failure).
+     * Request to update an user's permission type to this device. Return true if operation succeeded, false otherwise.
+     * 
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *                                  
      * @throws ClientCommandException   If number of parameters is invalid.
      */
     @Override
@@ -44,6 +45,12 @@ public class CmdUpdatePermission extends ClientCommand
         String newPermission = parameters[1];
         GrantType grantType;
 
+        if(username.trim().isEmpty())
+        {
+            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
+            return;
+        }
+        
         try
         {
             grantType = GrantType.valueOf(newPermission);
@@ -54,23 +61,21 @@ public class CmdUpdatePermission extends ClientCommand
             return;
         }
 
-        User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
-
-        // grantType can't be null with "valueOf" (enum), but anyway
-        if(user == null || grantType == null || grantType == GrantType.UNDEFINED)
+        boolean result = DeviceHandler.getDevice().getUsersService().updatePermission(username, grantType);
+        
+        if(!result)
         {
-            // user could not be found or grantType was invalid
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
-        }
+        }        
 
         if(!((DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class)).persist(username, grantType))
         {
+            SmartLogger.getLogger().severe(String.format("Permission set to %s for User %s, but not persisted!", 
+                    newPermission, username));
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
         }
-
-        DeviceHandler.getDevice().getUsersService().updatePermission(username, grantType);
 
         SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, TRUE);
     }

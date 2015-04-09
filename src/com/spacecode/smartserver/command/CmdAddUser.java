@@ -2,18 +2,12 @@ package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.sdk.user.User;
-import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.dao.DaoUser;
-import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
 
 /**
  * AddUser command.
@@ -45,33 +39,47 @@ public class CmdAddUser extends ClientCommand
         }
 
         User newUser = User.deserialize(parameters[0]);
-
-        if(newUser == null || newUser.getUsername() == null || newUser.getUsername().trim().isEmpty())
+        
+        if(newUser == null)            
         {
+            // invalid user: deserialization failed
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
+            return;
+        }
+        
+        String username = newUser.getUsername();
+        
+        if(username == null || username.trim().isEmpty())
+        {
+            // invalid username => reject the request
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }
 
-        // check if the user already exist in DB. In that case, we take HIS badge number and fingerprints
         DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
-        UserEntity currentUser = daoUser.getByUsername(newUser.getUsername());
-
-        if(currentUser != null)
+        
+        if(daoUser == null)
         {
-            Collection<FingerprintEntity> fingers = currentUser.getFingerprints();
-            Map<FingerIndex, String> fingersMap = new EnumMap<>(FingerIndex.class);
+            // DB issue: unable to read/write anything without DAO => reject the request
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
+            return;
+        }
+        
+        if(DeviceHandler.getDevice().getUsersService().getUserByName(username) != null)
+        {
+            // user already registered by the device => reject the request
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
+            return;
+        }
 
-            for(FingerprintEntity fe : fingers)
-            {
-                FingerIndex fingerIndex = FingerIndex.getValueByIndex(fe.getFingerIndex());
+        // try to get a user with the same name in the DB
+        UserEntity userEntity = daoUser.getByUsername(username);
 
-                if(fingerIndex != null)
-                {
-                    fingersMap.put(fingerIndex, fe.getTemplate());
-                }
-            }
-
-            newUser = new User(newUser.getUsername(), newUser.getPermission(), currentUser.getBadgeNumber(), fingersMap);
+        if(userEntity != null)
+        {
+            // a user with the same name exists in the DB => reject the request
+            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
+            return;
         }
 
         if(!DeviceHandler.getDevice().getUsersService().addUser(newUser))
@@ -83,7 +91,7 @@ public class CmdAddUser extends ClientCommand
         if(!daoUser.persist(newUser))
         {
             // if insert in db failed, remove user from local users.
-            DeviceHandler.getDevice().getUsersService().removeUser(newUser.getUsername());
+            DeviceHandler.getDevice().getUsersService().removeUser(username);
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }

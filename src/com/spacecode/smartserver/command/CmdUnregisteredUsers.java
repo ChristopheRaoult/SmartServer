@@ -1,7 +1,6 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
-import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Granted Users List command.
+ * Unregistered Users List command.
  */
-public class CmdUsersList extends ClientCommand
+public class CmdUnregisteredUsers extends ClientCommand
 {
     /**
-     * Request to get the granted users list. Send the list of granted Users as serialized users (strings).
+     * Request to get the unregistered users list. Send the names of unregistered Users as.
      * 
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
@@ -27,19 +26,19 @@ public class CmdUsersList extends ClientCommand
     {
         if(DeviceHandler.getDevice() == null)
         {
-            SmartServer.sendMessage(ctx, RequestCode.USERS_LIST);
+            SmartServer.sendMessage(ctx, RequestCode.USERS_UNREGISTERED);
             return;
         }
 
         List<String> responsePackets = new ArrayList<>();
 
         // add the request code first
-        responsePackets.add(RequestCode.USERS_LIST);
+        responsePackets.add(RequestCode.USERS_UNREGISTERED);
 
-        // then all the serialized users
-        for(User user : DeviceHandler.getDevice().getUsersService().getUsers())
+        // then all the usernames
+        for(String username : DeviceHandler.getDevice().getUsersService().getUnregisteredUsers())
         {
-            responsePackets.add(user.serialize());
+            responsePackets.add(username);
         }
 
         SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));

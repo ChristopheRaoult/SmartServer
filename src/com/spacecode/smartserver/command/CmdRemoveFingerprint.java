@@ -68,7 +68,8 @@ public class CmdRemoveFingerprint extends ClientCommand
         }
 
         // persist deletion in database
-        if(!((DaoFingerprint) DbManager.getDao(FingerprintEntity.class)).delete(username, fingerIndex.getIndex()))
+        DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+        if(daoFp == null || !daoFp.delete(username, fingerIndex.getIndex()))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;

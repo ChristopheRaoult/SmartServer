@@ -132,7 +132,7 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
     }
 
     /**
-     * Default method to insert a new row in the dao table.
+     * Default method to insert a new item in the dao table. The entity is refreshed by the DAO after being inserted.
      *
      * @param newEntity New entity to be inserted in the table (as a new row).
      *
@@ -142,7 +142,15 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
     {
         try
         {
-            return create(newEntity) == 1;
+            if(create(newEntity) != 1)
+            {
+                return false;
+            }
+            
+            // "refresh" the entity object: initialize foreign collections, etc.
+            refresh(newEntity);
+            
+            return true;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while inserting new entity.", sqle);
@@ -257,23 +265,33 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
      * Perform a "IN" query to get all entities which match a given values (provided list).
      *
      * @param field     Column name.
-     * @param values    Desired values.
+     * @param object    Target values.
      *
      * @return List of all entities matching the condition (empty if any SQLException occurred).
      */
-    public final  List<T> getAllWhereFieldIn(String field, Iterable<?> values)
+    public final  List<T> getEntitiesWhereIn(String field, Iterable<?> object)
     {
+        List<T> emptyResult = new ArrayList<>();
+
+        if(object instanceof Collection)
+        {
+            if(((Collection) object).isEmpty())
+            {
+                return emptyResult;
+            }
+        }
+        
         try
         {
             return query(queryBuilder()
                     .where()
-                    .in(field, values)
+                    .in(field, object)
                     .prepare()
             );
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'IN'.", sqle);
-            return new ArrayList<>();
+            return emptyResult;
         }
     }
 
@@ -281,23 +299,33 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
      * Perform a "NOT IN" query to get all entities which don't match given values (provided list).
      *
      * @param field     Column name.
-     * @param values    Desired values.
+     * @param object    Target values.
      *
      * @return List of all entities returned by NOT IN query (empty if any SQLException occurred).
      */
-    public final List<T> getAllWhereFieldNotIn(String field, Iterable<?> values)
+    public final List<T> getEntitiesWhereNotIn(String field, Iterable<?> object)
     {
+        List<T> emptyResult = new ArrayList<>();
+        
+        if(object instanceof Collection)
+        {
+            if(((Collection) object).isEmpty())
+            {
+                return emptyResult;
+            }
+        }
+        
         try
         {
             return query(queryBuilder()
                     .where()
-                    .notIn(field, values)
+                    .notIn(field, object)
                     .prepare()
             );
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while getting 'NOT IN'.", sqle);
-            return new ArrayList<>();
+            return emptyResult;
         }
     }
 }

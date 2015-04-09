@@ -15,9 +15,7 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
@@ -32,6 +30,7 @@ public class DaoUserTest
 {
     private UserEntity _userEntity;
     private DeviceEntity _devEntity;
+    private String _badgeNumber;
 
     @Before
     public void setUp() throws Exception
@@ -45,8 +44,8 @@ public class DaoUserTest
         doReturn(_devEntity).when(DbManager.class, "getDevEntity");
 
         String username = "Vincent";
-        String badgeNumber = "BCDE05551";
-        _userEntity = new UserEntity(username, badgeNumber);
+        _badgeNumber = "BCDE05551";
+        _userEntity = new UserEntity(username, _badgeNumber);
     }
 
     @After
@@ -65,78 +64,20 @@ public class DaoUserTest
         assertTrue(DbManager.initializeDatabase());
 
         // get the dao
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
 
-        assertNull(userRepo.getByUsername(null));
-        assertNull(userRepo.getByUsername(""));
-        assertNull(userRepo.getByUsername("   "));
+        assertNull(daoUser.getByUsername(null));
+        assertNull(daoUser.getByUsername(""));
+        assertNull(daoUser.getByUsername("   "));
 
-        assertNull(userRepo.getByUsername("Unknown User"));
+        assertNull(daoUser.getByUsername("Unknown User"));
 
-        // get the DAO and create the fixture
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
+        // create the fixture
         daoUser.create(_userEntity);
 
-        UserEntity lastUser = userRepo.getByUsername(_userEntity.getUsername());
+        UserEntity lastUser = daoUser.getByUsername(_userEntity.getUsername());
         assertNotNull(lastUser);
-    }
-
-    @Test
-    public void testDeleteByName() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:deleteByUsername").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // get the dao
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-
-        assertFalse(userRepo.deleteByName(null));
-        assertFalse(userRepo.deleteByName(""));
-        assertFalse(userRepo.deleteByName("  "));
-        assertFalse(userRepo.deleteByName("Unknown User"));
-
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
-
-        assertEquals(daoUser.countOf(), 0);
-        daoUser.create(_userEntity);
-        assertEquals(daoUser.countOf(), 1);
-        assertTrue(userRepo.deleteByName(_userEntity.getUsername()));
-        assertEquals(daoUser.countOf(), 0);
-    }
-
-    @Test
-    public void testDelete() throws Exception
-    {
-        // create an in-memory db using H2, for the purpose of this test
-        doReturn("jdbc:h2:mem:deleteUser").when(DbManager.class, "getConnectionString");
-        assertTrue(DbManager.initializeDatabase());
-
-        // get the dao
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        DaoGrantType gtRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
-
-        assertFalse(userRepo.deleteEntity((UserEntity) null));
-
-        // get the DAO's and create the fixtures
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
-        Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
-        Dao<GrantedAccessEntity, Integer> daoGa = DbManager.getDao(GrantedAccessEntity.class);
-        daoUser.create(_userEntity);
-        daoFp.create(new FingerprintEntity(_userEntity, 4, "faketpl"));
-        daoGa.create(new GrantedAccessEntity(_userEntity, gtRepo.fromGrantType(GrantType.MASTER)));
-
-        assertEquals(daoUser.countOf(), 1);
-        assertEquals(daoFp.countOf(), 1);
-        assertEquals(daoGa.countOf(), 1);
-
-        UserEntity userFromDb = userRepo.getByUsername(_userEntity.getUsername());
-        assertNotNull(userFromDb);
-        assertTrue(userRepo.deleteEntity(userFromDb));
-
-        assertEquals(daoUser.countOf(), 0);
-        assertEquals(daoFp.countOf(), 0);
-        assertEquals(daoGa.countOf(), 0);
+        assertEquals(lastUser.getBadgeNumber(), _badgeNumber);
     }
 
     @Test
@@ -149,20 +90,19 @@ public class DaoUserTest
         String newBadgeNumber = "BD12345678";
 
         // get the dao
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
 
         // unknown or invalid user: check the operation fails
-        assertFalse(userRepo.updateBadgeNumber(null, newBadgeNumber));
-        assertFalse(userRepo.updateBadgeNumber("", newBadgeNumber));
-        assertFalse(userRepo.updateBadgeNumber("Unknown User", newBadgeNumber));
+        assertFalse(daoUser.updateBadgeNumber(null, newBadgeNumber));
+        assertFalse(daoUser.updateBadgeNumber("", newBadgeNumber));
+        assertFalse(daoUser.updateBadgeNumber("Unknown User", newBadgeNumber));
 
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
         daoUser.create(_userEntity);
 
         assertNotEquals(_userEntity.getBadgeNumber(), newBadgeNumber);
-        assertTrue(userRepo.updateBadgeNumber(_userEntity.getUsername(), newBadgeNumber));
+        assertTrue(daoUser.updateBadgeNumber(_userEntity.getUsername(), newBadgeNumber));
 
-        UserEntity userFromDb = userRepo.getByUsername(_userEntity.getUsername());
+        UserEntity userFromDb = daoUser.getByUsername(_userEntity.getUsername());
         assertNotNull(userFromDb);
         assertEquals(userFromDb.getBadgeNumber(), newBadgeNumber);
     }
@@ -204,15 +144,16 @@ public class DaoUserTest
     }
 
     @Test
-    public void testPersistNotExisting() throws Exception
+    public void testPersist() throws Exception
     {
         // create an in-memory db using H2, for the purpose of this test
         doReturn("jdbc:h2:mem:persistUserNotExisting").when(DbManager.class, "getConnectionString");
         assertTrue(DbManager.initializeDatabase());
 
         // get the repositories
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+        DaoGrantedAccess daoGa = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
 
         // create a new (SDK) User instance
         String username = "Mike";
@@ -224,21 +165,17 @@ public class DaoUserTest
 
         User newUser = new User(username, userPermission, userBadge, fingersMap);
 
-        // get the DAO
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
-        Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
-        Dao<GrantedAccessEntity, Integer> daoGa = DbManager.getDao(GrantedAccessEntity.class);
         assertEquals(daoUser.countOf(), 0);
         assertEquals(daoFp.countOf(), 0);
         assertEquals(daoGa.countOf(), 0);
 
-        assertTrue(userRepo.persist(newUser));
+        assertTrue(daoUser.persist(newUser));
 
         assertEquals(daoUser.countOf(), 1);
         assertEquals(daoFp.countOf(), 2);
         assertEquals(daoGa.countOf(), 1);
 
-        UserEntity userFromDb = userRepo.getByUsername(username);
+        UserEntity userFromDb = daoUser.getByUsername(username);
 
         // check the granted access
         Iterator<GrantedAccessEntity> gaIterator = userFromDb.getGrantedAccesses().iterator();
@@ -247,8 +184,8 @@ public class DaoUserTest
         assertEquals(DaoGrantType.asGrantType(gae.getGrantType()), userPermission);
 
         // check the fingerprints
-        FingerprintEntity fpe1 = fpRepo.getFingerprint(userFromDb, FingerIndex.LEFT_INDEX.getIndex());
-        FingerprintEntity fpe2 = fpRepo.getFingerprint(userFromDb, FingerIndex.RIGHT_MIDDLE.getIndex());
+        FingerprintEntity fpe1 = daoFp.getFingerprint(userFromDb, FingerIndex.LEFT_INDEX.getIndex());
+        FingerprintEntity fpe2 = daoFp.getFingerprint(userFromDb, FingerIndex.RIGHT_MIDDLE.getIndex());
         assertNotNull(fpe1);
         assertNotNull(fpe2);
         assertEquals(fpe1.getTemplate(), "leftindextpl");
@@ -263,24 +200,61 @@ public class DaoUserTest
         assertTrue(DbManager.initializeDatabase());
 
         // get the repositories
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        DaoGrantType gtRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
-
-        Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
-        Dao<GrantedAccessEntity, Integer> daoGa = DbManager.getDao(GrantedAccessEntity.class);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoGrantType daoGt = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
+        DaoGrantedAccess daoGa = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
 
         daoUser.create(_userEntity);
 
         assertEquals(daoGa.countOf(), 0);
-        daoGa.create(new GrantedAccessEntity(_userEntity, gtRepo.fromGrantType(GrantType.MASTER)));
+        daoGa.create(new GrantedAccessEntity(_userEntity, daoGt.fromGrantType(GrantType.MASTER)));
         assertEquals(daoGa.countOf(), 1);
 
-        assertTrue(userRepo.removePermission(_userEntity.getUsername()));
+        assertTrue(daoUser.removePermission(_userEntity.getUsername()));
         assertEquals(daoGa.countOf(), 0);
     }
 
     @Test
-    public void testGetAuthorizedUsers() throws Exception
+    public void sortUsersFromDb() throws Exception
     {
+        // create an in-memory db using H2, for the purpose of this test
+        doReturn("jdbc:h2:mem:sortUsers").when(DbManager.class, "getConnectionString");
+        assertTrue(DbManager.initializeDatabase());
+
+        // get the repositories
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoGrantType gtRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
+        DaoGrantedAccess daoGa = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
+        
+        // create the fixtures
+        UserEntity authUser1, authUser2, authUser3;
+        UserEntity unregUser1, unregUser2, unregUser3;
+        
+        authUser1 = new UserEntity("auth1", "abadge1");
+        authUser2 = new UserEntity("auth2", "abadge2");
+        authUser3 = new UserEntity("auth3", "abadge3");
+        unregUser1 = new UserEntity("unreg1", "ubadge1");
+        unregUser2 = new UserEntity("unreg2", "ubadge2");
+        
+        daoUser.create(authUser1);
+        daoUser.create(authUser2);
+        daoUser.create(authUser3);        
+        daoUser.create(unregUser1);
+        daoUser.create(unregUser2);
+
+        // authorized users have a permission
+        daoGa.create(new GrantedAccessEntity(authUser1, gtRepo.fromGrantType(GrantType.MASTER)));
+        daoGa.create(new GrantedAccessEntity(authUser2, gtRepo.fromGrantType(GrantType.ALL)));
+        daoGa.create(new GrantedAccessEntity(authUser3, gtRepo.fromGrantType(GrantType.UNDEFINED)));
+        
+        List<User> authorizedUsers = new ArrayList<>();
+        List<User> unregisteredUsers = new ArrayList<>();
+        
+        assertTrue(daoUser.sortUsersFromDb(authorizedUsers, unregisteredUsers));
+        
+        assertFalse(authorizedUsers.isEmpty());
+        assertFalse(unregisteredUsers.isEmpty());
+        assertEquals(authorizedUsers.size(), 3);
+        assertEquals(unregisteredUsers.size(), 2);
     }
 }

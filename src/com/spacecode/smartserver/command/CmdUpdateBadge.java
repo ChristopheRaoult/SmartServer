@@ -39,18 +39,16 @@ public class CmdUpdateBadge extends ClientCommand
         String username = parameters[0];
         String badgeNumber = parameters.length > 1 ? parameters[1] : "";
 
-        if(!((DaoUser)DbManager.getDao(UserEntity.class)).updateBadgeNumber(username, badgeNumber))
+        DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
+        if(daoUser == null || !daoUser.updateBadgeNumber(username, badgeNumber))
         {
-            SmartLogger.getLogger().warning("Unable to update badge number: DB operation failed.");
-            SmartLogger.getLogger().warning("Make sure that the user "+username+" exists.");
+            SmartLogger.getLogger().warning(String.format("Unable to update badge for user %s", username));
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }
 
         if(!DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber))
         {
-            SmartLogger.getLogger().warning("Unable to update badge number: Users Service failed.");
-            SmartLogger.getLogger().warning("Make sure that the user "+username+" exists.");
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }

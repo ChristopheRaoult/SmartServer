@@ -320,7 +320,7 @@ public final class AlertCenter
 
             // get the attached AlertTemperature entities
             DaoAlertTemperature atRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
-            List<AlertTemperatureEntity> atList = atRepo.getAllWhereFieldIn(AlertTemperatureEntity.ALERT_ID, alertIds);
+            List<AlertTemperatureEntity> atList = atRepo.getEntitiesWhereIn(AlertTemperatureEntity.ALERT_ID, alertIds);
 
             Map<Entity, AlertEntity> matchingAlerts = new HashMap<>();
 
