@@ -55,7 +55,8 @@ public class CmdSetThiefFinger extends ClientCommand
             return;
         }
 
-        if(!((DaoUser)DbManager.getDao(UserEntity.class)).updateThiefFingerIndex(username, fingerIndex))
+        DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
+        if(daoUser == null || !daoUser.updateThiefFingerIndex(username, fingerIndex))
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
             return;

@@ -37,11 +37,26 @@ public class CmdEnrollFinger extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [EnrollFinger].");
         }
 
+        if(DeviceHandler.getDevice() == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
+            return;
+        }
+
         final String username = parameters[0];
         final FingerIndex fingerIndex;
         final boolean masterReader = Boolean.parseBoolean(parameters[2]);
         final String template = parameters.length > 3 ? parameters[3] : null;
 
+        final User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        
+        if(gu == null)
+        {
+            // unknown user
+            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
+            return;
+        }
+        
         try
         {
             int fingerIndexVal = Integer.parseInt(parameters[1]);
@@ -60,6 +75,8 @@ public class CmdEnrollFinger extends ClientCommand
             return;
         }
         
+        final String oldTemplate = gu.getFingerprintTemplate(fingerIndex);
+        
         // if no template has been provided: process a "normal" enrollment
         if(template == null || template.trim().isEmpty())
         {
@@ -69,23 +86,19 @@ public class CmdEnrollFinger extends ClientCommand
                 @Override
                 public void run()
                 {
+                    boolean result;
+                            
                     try
                     {
-                        if (!DeviceHandler.getDevice().getUsersService().enrollFinger(username, fingerIndex, masterReader))
-                        {
-                            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-                            return;
-                        }
+                         result = enrollAndPersist(gu, fingerIndex, masterReader, oldTemplate);
                     } catch (TimeoutException te)
                     {
-                        // enrollment process timeout expired
-                        SmartLogger.getLogger().log(Level.WARNING, "Enrollment process timed out for User " + username, te);
-                        SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-                        return;
+                        SmartLogger.getLogger().log(Level.WARNING, 
+                                "Enrollment process timed out for User " + username, te);
+                        result = false;
                     }
 
-                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER,
-                            persistTemplate(username, fingerIndex) ? TRUE : FALSE);
+                    SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, result ? TRUE : FALSE);
                 }
             });
         }
@@ -100,30 +113,47 @@ public class CmdEnrollFinger extends ClientCommand
             }
 
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER,
-                    persistTemplate(username, fingerIndex) ? TRUE : FALSE);
+                    persistTemplate(gu, fingerIndex, oldTemplate) ? TRUE : FALSE);
         }
+    }
+
+    /**
+     * Start the enrollment process, and if successful, try to persist the new fingerprint template in the DB.
+     *
+     * @param user          User owning the templates.
+     * @param fingerIndex   Index of the enrolled finger.
+     * @param masterReader  If true, use the master fingerprint reader. Otherwise, the slave.
+     * @param oldTemplate   Template to be restored if the operation fails.
+     * 
+     * @return True if the enrollment AND the persistence succeeded. False otherwise.
+     * 
+     * @throws TimeoutException If the enrollment max. delay is up.
+     */
+    boolean enrollAndPersist(User user, FingerIndex fingerIndex, boolean masterReader, String oldTemplate) 
+            throws TimeoutException
+    {
+        return DeviceHandler.getDevice().getUsersService().enrollFinger(user.getUsername(), fingerIndex, masterReader) 
+                && persistTemplate(user, fingerIndex, oldTemplate);
     }
 
     /**
      * Persist the fingerprint template of the given user/finger index in the DB. If fails, remove the template from the
      * local user instance (in order not to let the UsersService use it for authentications).
      * 
-     * @param username      Name of the user.
+     * @param user          User owning the templates.
      * @param fingerIndex   Index of the finger to be updated.
-     * 
+     * @param oldTemplate   Template to be restored if the operation fails.
+     *
      * @return True if the update succeeded, false otherwise.
      */
-    private boolean persistTemplate(String username, FingerIndex fingerIndex)
+    boolean persistTemplate(User user, FingerIndex fingerIndex, String oldTemplate)
     {
-        // persist the enrolled template in db
-        User gu = DeviceHandler.getDevice().getUsersService().getUserByName(username);
-        String fpTpl = gu.getFingerprintTemplate(fingerIndex);
-
+        String fpTpl = user.getFingerprintTemplate(fingerIndex);
         DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
         
-        if (daoFp == null || !daoFp.persist(username, fingerIndex.getIndex(), fpTpl))
+        if (daoFp == null || !daoFp.persist(user.getUsername(), fingerIndex.getIndex(), fpTpl))
         {
-            DeviceHandler.getDevice().getUsersService().removeFingerprint(username, fingerIndex);
+            DeviceHandler.getDevice().getUsersService().enrollFinger(user.getUsername(), fingerIndex, oldTemplate);
             return false;
         }
 

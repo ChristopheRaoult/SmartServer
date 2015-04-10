@@ -1,6 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.sdk.user.User;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.dao.DaoUser;
@@ -39,16 +40,27 @@ public class CmdUpdateBadge extends ClientCommand
         String username = parameters[0];
         String badgeNumber = parameters.length > 1 ? parameters[1] : "";
 
-        DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
-        if(daoUser == null || !daoUser.updateBadgeNumber(username, badgeNumber))
+        User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);
+        String badgeSave = "";
+        
+        if(user != null)
         {
-            SmartLogger.getLogger().warning(String.format("Unable to update badge for user %s", username));
+            badgeSave = user.getBadgeNumber();
+        }
+        
+        if(!DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber))
+        {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }
 
-        if(!DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeNumber))
+        DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
+        if(daoUser == null || !daoUser.updateBadgeNumber(username, badgeNumber))
         {
+            // restore the old badge number, as we can't save the new one in the DB
+            DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeSave);
+            
+            SmartLogger.getLogger().warning(String.format("Unable to persist badge  number for %s", username));
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
         }

@@ -16,9 +16,11 @@ import io.netty.channel.ChannelHandlerContext;
 public class CmdAddAlert extends ClientCommand
 {
     /**
-     * Request to add a new Alert to database. Send (string) "true" if succeed, "false" otherwise.
+     * Request to add a new Alert to database. Sends back "true" if succeed, "false" otherwise.
+     * 
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
+     *                                  
      * @throws ClientCommandException
      */
     @Override
@@ -47,7 +49,9 @@ public class CmdAddAlert extends ClientCommand
             return;
         }
 
-        if(!((DaoAlert)DbManager.getDao(AlertEntity.class)).persist(newAlert))
+        // persist the new alert in DB
+        DaoAlert daoAlert = (DaoAlert)DbManager.getDao(AlertEntity.class);
+        if(daoAlert == null || !daoAlert.persist(newAlert))
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;
