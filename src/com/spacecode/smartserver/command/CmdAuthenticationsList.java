@@ -79,7 +79,7 @@ public class CmdAuthenticationsList extends ClientCommand
                     ? "F"
                     : "U";
 
-            UserEntity authenticatedUser = authentication.getGrantedUser();
+            UserEntity authenticatedUser = authentication.getUser();
             responsePackets.add(authenticatedUser != null ? authenticatedUser.getUsername() : "Unknown User");
             responsePackets.add(String.valueOf(authentication.getCreatedAt().getTime() / 1000));
             responsePackets.add(accessTypePacket);

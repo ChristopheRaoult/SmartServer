@@ -22,7 +22,7 @@ public final class InventoryEntity extends Entity
     public static final String TABLE_NAME = "sc_inventory";
 
     public static final String DEVICE_ID = "device_id";
-    public static final String GRANTED_USER_ID = "granted_user_id";
+    public static final String USER_ID = "user_id";
     public static final String ACCESS_TYPE_ID = "access_type_id";
     public static final String TOTAL_ADDED = "total_added";
     public static final String TOTAL_PRESENT = "total_present";
@@ -32,8 +32,8 @@ public final class InventoryEntity extends Entity
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
 
-    @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, foreignAutoRefresh = true)
-    private UserEntity _grantedUser;
+    @DatabaseField(foreign = true, columnName = USER_ID, foreignAutoRefresh = true)
+    private UserEntity _user;
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
@@ -70,7 +70,7 @@ public final class InventoryEntity extends Entity
     public InventoryEntity(Inventory inventory, UserEntity gue, AccessTypeEntity ate)
     {
         _device = DbManager.getDevEntity();
-        _grantedUser = gue;
+        _user = gue;
         _accessType = ate;
 
         _totalAdded = inventory.getNumberAdded();
@@ -87,9 +87,9 @@ public final class InventoryEntity extends Entity
     }
 
     /** @return User which started this inventory by authenticating (or null if manual scan). */
-    public UserEntity getGrantedUser()
+    public UserEntity getUser()
     {
-        return _grantedUser;
+        return _user;
     }
 
     /** @return Access type (if started by a user) or Undefined (value of AccessType enumeration). */
@@ -164,7 +164,7 @@ public final class InventoryEntity extends Entity
                tagsAdded,
                tagsPresent,
                tagsRemoved,
-               _grantedUser != null ? _grantedUser.getUsername() : "",
+               _user != null ? _user.getUsername() : "",
                DaoAccessType.asAccessType(_accessType),
                _createdAt);
     }

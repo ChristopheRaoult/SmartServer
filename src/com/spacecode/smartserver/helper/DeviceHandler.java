@@ -322,8 +322,14 @@ public final class DeviceHandler
      */
     public static boolean loadLastInventory()
     {
-        Inventory lastInventoryRecorded = ((DaoInventory) DbManager.getDao(InventoryEntity.class))
-            .getLastInventory();
+        DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+
+        if(daoInventory == null)
+        {
+            return false;
+        }
+        
+        Inventory lastInventoryRecorded = daoInventory.getLastInventory();
 
         if(lastInventoryRecorded == null)
         {
@@ -386,7 +392,12 @@ public final class DeviceHandler
         public void scanCompleted()
         {
             // todo: thread this operation? The point is about "getLastInventory" command, which MUST return the VERY last
-            ((DaoInventory)DbManager.getDao(InventoryEntity.class)).persist(_device.getLastInventory());
+            DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+            
+            if(daoInventory != null)
+            {
+                daoInventory.persist(_device.getLastInventory());    
+            }            
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }
@@ -409,8 +420,12 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
-            ((DaoAuthentication)DbManager.getDao(AuthenticationEntity.class))
-                    .persist(grantedUser, accessType);
+            DaoAuthentication daoAuthentication = (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);
+            
+            if(daoAuthentication != null)
+            {
+                daoAuthentication.persist(grantedUser, accessType);
+            }
         }
 
         @Override

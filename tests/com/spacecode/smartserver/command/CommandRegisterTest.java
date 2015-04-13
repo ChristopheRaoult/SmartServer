@@ -1,6 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,13 +28,21 @@ public class CommandRegisterTest
 {
     private ClientCommandRegister _commandRegister;
     private Map<String, ClientCommand> _commands;
+    
+    private ChannelHandlerContext _ctx;
+    private Channel _channel;
 
     @Before
     public void setUpbeforeTest()
     {
-        _commandRegister = PowerMockito.mock(ClientCommandRegister.class, CALLS_REAL_METHODS);
         _commands = new HashMap<>();
+        
+        _commandRegister = PowerMockito.mock(ClientCommandRegister.class, CALLS_REAL_METHODS);
+        _ctx = PowerMockito.mock(ChannelHandlerContext.class);
+        _channel = PowerMockito.mock(Channel.class);
 
+        PowerMockito.doReturn(_channel).when(_ctx).channel();
+        
         Whitebox.setInternalState(_commandRegister, "_commands", _commands);
         Whitebox.setInternalState(_commandRegister, "_lastExecPackets", new String[] { "" });
     }
@@ -66,7 +75,7 @@ public class CommandRegisterTest
     {
         String[] params = new String[] { "not_existing_rule" };
 
-        _commandRegister.execute(null, params);
+        _commandRegister.execute(_ctx, params);
     }
 
     @Test
@@ -80,9 +89,9 @@ public class CommandRegisterTest
         _commandRegister.addCommand(requestCode, command);
 
         // execute the command
-        _commandRegister.execute(null, params);
+        _commandRegister.execute(_ctx, params);
         // verify the command has been executed [without the request code, obviously]
-        verify(command).execute(null, new String[0]);
+        verify(command).execute(_ctx, new String[0]);
     }
 
     @Test
@@ -94,27 +103,27 @@ public class CommandRegisterTest
         doNothing().when(cmd).execute(any(ChannelHandlerContext.class), any(String[].class));
 
         // execute the same request twice in a row to trigger the "anti-flood" delay
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "fake_serialized_alert"});
 
         // must be called once, not twice
-        verify(cmd).execute(null, new String[]{"fake_serialized_alert"});
+        verify(cmd).execute(_ctx, new String[]{"fake_serialized_alert"});
 
         // with more than 1 parameter
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "a", "b", "z"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "z"});
 
         // must be called once, not twice
-        verify(cmd).execute(null, new String[]{"a", "b", "c"});
+        verify(cmd).execute(_ctx, new String[]{"a", "b", "c"});
         // called only once: should be called once
-        verify(cmd).execute(null, new String[]{"a", "b", "z"});        
+        verify(cmd).execute(_ctx, new String[]{"a", "b", "z"});        
 
         // repeat the same request twice, but wait for the anti-flood delay before
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "1", "2"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1", "2"});
         Thread.sleep(ClientCommandRegister.DELAY_BETWEEN_EXEC);
-        _commandRegister.execute(null, new String[]{RequestCode.ADD_ALERT, "1", "2"});
-        verify(cmd, times(2)).execute(null, new String[]{"1", "2"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1", "2"});
+        verify(cmd, times(2)).execute(_ctx, new String[]{"1", "2"});
     }
 
     @Test
@@ -128,8 +137,8 @@ public class CommandRegisterTest
         _commandRegister.addCommand(requestCode, command);
 
         // execute the command
-        _commandRegister.execute(null, params);
-        // verify the command has been executed [without the request code, obviously]
-        verify(command).execute(null, new String[] { "param1", "param2"});
+        _commandRegister.execute(_ctx, params);
+        // verify the command has been executed
+        verify(command).execute(_ctx, new String[] { "param1", "param2"});
     }
 }

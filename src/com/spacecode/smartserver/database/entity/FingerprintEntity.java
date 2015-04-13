@@ -13,12 +13,12 @@ public final class FingerprintEntity extends Entity
 {
     public static final String TABLE_NAME = "sc_fingerprint";
 
-    public static final String GRANTED_USER_ID = "granted_user_id";
+    public static final String USER_ID = "user_id";
     public static final String FINGER_INDEX = "finger_index";
     public static final String TEMPLATE = "template";
 
-    @DatabaseField(foreign = true, columnName = GRANTED_USER_ID, canBeNull = false)
-    private UserEntity _grantedUser;
+    @DatabaseField(foreign = true, columnName = USER_ID, canBeNull = false)
+    private UserEntity _user;
 
     @DatabaseField(columnName = FINGER_INDEX, canBeNull = false)
     private int _fingerIndex;
@@ -41,15 +41,15 @@ public final class FingerprintEntity extends Entity
      */
     public FingerprintEntity(UserEntity user, int index, String template)
     {
-        _grantedUser = user;
+        _user = user;
         _fingerIndex = index;
         _template = template;
     }
 
     /** @return UserEntity attached to this fingerprint. */
-    public UserEntity getGrantedUser()
+    public UserEntity getUser()
     {
-        return _grantedUser;
+        return _user;
     }
 
     /** @return FingerIndex's index value (0 to 9, see FingerIndex enum). */

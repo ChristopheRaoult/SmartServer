@@ -8,6 +8,7 @@
  import com.spacecode.sdk.network.alert.AlertType;
  import com.spacecode.sdk.user.data.AccessType;
  import com.spacecode.sdk.user.data.GrantType;
+ import com.spacecode.smartserver.database.dao.DaoDevice;
  import com.spacecode.smartserver.database.dao.DaoEntity;
  import com.spacecode.smartserver.database.entity.*;
  import com.spacecode.smartserver.helper.ConfManager;
@@ -257,10 +258,17 @@ public class DbManager
         {
             return _deviceEntity;
         }
+        
+        DaoDevice daoDevice = (DaoDevice) getDao(DeviceEntity.class);
+        
+        if(daoDevice == null)
+        {
+            return null;
+        }
 
-        DeviceEntity result = getDao(DeviceEntity.class).getEntityBy(
-                DeviceEntity.SERIAL_NUMBER,
+        DeviceEntity result = daoDevice.getEntityBy(DeviceEntity.SERIAL_NUMBER, 
                 DeviceHandler.getDevice().getSerialNumber());
+        
         _deviceEntity = result == null ? null : result;
 
         return _deviceEntity;
@@ -275,9 +283,34 @@ public class DbManager
      */
     public static boolean createDeviceIfNotExists(String devSerialNumber)
     {
-        // either a DeviceEntity is available => return true, otherwise try to create and load it => return result
-        return  getDevEntity() != null ||
-                getDao(DeviceEntity.class).insert(new DeviceEntity(devSerialNumber)) && getDevEntity() != null;
+        DaoDevice daoDevice = (DaoDevice) getDao(DeviceEntity.class);
+        
+        return  daoDevice != null &&
+                // either a DeviceEntity is available => return true, otherwise try to create and load it => return result
+                (
+                        getDevEntity() != null || 
+                    daoDevice.insert(new DeviceEntity(devSerialNumber)) && getDevEntity() != null
+                );
+    }
 
+    /**
+     * Call the given entity's DAO updateEntity method. Used to force the update of the field "UPDATED AT".
+     * 
+     * @param entity    Entity to be updated.
+     * @param <E>       Type of the Entity
+     *     
+     * @return True if the operation succeeded, false otherwise.
+     */
+    public static <E extends Entity> boolean forceUpdate(E entity)
+    {
+        DaoEntity<E, Integer> daoEntity = (DaoEntity<E, Integer>) getDao(entity.getClass());
+
+        if(daoEntity != null)
+        {
+            return daoEntity.updateEntity(entity);
+        }
+
+        SmartLogger.getLogger().warning(String.format("Unable to update the entity (%s).", entity.getClass().getName()));
+        return false;
     }
 }

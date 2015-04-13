@@ -70,7 +70,7 @@ public class InventoryEntityTest
         doReturn(iterator).when(rfidTags).iterator();
 
         Whitebox.setInternalState(invEntity, "_device", devEntity);
-        Whitebox.setInternalState(invEntity, "_grantedUser", userEntity);
+        Whitebox.setInternalState(invEntity, "_user", userEntity);
         Whitebox.setInternalState(invEntity, "_accessType", accessTypeEntity);
         Whitebox.setInternalState(invEntity, "_totalAdded", totalAdded);
         Whitebox.setInternalState(invEntity, "_totalPresent", totalPresent);

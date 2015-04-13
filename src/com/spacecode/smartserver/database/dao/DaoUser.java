@@ -6,6 +6,7 @@ import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.FingerIndex;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.FingerprintEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
@@ -89,7 +90,7 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
      * Process the data persistence:
      * UserEntity, Fingerprint(s), GrantedAccessEntity.
      *
-     * @param newUser   Instance of GrantedUser (SDK) to be added to database.
+     * @param newUser   Instance of User (SDK) to be added to database.
      *
      * @return          True if success, false otherwise (username already used, SQLException, etc).
      */
@@ -117,23 +118,26 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
     public boolean removePermission(String username)
     {
         UserEntity gue = getByUsername(username);
+        DeviceEntity devEntity = DbManager.getDevEntity();        
+        DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
 
-        if(gue == null)
+        if(gue == null || devEntity == null || gaRepo == null)
         {
             return false;
         }
 
-        DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
         Collection<GrantedAccessEntity> gaesList = gue.getGrantedAccesses();
         Collection<GrantedAccessEntity> gaesOndevice = new ArrayList<>();
 
         for(GrantedAccessEntity gae : gaesList)
         {
-            if(gae.getDevice().getId() == DbManager.getDevEntity().getId())
+            if(gae.getDevice().getId() == devEntity.getId())
             {
                 gaesOndevice.add(gae);
             }
         }
+        
+        DbManager.forceUpdate(gue);
 
         return gaRepo.deleteEntity(gaesOndevice);
     }
@@ -288,11 +292,10 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
             }
 
             // create & persist access
-            DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
-            
+            DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);            
             if(gaRepo == null || !gaRepo.persist(gue, _newUser.getPermission()))
             {
-                throw new SQLException("Failed when inserting new granted access.");
+                throw new SQLException("Failed when inserting new permission.");
             }
 
             return null;

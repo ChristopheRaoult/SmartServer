@@ -14,6 +14,8 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.Date;
+
 import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -87,7 +89,8 @@ public class DaoFingerprintTest
         Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
         Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
         daoUser.create(_userEntity);
-
+        Date lastUpdate = _userEntity.getUpdatedAt();
+        
         // make sure there is no fingerprint in the table yet
         assertEquals(daoFp.countOf(), 0);
         // "update" (in fact, create) the given fpe
@@ -98,6 +101,10 @@ public class DaoFingerprintTest
 
         // make sure a new entry has been created
         assertEquals(daoFp.countOf(), 1);
+
+        // check that User's "updated_at" has been updated
+        daoUser.refresh(_userEntity);
+        assertTrue(lastUpdate.before(_userEntity.getUpdatedAt()));
     }
 
     @Test
@@ -118,6 +125,7 @@ public class DaoFingerprintTest
         Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
         Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
         daoUser.create(_userEntity);
+        Date lastUpdate = _userEntity.getUpdatedAt();
         daoFp.create(fpe);
 
         long entriesCount = daoFp.countOf();
@@ -132,6 +140,10 @@ public class DaoFingerprintTest
 
         // make sure we did not create a new entry or something wrong happened with entries count
         assertEquals(entriesCount, daoFp.countOf());
+        
+        // check that User's "updated_at" has been updated
+        daoUser.refresh(_userEntity);
+        assertTrue(lastUpdate.before(_userEntity.getUpdatedAt()));
     }
 
     @Test
@@ -155,12 +167,17 @@ public class DaoFingerprintTest
         Dao<FingerprintEntity, Integer> daoFp = DbManager.getDao(FingerprintEntity.class);
         Dao<UserEntity, Integer> daoUser = DbManager.getDao(UserEntity.class);
         daoUser.create(_userEntity);
+        Date lastUpdate = _userEntity.getUpdatedAt();
         daoFp.create(fpe);
 
         long entriesCount = daoFp.countOf();
         assertTrue(fpRepo.delete(_userEntity.getUsername(), fingerIndex));
         // make sure there is one less entry
         assertEquals(entriesCount - 1, daoFp.countOf());
+        
+        // check that User's "updated_at" has been updated
+        daoUser.refresh(_userEntity);
+        assertTrue(lastUpdate.before(_userEntity.getUpdatedAt()));
     }
 
     @Test

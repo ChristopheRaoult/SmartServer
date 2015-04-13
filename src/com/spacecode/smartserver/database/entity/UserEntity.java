@@ -10,17 +10,17 @@ import com.spacecode.smartserver.database.dao.DaoUser;
 import java.util.Date;
 
 /**
- * GrantedUser Entity
+ * User Entity
  */
 @DatabaseTable(tableName = UserEntity.TABLE_NAME, daoClass = DaoUser.class)
 public final class UserEntity extends Entity
 {
-    public static final String TABLE_NAME = "sc_granted_user";
+    public static final String TABLE_NAME = "sc_user";
 
     public static final String USERNAME = "username";
     public static final String BADGE_NUMBER = "badge_number";
     public static final String THIEF_FINGER_INDEX = "thief_finger_index";
-    public static final String CREATED_AT = "created_at";
+    public static final String UPDATED_AT = "updated_at";
 
     @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true)
     private String _username;
@@ -31,8 +31,8 @@ public final class UserEntity extends Entity
     @DatabaseField(columnName = THIEF_FINGER_INDEX)
     private Integer _thiefFingerIndex;
 
-    @DatabaseField(columnName = CREATED_AT, index = true)
-    private Date _createdAt;
+    @DatabaseField(columnName = UPDATED_AT, version = true)
+    private Date _updatedAt;
 
     @ForeignCollectionField(eager = true)
     private ForeignCollection<FingerprintEntity> _fingerprints;
@@ -48,7 +48,7 @@ public final class UserEntity extends Entity
     }
 
     /**
-     * Create a GrantedUser entity from username and badge number.
+     * Create a User entity from username and badge number.
      *
      * @param username      Username.
      * @param badgeNumber   Badge number.
@@ -57,16 +57,14 @@ public final class UserEntity extends Entity
     {
         _username = username;
         _badgeNumber = badgeNumber;
-
-        _createdAt = new Date();
     }
 
     /**
-     * Create a GrantedUser entity from a GrantedUser (SDK).
+     * Create a UserEntity from a User.
      * Only fill Username and Badge Number fields.
      * Fingerprints & Accesses must be created separately.
      *
-     * @param newUser   GrantedUser (SDK) instance to get information from.
+     * @param newUser   User instance to get information from.
      */
     public UserEntity(User newUser)
     {
@@ -95,10 +93,10 @@ public final class UserEntity extends Entity
         _badgeNumber = badgeNumber;
     }
 
-    /** @return Creation Date */
-    public Date getCreatedAt()
+    /** @return Last Update Date */
+    public Date getUpdatedAt()
     {
-        return new Date(_createdAt.getTime());
+        return new Date(_updatedAt.getTime());
     }
 
     /** @return "Thief finger" index (finger used in case of robbery/mugging). */

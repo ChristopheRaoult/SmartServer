@@ -58,17 +58,22 @@ public class DaoAuthentication extends DaoEntity<AuthenticationEntity, Integer>
     /**
      * On successful authentication (event raised by Device), persist information in database.
      *
-     * @param grantedUser   GrantedUser instance who successfully authenticated.
+     * @param user          User instance who successfully authenticated.
      * @param accessType    AccessType enum value (fingerprint, badge...).
      *
      * @return True if operation was successful, false otherwise.
      */
-    public boolean persist(User grantedUser, AccessType accessType)
+    public boolean persist(User user, AccessType accessType)
     {
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        DaoAccessType accessTypeRepo = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        DaoAccessType daoAccessType = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
 
-        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
+        if(daoUser == null || daoAccessType == null)
+        {
+            return false;
+        }
+        
+        UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, user.getUsername());
 
         if(gue == null)
         {
@@ -76,7 +81,7 @@ public class DaoAuthentication extends DaoEntity<AuthenticationEntity, Integer>
             return false;
         }
 
-        AccessTypeEntity ate = accessTypeRepo.fromAccessType(accessType);
+        AccessTypeEntity ate = daoAccessType.fromAccessType(accessType);
 
         if(ate == null)
         {

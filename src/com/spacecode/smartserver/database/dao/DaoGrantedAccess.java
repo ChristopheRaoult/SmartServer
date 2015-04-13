@@ -3,6 +3,7 @@ package com.spacecode.smartserver.database.dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.spacecode.sdk.user.data.GrantType;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.entity.DeviceEntity;
 import com.spacecode.smartserver.database.entity.GrantTypeEntity;
 import com.spacecode.smartserver.database.entity.GrantedAccessEntity;
 import com.spacecode.smartserver.database.entity.UserEntity;
@@ -45,15 +46,16 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
      * @return  True if success, false otherwise (user not known, SQLException, etc).
      */
     public boolean persist(UserEntity gue, GrantType grantType)
-    {
-        DaoGrantType grantTypeRepo = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
+    {   
+        DaoGrantType daoGrantType = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
+        DeviceEntity devEntity = DbManager.getDevEntity();
         
-        if(gue == null || grantTypeRepo == null)
+        if(gue == null || daoGrantType == null || devEntity == null)
         {
             return false;
         }
 
-        GrantTypeEntity gte = grantTypeRepo.fromGrantType(grantType);
+        GrantTypeEntity gte = daoGrantType.fromGrantType(grantType);
 
         if(gte == null)
         {
@@ -75,13 +77,15 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
         // remove any previous permission on this device
         while(it.hasNext())
         {
-            if(it.next().getDevice().getId() == DbManager.getDevEntity().getId())
+            if(it.next().getDevice().getId() == devEntity.getId())
             {
                 it.remove();
                 break;
             }
         }
 
+        DbManager.forceUpdate(gue);
+        
         // add the new permission
         return gaesList.add(gae);
     }

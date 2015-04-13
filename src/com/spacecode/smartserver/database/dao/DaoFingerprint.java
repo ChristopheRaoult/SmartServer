@@ -20,18 +20,25 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
     }
 
     /**
-     * Allow getting a fingerprint from db with GrantedUser entity and finger index.
+     * Allow getting a fingerprint from db with a UserEntity and a finger index.
+     * 
      * @param gue   User attached to the fingerprint.
      * @param index Finger index of the fingerprint.
+     *              
      * @return      FingerprintEntity instance (if any), null otherwise (none or SQLException).
      */
     public FingerprintEntity getFingerprint(UserEntity gue, int index)
     {
+        if(gue == null)
+        {
+            return null;
+        }
+        
         try
         {
             return queryForFirst(
                     queryBuilder().where()
-                            .eq(FingerprintEntity.GRANTED_USER_ID, gue.getId())
+                            .eq(FingerprintEntity.USER_ID, gue.getId())
                             .and()
                             .eq(FingerprintEntity.FINGER_INDEX, index)
                             .prepare());
@@ -43,7 +50,7 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
     }
 
     /**
-     * (Create or) Update a fingerprint template according to granted_user_id and finger_index.
+     * (Create or) Update a fingerprint template according to user_id and finger_index.
      * 
      * @param fpEntity  Entity instance containing user's Id and finger index values.
      *                  
@@ -52,28 +59,19 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
     @Override
     public boolean updateEntity(FingerprintEntity fpEntity)
     {
-        try
-        {
-            FingerprintEntity fpEnt = queryForFirst(
-                    queryBuilder().where()
-                            .eq(FingerprintEntity.GRANTED_USER_ID, fpEntity.getGrantedUser().getId())
-                            .and()
-                            .eq(FingerprintEntity.FINGER_INDEX, fpEntity.getFingerIndex())
-                            .prepare());
+        UserEntity ue = fpEntity.getUser();        
+        FingerprintEntity fpEnt = getFingerprint(ue, fpEntity.getFingerIndex());
 
-            if(fpEnt == null)
-            {
-                return insert(fpEntity);
-            }
-            
-            fpEnt.setTemplate(fpEntity.getTemplate());
-            return super.updateEntity(fpEnt);
-            
-        } catch (SQLException sqle)
+        DbManager.forceUpdate(ue);
+        
+        if(fpEnt == null)
         {
-            SmartLogger.getLogger().log(Level.SEVERE, "Exception occurred while updating Fingerprint.", sqle);
-            return false;
+            return insert(fpEntity);
         }
+        
+        fpEnt.setTemplate(fpEntity.getTemplate());
+        
+        return super.updateEntity(fpEnt);
     }
 
     /**
@@ -99,6 +97,8 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
         {
             return false;
         }
+
+        DbManager.forceUpdate(gue);
 
         FingerprintEntity fpe = getFingerprint(gue, index);
         return fpe != null && deleteEntity(fpe);

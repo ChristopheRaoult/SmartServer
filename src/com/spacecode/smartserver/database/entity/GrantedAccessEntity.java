@@ -14,14 +14,14 @@ public final class GrantedAccessEntity extends Entity
     public static final String TABLE_NAME =  "sc_granted_access";
 
     public static final String DEVICE_ID = "device_id";
-    public static final String USER_ID = "granted_user_id";
+    public static final String USER_ID = "user_id";
     public static final String GRANT_TYPE_ID = "grant_type_id";
 
     @DatabaseField(foreign = true, columnName = DEVICE_ID, canBeNull = false)
     private DeviceEntity _device;
 
     @DatabaseField(foreign = true, columnName = USER_ID, canBeNull = false, foreignAutoRefresh = true)
-    private UserEntity _grantedUser;
+    private UserEntity _user;
 
     @DatabaseField(foreign = true, columnName = GRANT_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private GrantTypeEntity _grantType;
@@ -35,13 +35,13 @@ public final class GrantedAccessEntity extends Entity
 
     /**
      * Default constructor.
-     * @param grantedUser   UserEntity instance to be set as user.
-     * @param grantType     GrantTypeEntity to be set as grant type.
+     * @param user      UserEntity instance to be set as user.
+     * @param grantType GrantTypeEntity to be set as grant type.
      */
-    public GrantedAccessEntity(UserEntity grantedUser,
+    public GrantedAccessEntity(UserEntity user,
                                GrantTypeEntity grantType)
     {
-        _grantedUser = grantedUser;
+        _user = user;
         _device = DbManager.getDevEntity();
         _grantType = grantType;
     }
@@ -49,7 +49,7 @@ public final class GrantedAccessEntity extends Entity
     /** @return UserEntity instance (attached user). */
     public UserEntity getUser()
     {
-        return _grantedUser;
+        return _user;
     }
 
     /** @return DeviceEntity instance (attached device). */

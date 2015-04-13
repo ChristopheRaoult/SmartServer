@@ -69,7 +69,8 @@ public class CmdUpdatePermission extends ClientCommand
             return;
         }        
 
-        if(!((DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class)).persist(username, grantType))
+        DaoGrantedAccess daoGa = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
+        if(daoGa == null || !daoGa.persist(username, grantType))
         {
             SmartLogger.getLogger().severe(String.format("Permission set to %s for User %s, but not persisted!", 
                     newPermission, username));

@@ -210,8 +210,14 @@ public class DaoUserTest
         daoGa.create(new GrantedAccessEntity(_userEntity, daoGt.fromGrantType(GrantType.MASTER)));
         assertEquals(daoGa.countOf(), 1);
 
+        Date lastUpdate = _userEntity.getUpdatedAt();
+        
         assertTrue(daoUser.removePermission(_userEntity.getUsername()));
         assertEquals(daoGa.countOf(), 0);
+        
+        // check that User's "updated_at" has been updated
+        daoUser.refresh(_userEntity);
+        assertTrue(lastUpdate.before(_userEntity.getUpdatedAt()));
     }
 
     @Test
