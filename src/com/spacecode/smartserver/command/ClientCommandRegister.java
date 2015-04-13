@@ -3,14 +3,16 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * ClientCommandRegister class allows SmartServerHandler to execute any appropriate Command object for a given request string.
- * Request string (sent by the Client) is passed as a String array to execute() method with the ChannelHandlerContext. If any corresponding command is found,
- * ClientCommandRegister instance executes execute() method from this command. Other parameters (if any) of the string array are passed with the ChannelHandlerContext.
+ * ClientCommandRegister contains the mapping of Request Codes to Commands.<br/> 
+ * This class handles the execution of each command by providing an anti-flood system (a request coming from the same
+ * socket with the same code/parameters in a given delay will be refused).<br/>
+ * Few "secret" commands are also provided for internal purposes like "TestRFID" integrated into a web app (SmartApp).
  */
 public final class ClientCommandRegister extends ClientCommand
 {
@@ -22,6 +24,7 @@ public final class ClientCommandRegister extends ClientCommand
     static final int DELAY_BETWEEN_EXEC = 500;
     private long _lastExecTimestamp;
     private String[] _lastExecPackets = new String[] { "" };
+    private SocketAddress _lastSender = null;
 
     /**
      * Initialize a command register: Build the map "RequestCode to Command".
@@ -131,7 +134,6 @@ public final class ClientCommandRegister extends ClientCommand
     public void execute(final ChannelHandlerContext ctx, final String[] parameters) throws ClientCommandException
     {
         String requestCode = parameters[0];
-
         final ClientCommand cmd = _commands.get(requestCode);
 
         if(cmd == null)
@@ -140,11 +142,10 @@ public final class ClientCommandRegister extends ClientCommand
         }
 
         boolean executeCommand = true;
-
         long currentTimestamp = System.currentTimeMillis();
 
-        // if the previous request code was the same
-        if(requestCode.equals(_lastExecPackets[0]))
+        // if the previous request code was the same & came from the same sender
+        if(requestCode.equals(_lastExecPackets[0]) && _lastSender == ctx.channel().remoteAddress())
         {
             // if the number of parameters is the same
             if(parameters.length > 0 && _lastExecPackets.length == parameters.length)
@@ -171,6 +172,7 @@ public final class ClientCommandRegister extends ClientCommand
 
         _lastExecTimestamp = currentTimestamp;
         _lastExecPackets = Arrays.copyOfRange(parameters, 0, parameters.length);
+        _lastSender = ctx.channel().remoteAddress();
 
         if(executeCommand)
         {
