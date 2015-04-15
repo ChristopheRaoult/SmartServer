@@ -84,14 +84,8 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
      */
     public boolean delete(String username, int index)
     {
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        
-        if(userRepo == null)
-        {
-            return false;
-        }
-
-        UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, username);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, username);
 
         if(gue == null)
         {
@@ -115,13 +109,7 @@ public class DaoFingerprint extends DaoEntity<FingerprintEntity, Integer>
      */
     public boolean persist(String username, int fingerIndex, String fpTpl)
     {
-        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
-        
-        if(daoUser == null)
-        {
-            return false;
-        }
-        
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);        
         UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, username);
 
         return gue != null && updateEntity(new FingerprintEntity(gue, fingerIndex, fpTpl));

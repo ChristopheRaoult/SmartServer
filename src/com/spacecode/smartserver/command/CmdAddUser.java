@@ -32,7 +32,7 @@ public class CmdAddUser extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [AddUser].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
@@ -55,15 +55,6 @@ public class CmdAddUser extends ClientCommand
             SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
             return;
         }
-
-        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
-        
-        if(daoUser == null)
-        {
-            // DB issue: unable to read/write anything without DAO => reject the request
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
-            return;
-        }
         
         if(DeviceHandler.getDevice().getUsersService().getUserByName(username) != null)
         {
@@ -72,6 +63,8 @@ public class CmdAddUser extends ClientCommand
             return;
         }
 
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        
         // try to get a user with the same name in the DB
         UserEntity userEntity = daoUser.getByUsername(username);
 

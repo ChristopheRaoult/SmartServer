@@ -34,7 +34,7 @@ public class CmdRemoveUser extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [RemoveUser].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
             return;
@@ -59,7 +59,7 @@ public class CmdRemoveUser extends ClientCommand
         }
 
         DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
-        if(daoUser == null || !daoUser.removePermission(username))
+        if(!daoUser.removePermission(username))
         {
             // if the permission could not be removed from DB, get the user back!
             DeviceHandler.getDevice().getUsersService().updatePermission(username, grantSave);

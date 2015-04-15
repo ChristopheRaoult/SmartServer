@@ -22,7 +22,7 @@ public class CmdInitialization extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             return;
         }

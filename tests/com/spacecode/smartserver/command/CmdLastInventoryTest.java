@@ -55,6 +55,7 @@ public class CmdLastInventoryTest
 
         PowerMockito.mockStatic(SmartServer.class);
         PowerMockito.mockStatic(DeviceHandler.class);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
         PowerMockito.mockStatic(DbManager.class);
     }
 
@@ -72,7 +73,7 @@ public class CmdLastInventoryTest
     @Test
     public void testExecuteNullDevice() throws Exception
     {
-        doReturn(null).when(DeviceHandler.class, "getDevice");
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(false);
 
         _command.execute(_ctx, null);
 

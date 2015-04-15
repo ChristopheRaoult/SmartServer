@@ -273,27 +273,27 @@ public class DaoUser extends DaoEntity<UserEntity, Integer>
                 {
                     throw new SQLException("Failed when inserting new user.");
                 }
-
-                DaoFingerprint fpRepo = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
                 
-                if(fpRepo != null)
+                // refresh the entity to initialize the ForeignCollections (here, the fingerprints)
+                refresh(gue);
+                
+                DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
+                
+                // insert or update his fingerprints
+                for (FingerIndex index : _newUser.getEnrolledFingersIndexes())
                 {
-                    // insert or update his fingerprints
-                    for (FingerIndex index : _newUser.getEnrolledFingersIndexes())
+                    if (!daoFp.updateEntity(
+                            new FingerprintEntity(gue, index.getIndex(), _newUser.getFingerprintTemplate(index))
+                    ))
                     {
-                        if (!fpRepo.updateEntity(
-                                new FingerprintEntity(gue, index.getIndex(), _newUser.getFingerprintTemplate(index))
-                        ))
-                        {
-                            throw new SQLException("Failed when inserting new user's fingerprints.");
-                        }
+                        throw new SQLException("Failed when inserting new user's fingerprints.");
                     }
                 }
             }
 
             // create & persist access
-            DaoGrantedAccess gaRepo = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);            
-            if(gaRepo == null || !gaRepo.persist(gue, _newUser.getPermission()))
+            DaoGrantedAccess daoGrantedAccess = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);            
+            if(!daoGrantedAccess.persist(gue, _newUser.getPermission()))
             {
                 throw new SQLException("Failed when inserting new permission.");
             }

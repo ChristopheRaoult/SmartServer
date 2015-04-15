@@ -69,7 +69,7 @@ class ScAdmin
                 throw new ClientCommandException("Invalid number of parameters [FlashFirmware].");
             }
 
-            if( DeviceHandler.getDevice() == null || 
+            if( !DeviceHandler.isAvailable() || 
                 DeviceHandler.getDevice().getStatus() == DeviceStatus.FLASHING_FIRMWARE)
             {
                 SmartServer.sendAllClients(ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);

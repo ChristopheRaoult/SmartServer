@@ -96,9 +96,9 @@ public class DaoAlert extends DaoEntity<AlertEntity, Integer>
      */
     public boolean persist(Alert alert)
     {
-        DaoAlertType aTypeRepo = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
+        DaoAlertType daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
 
-        AlertTypeEntity ate = aTypeRepo.fromAlertType(alert.getType());
+        AlertTypeEntity ate = daoAlertType.fromAlertType(alert.getType());
 
         if(ate == null)
         {
@@ -141,21 +141,27 @@ public class DaoAlert extends DaoEntity<AlertEntity, Integer>
 
         AlertTemperature alertTemperature = (AlertTemperature) alert;
 
-        DaoAlertTemperature aTempRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
+        DaoAlertTemperature daoAlertTemp = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
 
         // if the Alert is already known: update the attached AlertTemperature
         if(alert.getId() != 0)
         {
-            AlertTemperatureEntity atEntity = aTempRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, alert.getId());
+            AlertTemperatureEntity atEntity = daoAlertTemp.getEntityBy(AlertTemperatureEntity.ALERT_ID, alert.getId());
+            
+            if(atEntity == null)
+            {
+                return false;
+            }
+            
             atEntity.setTemperatureMin(alertTemperature.getTemperatureMin());
             atEntity.setTemperatureMax(alertTemperature.getTemperatureMax());
-            return aTempRepo.updateEntity(atEntity);
+            return daoAlertTemp.updateEntity(atEntity);
         }
 
         // else create a new AlertTemperature
         else
         {
-            return aTempRepo.insert(new AlertTemperatureEntity(newAlertEntity, alertTemperature));
+            return daoAlertTemp.insert(new AlertTemperatureEntity(newAlertEntity, alertTemperature));
         }
     }
 

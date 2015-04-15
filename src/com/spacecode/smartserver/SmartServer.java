@@ -3,7 +3,10 @@ package com.spacecode.smartserver;
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.helper.*;
+import com.spacecode.smartserver.helper.AlertCenter;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
+import com.spacecode.smartserver.helper.TemperatureCenter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -120,8 +123,6 @@ public final class SmartServer
             return;
         }
 
-        // TODO: execute "update.sql" if any is found (in SmartServer.getWorkingDirectory()), then REMOVE IT.
-
         if(!DeviceHandler.connectDevice())
         {
             SmartLogger.getLogger().severe("Unable to connect a device. SmartServer will not start");
@@ -194,11 +195,6 @@ public final class SmartServer
     {
         Device currentDevice = DeviceHandler.getDevice();
 
-        if(currentDevice == null)
-        {
-            return false;
-        }
-
         String devSerialNumber = currentDevice.getSerialNumber();
         SmartLogger.getLogger().info(currentDevice.getDeviceType() + ": " + devSerialNumber);
 
@@ -222,21 +218,11 @@ public final class SmartServer
         // Load last inventory from DB and load it into device.
         if(!DeviceHandler.loadLastInventory())
         {
-            SmartLogger.getLogger().info("No \"last\" Inventory was loaded because none was found.");
+            SmartLogger.getLogger().info("No \"last\" Inventory loaded: none found.");
         }
 
-        if(!AlertCenter.initialize())
-        {
-            SmartLogger.getLogger().severe("Unable to start AlertCenter.");
-        }
-
-        if(ConfManager.isDevTemperature())
-        {
-            if(!TemperatureCenter.initialize())
-            {
-                SmartLogger.getLogger().severe("Unable to start TemperatureCenter.");
-            }
-        }
+        AlertCenter.initialize();
+        TemperatureCenter.initialize();
 
         return true;
     }

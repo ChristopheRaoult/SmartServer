@@ -50,8 +50,8 @@ public class CmdAddAlert extends ClientCommand
         }
 
         // persist the new alert in DB
-        DaoAlert daoAlert = (DaoAlert)DbManager.getDao(AlertEntity.class);
-        if(daoAlert == null || !daoAlert.persist(newAlert))
+        DaoAlert daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
+        if(!daoAlert.persist(newAlert))
         {
             SmartServer.sendMessage(ctx, RequestCode.ADD_ALERT, FALSE);
             return;

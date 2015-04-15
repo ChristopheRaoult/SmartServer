@@ -32,7 +32,7 @@ public class CmdStartLighting extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [StartLighting].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING, FALSE);
             return;

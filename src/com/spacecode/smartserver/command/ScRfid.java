@@ -34,7 +34,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_AXIS_COUNT, "-1");
                 return;
@@ -77,7 +77,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_CALIBRATE);
                 return;
@@ -125,7 +125,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DEC_FREQUENCY, FALSE);
                 return;
@@ -166,7 +166,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DUTY_CYCLE);
                 return;
@@ -216,7 +216,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_FREQUENCY);
                 return;
@@ -266,7 +266,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_INC_FREQUENCY, FALSE);
                 return;
@@ -307,7 +307,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SAVE_DUTY_CYCLE, FALSE);
                 return;
@@ -353,7 +353,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SELECT_AXIS, FALSE);
                 return;
@@ -418,7 +418,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DOOR_STATE, FALSE);
                 return;
@@ -469,7 +469,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DUTY_CYCLE, FALSE);
                 return;
@@ -545,7 +545,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_THRESHOLD, FALSE);
                 return;
@@ -604,7 +604,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD, "-1");
                 return;
@@ -656,7 +656,7 @@ class ScRfid
                 return;
             }
 
-            if(DeviceHandler.getDevice() == null)
+            if(!DeviceHandler.isAvailable())
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD_SAMPLING, FALSE);
                 return;

@@ -129,15 +129,6 @@ public class SmartServerTest
     }
 
     @Test
-    public void testInitNullDevice() throws Exception
-    {
-        when(SmartServer.class, "init").thenCallRealMethod();
-
-        doReturn(null).when(DeviceHandler.class, "getDevice");
-        assertFalse((boolean) Whitebox.invokeMethod(SmartServer.class, "init"));
-    }
-
-    @Test
     public void testInitDbFailsCreatingDevice() throws Exception
     {
         when(SmartServer.class, "init").thenCallRealMethod();
@@ -187,9 +178,7 @@ public class SmartServerTest
         doReturn(device).when(DeviceHandler.class, "getDevice");
         doReturn(true).when(DbManager.class, "createDeviceIfNotExists", serialNumber);
         doReturn(true).when(DeviceHandler.class, "loadUsers");
-        doReturn(true).when(AlertCenter.class, "initialize");
         doReturn(true).when(ConfManager.class, "isDevTemperature");
-        doReturn(true).when(TemperatureCenter.class, "initialize");
 
         assertTrue((boolean) Whitebox.invokeMethod(SmartServer.class, "init"));
 

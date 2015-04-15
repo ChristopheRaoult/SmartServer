@@ -28,18 +28,18 @@ public class CmdLastAlert extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.LAST_ALERT, "");
             return;
         }
 
-        DaoAlertHistory histoRepo = (DaoAlertHistory)
+        DaoAlertHistory daoAlertHistory = (DaoAlertHistory)
                 DbManager.getDao(AlertHistoryEntity.class);
-        DaoAlertTemperature alertTempRepo = (DaoAlertTemperature)
+        DaoAlertTemperature daoAlertTemp = (DaoAlertTemperature)
                 DbManager.getDao(AlertTemperatureEntity.class);
 
-        AlertHistoryEntity alertHisto = histoRepo.getLastAlertHistory();
+        AlertHistoryEntity alertHisto = daoAlertHistory.getLastAlertHistory();
 
         if(alertHisto != null)
         {
@@ -53,7 +53,7 @@ public class CmdLastAlert extends ClientCommand
 
             // is the alert an AlertTemperature? let's seek a matching one
             AlertTemperatureEntity ate =
-                    alertTempRepo.getEntityBy(AlertTemperatureEntity.ALERT_ID, lastAlert.getId());
+                    daoAlertTemp.getEntityBy(AlertTemperatureEntity.ALERT_ID, lastAlert.getId());
 
             if(ate != null)
             {

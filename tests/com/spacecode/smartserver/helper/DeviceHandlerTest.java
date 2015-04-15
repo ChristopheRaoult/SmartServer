@@ -309,17 +309,7 @@ public class DeviceHandlerTest
         DeviceHandler.setForwardingSerialPort(false);
         assertFalse((boolean) Whitebox.getInternalState(DeviceHandler.class, "SERIAL_PORT_FORWARDING"));
     }
-
-    @Test
-    public void testIsForwardingSerialPort() throws Exception
-    {
-        Whitebox.setInternalState(DeviceHandler.class, "SERIAL_PORT_FORWARDING", true);
-        assertTrue(DeviceHandler.isForwardingSerialPort());
-
-        Whitebox.setInternalState(DeviceHandler.class, "SERIAL_PORT_FORWARDING", false);
-        assertFalse(DeviceHandler.isForwardingSerialPort());
-    }
-
+    
     @Test
     public void testLoadAuthorizedUsersDeviceNull() throws Exception
     {

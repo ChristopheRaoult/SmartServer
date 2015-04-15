@@ -243,7 +243,7 @@ public class DbManager
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.WARNING, "Unable to get requested DAO instance.", sqle);
-            return null;
+            throw new RuntimeException("Unable to create a DAO: Does the entity class has a daoClass?");
         }
     }
 
@@ -260,11 +260,6 @@ public class DbManager
         }
         
         DaoDevice daoDevice = (DaoDevice) getDao(DeviceEntity.class);
-        
-        if(daoDevice == null)
-        {
-            return null;
-        }
 
         DeviceEntity result = daoDevice.getEntityBy(DeviceEntity.SERIAL_NUMBER, 
                 DeviceHandler.getDevice().getSerialNumber());
@@ -285,12 +280,8 @@ public class DbManager
     {
         DaoDevice daoDevice = (DaoDevice) getDao(DeviceEntity.class);
         
-        return  daoDevice != null &&
-                // either a DeviceEntity is available => return true, otherwise try to create and load it => return result
-                (
-                        getDevEntity() != null || 
-                    daoDevice.insert(new DeviceEntity(devSerialNumber)) && getDevEntity() != null
-                );
+        return  getDevEntity() != null ||
+                    daoDevice.insert(new DeviceEntity(devSerialNumber)) && getDevEntity() != null;
     }
 
     /**
@@ -304,13 +295,7 @@ public class DbManager
     public static <E extends Entity> boolean forceUpdate(E entity)
     {
         DaoEntity<E, Integer> daoEntity = (DaoEntity<E, Integer>) getDao(entity.getClass());
-
-        if(daoEntity != null)
-        {
-            return daoEntity.updateEntity(entity);
-        }
-
-        SmartLogger.getLogger().warning(String.format("Unable to update the entity (%s).", entity.getClass().getName()));
-        return false;
+        
+        return daoEntity.updateEntity(entity);
     }
 }

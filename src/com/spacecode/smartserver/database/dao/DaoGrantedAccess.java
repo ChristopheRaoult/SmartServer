@@ -33,8 +33,8 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
      */
     public boolean persist(String username, GrantType grantType)
     {
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        return userRepo != null && persist(userRepo.getEntityBy(UserEntity.USERNAME, username), grantType);
+        DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+        return persist(daoUser.getEntityBy(UserEntity.USERNAME, username), grantType);
     }
 
     /**
@@ -50,7 +50,7 @@ public class DaoGrantedAccess extends DaoEntity<GrantedAccessEntity, Integer>
         DaoGrantType daoGrantType = (DaoGrantType) DbManager.getDao(GrantTypeEntity.class);
         DeviceEntity devEntity = DbManager.getDevEntity();
         
-        if(gue == null || daoGrantType == null || devEntity == null)
+        if(gue == null || devEntity == null)
         {
             return false;
         }

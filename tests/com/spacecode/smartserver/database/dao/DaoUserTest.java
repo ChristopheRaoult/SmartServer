@@ -221,7 +221,7 @@ public class DaoUserTest
     }
 
     @Test
-    public void sortUsersFromDb() throws Exception
+    public void testSortUsersFromDb() throws Exception
     {
         // create an in-memory db using H2, for the purpose of this test
         doReturn("jdbc:h2:mem:sortUsers").when(DbManager.class, "getConnectionString");

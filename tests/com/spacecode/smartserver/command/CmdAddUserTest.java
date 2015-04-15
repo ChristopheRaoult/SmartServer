@@ -62,6 +62,7 @@ public class CmdAddUserTest
 
         PowerMockito.mockStatic(DeviceHandler.class);
         PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(_device);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
         PowerMockito.when(DbManager.class, "getDao", UserEntity.class).thenReturn(_daoUser);
     }
 

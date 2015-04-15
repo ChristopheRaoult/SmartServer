@@ -31,7 +31,7 @@ public class CmdUpdateBadge extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [UpdateBadge].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
             return;
@@ -55,7 +55,7 @@ public class CmdUpdateBadge extends ClientCommand
         }
 
         DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
-        if(daoUser == null || !daoUser.updateBadgeNumber(username, badgeNumber))
+        if(!daoUser.updateBadgeNumber(username, badgeNumber))
         {
             // restore the old badge number, as we can't save the new one in the DB
             DeviceHandler.getDevice().getUsersService().updateBadgeNumber(username, badgeSave);

@@ -37,7 +37,7 @@ public class CmdTemperatureList extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [TemperatureList].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_LIST);
             return;

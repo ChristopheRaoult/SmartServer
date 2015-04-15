@@ -24,18 +24,14 @@ public class TemperatureCenter
     }
 
     /**
-     * Check that device has been initialized. If it has, add a new listener for Temperature event.
-     * @return True if subscribing to the temperature event succeeded. False otherwise.
+     * Add an events listener for Temperature events.
      */
-    public static boolean initialize()
+    public static void initialize()
     {
-        if(DeviceHandler.getDevice() == null)
+        if(ConfManager.isDevTemperature())
         {
-            return false;
+            DeviceHandler.getDevice().addListener(new TemperatureMeasureHandler());
         }
-
-        DeviceHandler.getDevice().addListener(new TemperatureMeasureHandler());
-        return true;
     }
 
     private static class TemperatureMeasureHandler implements DeviceEventHandler, TemperatureEventHandler
@@ -56,11 +52,10 @@ public class TemperatureCenter
                 return;
             }
 
-            DaoTemperatureMeasurement repo = 
+            DaoTemperatureMeasurement daoTempMeasurement = 
                     (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
 
-            if(!repo.insert(
-                    new TemperatureMeasurementEntity(roundedValue)))
+            if(!daoTempMeasurement.insert(new TemperatureMeasurementEntity(roundedValue)))
             {
                 SmartLogger.getLogger().severe("Unable to insert new temperature measure.");
                 return;

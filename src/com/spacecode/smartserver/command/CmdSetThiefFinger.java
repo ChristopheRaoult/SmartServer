@@ -30,7 +30,7 @@ public class CmdSetThiefFinger extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [SetThiefFinger].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
             return;
@@ -56,7 +56,7 @@ public class CmdSetThiefFinger extends ClientCommand
         }
 
         DaoUser daoUser = (DaoUser)DbManager.getDao(UserEntity.class);
-        if(daoUser == null || !daoUser.updateThiefFingerIndex(username, fingerIndex))
+        if(!daoUser.updateThiefFingerIndex(username, fingerIndex))
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_THIEF_FINGER, FALSE);
             return;

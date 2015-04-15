@@ -34,7 +34,7 @@ public class CmdSetProbeSettings extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [SetProbeSettings].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.SET_PROBE_SETTINGS, FALSE);
             return;

@@ -46,15 +46,9 @@ public final class AlertCenter
 
     /**
      * Initialize subscriptions to device events. Will allow handling specific alerts, if required.
-     * @return  True if operation is successful. False otherwise (device null / not instantiated).
      */
-    public static boolean initialize()
+    public static void initialize()
     {
-        if(DeviceHandler.getDevice() == null)
-        {
-            return false;
-        }
-
         _isSmtpServerSet = initializeSmtpServer();
 
         if(!_isSmtpServerSet)
@@ -62,14 +56,12 @@ public final class AlertCenter
             SmartLogger.getLogger().warning("No SMTP server is set. AlertCenter won't send any email.");
         }
 
-        if(!initializeRepositories())
-        {
-            SmartLogger.getLogger().severe("Could not initialize Repositories. Can't start AlertCenter.");
-            return false;
-        }
+        _daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
+        _daoAlertHistory = (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
+        _daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
+        _daoAlertTemperature = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
 
         DeviceHandler.getDevice().addListener(new AlertEventHandler());
-        return true;
     }
 
     /**
@@ -78,13 +70,7 @@ public final class AlertCenter
      */
     private static boolean initializeSmtpServer()
     {
-        DaoSmtpServer daoSmtpServer = (DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class);
-        
-        if(daoSmtpServer == null)
-        {
-            return false;
-        }
-        
+        DaoSmtpServer daoSmtpServer = (DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class);        
         final SmtpServerEntity sse = daoSmtpServer.getSmtpServerConfig();
 
         if(sse == null)
@@ -115,25 +101,7 @@ public final class AlertCenter
 
         return true;
     }
-
-    /**
-     * Get the Alert* DAO's to keep it at hand.
-     * 
-     * @return  true if succeeded, false otherwise.
-     */
-    private static boolean initializeRepositories()
-    {
-        _daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
-        _daoAlertHistory = (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
-        _daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
-        _daoAlertTemperature = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
-
-        return  _daoAlert != null &&
-                _daoAlertHistory != null &&
-                _daoAlertType != null &&
-                _daoAlertTemperature != null;
-    }
-
+    
     /**
      * Use SMTP server information (from database) to send an email according to alert settings.
      * Email addresses are divided in three fields: To, Cc, Bcc. Each field can contain one or many addresses (separated
@@ -261,12 +229,6 @@ public final class AlertCenter
                                           AccessType accessType, final boolean isMaster)
         {
             DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
-            
-            if(daoUser == null)
-            {
-                return;
-            }
-            
             _lastAuthenticatedUsername = grantedUser.getUsername();
 
             // we're only interested in fingerprint authentications for "thief finger" alert

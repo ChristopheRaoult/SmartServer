@@ -139,19 +139,15 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             DaoAccessType daoAccessType = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
             DaoRfidTag daoTag = (DaoRfidTag) DbManager.getDao(RfidTagEntity.class);
             DaoInventoryRfidTag daoInventoryTag = (DaoInventoryRfidTag) DbManager.getDao(InventoryRfidTag.class);
-            
-            if(daoUser == null || daoAccessType == null || daoTag == null || daoInventoryTag == null)
-            {
-                throw new SQLException("Unable to retrieve required DAO's");
-            }
 
             UserEntity gue = null;
+            String username = _inventory.getUsername();
 
-            if(_inventory.getUsername() != null && !"".equals(_inventory.getUsername().trim()))
+            if(username != null && !username.trim().isEmpty())
             {
                 // the scan was not manual, there is a user corresponding to this inventory
                 // we don't care if "gue" is null, as if it is, it means that the username is invalid
-                gue = daoUser.getEntityBy(UserEntity.USERNAME, _inventory.getUsername());
+                gue = daoUser.getEntityBy(UserEntity.USERNAME, username);
             }
 
             AccessTypeEntity ate = daoAccessType.fromAccessType(_inventory.getAccessType());
@@ -167,7 +163,6 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
 
             if(!insert(ie))
             {
-                // INSERT query failed
                 throw new SQLException("Failed when inserting new Inventory");
             }
 
@@ -178,6 +173,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             // browse all UID's (tags added, present, removed) to fill the map with entities
             for(String tagUid : allUids)
             {
+                // TODO: Optimize this! => For X tags: X "SELECT" + [0;X] "INSERT"... (X to 2X) 
                 RfidTagEntity rte = daoTag.createIfNotExists(tagUid);
 
                 if(rte == null)
@@ -216,7 +212,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
 
             if(!daoInventoryTag.insert(inventoryRfidTags))
             {
-                throw new SQLException("Unable to insert all tags and movements from new inventory in database");
+                throw new SQLException("Unable to insert all tags and movements of the new Inventory");
             }
 
             // this Callable doesn't need a return value

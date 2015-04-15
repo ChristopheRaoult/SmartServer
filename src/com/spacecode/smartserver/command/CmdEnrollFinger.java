@@ -37,7 +37,7 @@ public class CmdEnrollFinger extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [EnrollFinger].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
             return;
@@ -151,7 +151,7 @@ public class CmdEnrollFinger extends ClientCommand
         String fpTpl = user.getFingerprintTemplate(fingerIndex);
         DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
         
-        if (daoFp == null || !daoFp.persist(user.getUsername(), fingerIndex.getIndex(), fpTpl))
+        if (!daoFp.persist(user.getUsername(), fingerIndex.getIndex(), fpTpl))
         {
             DeviceHandler.getDevice().getUsersService().enrollFinger(user.getUsername(), fingerIndex, oldTemplate);
             return false;

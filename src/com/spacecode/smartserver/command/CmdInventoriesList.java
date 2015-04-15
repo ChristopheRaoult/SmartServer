@@ -58,9 +58,8 @@ public class CmdInventoriesList extends ClientCommand
             return;
         }
 
-        DaoInventory repo = (DaoInventory) DbManager.getDao(InventoryEntity.class);
-
-        List<Inventory> inventories = repo.getInventories(new Date(timestampStart), new Date(timestampEnd));
+        DaoInventory daoInvent = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+        List<Inventory> inventories = daoInvent.getInventories(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.INVENTORIES_LIST);

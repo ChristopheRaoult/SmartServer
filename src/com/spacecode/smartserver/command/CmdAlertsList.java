@@ -37,12 +37,6 @@ public class CmdAlertsList extends ClientCommand
         DaoAlert daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
         DaoAlertTemperature daoAlertTemperature = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
         
-        if(daoAlertType == null || daoAlert == null || daoAlertTemperature == null)
-        {
-            SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
-            return;
-        }
-        
         AlertTypeEntity alertTypeTemperature = daoAlertType.fromAlertType(AlertType.TEMPERATURE);
 
         if(alertTypeTemperature == null)

@@ -64,6 +64,7 @@ public class CmdEnrollFingerTest
         PowerMockito.mockStatic(SmartServer.class);
 
         PowerMockito.mockStatic(DeviceHandler.class);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
         PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(_device);
         PowerMockito.when(DbManager.class, "getDao", UserEntity.class).thenReturn(_daoUser);
         PowerMockito.when(DbManager.class, "getDao", FingerprintEntity.class).thenReturn(_daoFp);
@@ -97,7 +98,7 @@ public class CmdEnrollFingerTest
     @Test
     public void testExecuteDeviceNull() throws Exception
     {
-        PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(null);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(false);
 
         _command.execute(_ctx, new String[] { _username, String.valueOf(FingerIndex.LEFT_INDEX.getIndex()), "true" });
 

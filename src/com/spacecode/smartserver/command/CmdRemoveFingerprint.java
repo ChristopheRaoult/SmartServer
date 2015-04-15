@@ -31,7 +31,7 @@ public class CmdRemoveFingerprint extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [RemoveFingerprint].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;
@@ -69,7 +69,7 @@ public class CmdRemoveFingerprint extends ClientCommand
 
         // persist deletion in database
         DaoFingerprint daoFp = (DaoFingerprint) DbManager.getDao(FingerprintEntity.class);
-        if(daoFp == null || !daoFp.delete(username, fingerIndex.getIndex()))
+        if(!daoFp.delete(username, fingerIndex.getIndex()))
         {
             SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
             return;

@@ -67,11 +67,6 @@ public class DaoAuthentication extends DaoEntity<AuthenticationEntity, Integer>
     {
         DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
         DaoAccessType daoAccessType = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
-
-        if(daoUser == null || daoAccessType == null)
-        {
-            return false;
-        }
         
         UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, user.getUsername());
 

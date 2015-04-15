@@ -35,7 +35,7 @@ public class CmdUpdatePermission extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [UpdatePermission].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
             return;
@@ -70,7 +70,7 @@ public class CmdUpdatePermission extends ClientCommand
         }        
 
         DaoGrantedAccess daoGa = (DaoGrantedAccess) DbManager.getDao(GrantedAccessEntity.class);
-        if(daoGa == null || !daoGa.persist(username, grantType))
+        if(!daoGa.persist(username, grantType))
         {
             SmartLogger.getLogger().severe(String.format("Permission set to %s for User %s, but not persisted!", 
                     newPermission, username));

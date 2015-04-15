@@ -35,8 +35,6 @@ public class CmdUpdatePermissionTest
     private UsersService _usersService;
     private DaoGrantedAccess _daoGrantedAccess;
 
-    public String _username = "Vincent";
-
     @Before
     public void setUp() throws Exception
     {
@@ -52,6 +50,7 @@ public class CmdUpdatePermissionTest
         PowerMockito.mockStatic(SmartServer.class);
 
         PowerMockito.mockStatic(DeviceHandler.class);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
         PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(_device);
         PowerMockito.when(DbManager.class, "getDao", GrantedAccessEntity.class).thenReturn(_daoGrantedAccess);
     }
@@ -84,7 +83,7 @@ public class CmdUpdatePermissionTest
     @Test
     public void testExecuteDeviceNull() throws Exception
     {
-        PowerMockito.when(DeviceHandler.class, "getDevice").thenReturn(null);
+        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(false);
 
         _command.execute(_ctx, new String[] { "username", GrantType.MASTER.name() });
 

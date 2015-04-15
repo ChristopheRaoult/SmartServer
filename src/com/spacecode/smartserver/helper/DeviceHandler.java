@@ -138,7 +138,7 @@ public final class DeviceHandler
     }
 
     /**
-     * @return Currently used RFIDDevice instance (null if not initialized).
+     * @return Currently used Device instance (null if not initialized).
      */
     public static Device getDevice()
     {
@@ -258,11 +258,11 @@ public final class DeviceHandler
     }
 
     /**
-     * @return True if serial port is being forwarded through host USB-OTG. False otherwise.
+     * @return True if the "serial bridge" is not active and the device is initialized. False otherwise.
      */
-    public static boolean isForwardingSerialPort()
+    public static boolean isAvailable()
     {
-        return SERIAL_PORT_FORWARDING;
+        return !SERIAL_PORT_FORWARDING && _device != null;
     }
 
     /**
@@ -272,12 +272,12 @@ public final class DeviceHandler
      */
     public static boolean loadUsers()
     {
-        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-        
-        if(_device == null || userRepo == null)
+        if(!DeviceHandler.isAvailable())
         {
             return false;
         }
+        
+        DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
 
         List<User> authorizedUsers = new ArrayList<>();
         List<User> unregisteredUsers = new ArrayList<>();
@@ -323,12 +323,6 @@ public final class DeviceHandler
     public static boolean loadLastInventory()
     {
         DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
-
-        if(daoInventory == null)
-        {
-            return false;
-        }
-        
         Inventory lastInventoryRecorded = daoInventory.getLastInventory();
 
         if(lastInventoryRecorded == null)
@@ -391,13 +385,9 @@ public final class DeviceHandler
         @Override
         public void scanCompleted()
         {
-            // todo: thread this operation? The point is about "getLastInventory" command, which MUST return the VERY last
             DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
-            
-            if(daoInventory != null)
-            {
-                daoInventory.persist(_device.getLastInventory());    
-            }            
+            // todo: thread this? The point is about "getLastInventory" command, which MUST return the VERY last
+            daoInventory.persist(_device.getLastInventory());     
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }
@@ -420,12 +410,8 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
                     accessType.name(), String.valueOf(isMaster));
 
-            DaoAuthentication daoAuthentication = (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);
-            
-            if(daoAuthentication != null)
-            {
-                daoAuthentication.persist(grantedUser, accessType);
-            }
+            DaoAuthentication daoAuthentication = (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);            
+            daoAuthentication.persist(grantedUser, accessType);
         }
 
         @Override

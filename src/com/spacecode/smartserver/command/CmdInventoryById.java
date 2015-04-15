@@ -32,9 +32,9 @@ public class CmdInventoryById extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [InventoryById].");
         }
 
-        DaoInventory repoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+        DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
 
-        if(DeviceHandler.getDevice() == null || repoInventory == null)
+        if(!DeviceHandler.isAvailable())
         {
             SmartServer.sendMessage(ctx, RequestCode.INVENTORY_BY_ID, "");
             return;
@@ -45,7 +45,7 @@ public class CmdInventoryById extends ClientCommand
         try
         {
             int id = Integer.parseInt(inventoryId);
-            InventoryEntity invEntity = repoInventory.getEntityById(id);
+            InventoryEntity invEntity = daoInventory.getEntityById(id);
 
             if(invEntity == null)
             {

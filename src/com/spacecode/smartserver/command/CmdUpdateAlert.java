@@ -46,7 +46,7 @@ public class CmdUpdateAlert extends ClientCommand
         }
 
         DaoAlert daoAlert = (DaoAlert)DbManager.getDao(AlertEntity.class);
-        if(daoAlert == null || !daoAlert.persist(alert))
+        if(!daoAlert.persist(alert))
         {
             SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
             return;

@@ -132,7 +132,7 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
     }
 
     /**
-     * Default method to insert a new item in the dao table. The entity is refreshed by the DAO after being inserted.
+     * Default method to insert a new item in the dao table.
      *
      * @param newEntity New entity to be inserted in the table (as a new row).
      *
@@ -142,15 +142,7 @@ public class DaoEntity<T, ID> extends BaseDaoImpl<T, ID>
     {
         try
         {
-            if(create(newEntity) != 1)
-            {
-                return false;
-            }
-            
-            // "refresh" the entity object: initialize foreign collections, etc.
-            refresh(newEntity);
-            
-            return true;
+            return create(newEntity) == 1;
         } catch (SQLException sqle)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "Error occurred while inserting new entity.", sqle);
