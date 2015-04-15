@@ -194,8 +194,6 @@ public class SmartServerTest
         verifyStatic();
         AlertCenter.initialize();
         verifyStatic();
-        ConfManager.isDevTemperature();
-        verifyStatic();
         TemperatureCenter.initialize();
     }
 
