@@ -37,6 +37,15 @@ public class CmdAlertReports extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [AlertReports].");
         }
 
+        DaoAlertHistory daoAlertHistory =
+                (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
+        
+        if(daoAlertHistory == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
+            return;
+        }
+
         long timestampStart;
         long timestampEnd;
 
@@ -58,10 +67,8 @@ public class CmdAlertReports extends ClientCommand
             return;
         }
 
-        DaoAlertHistory repo =
-                (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
-
-        List<AlertHistoryEntity> entities = repo.getAlertsHistory(new Date(timestampStart),  new Date(timestampEnd));
+        List<AlertHistoryEntity> entities = 
+                daoAlertHistory.getAlertsHistory(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.ALERT_REPORTS);

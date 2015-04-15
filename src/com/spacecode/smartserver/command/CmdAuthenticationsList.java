@@ -39,6 +39,15 @@ public class CmdAuthenticationsList extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [AuthenticationList].");
         }
 
+        DaoAuthentication daoAuthentication =
+                (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);
+        
+        if(daoAuthentication == null)
+        {
+            SmartServer.sendMessage(ctx, RequestCode.AUTHENTICATIONS_LIST);
+            return;
+        }
+
         long timestampStart;
         long timestampEnd;
 
@@ -60,11 +69,8 @@ public class CmdAuthenticationsList extends ClientCommand
             return;
         }
 
-        DaoAuthentication repo =
-                (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);
-
         List<AuthenticationEntity> authentications =
-                repo.getAuthentications(new Date(timestampStart), new Date(timestampEnd));
+                daoAuthentication.getAuthentications(new Date(timestampStart), new Date(timestampEnd));
 
         List<String> responsePackets = new ArrayList<>();
         responsePackets.add(RequestCode.AUTHENTICATIONS_LIST);

@@ -465,12 +465,14 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.BADGE_SCANNED, badgeNumber);
         }
 
+        /*
         @Override
         public void tagPresence()
         {
             SmartLogger.getLogger().info("Tag presence.");
             SmartServer.sendAllClients(EventCode.TAG_PRESENCE);
         }
+        */
 
         @Override
         public void scanCancelledByDoor()

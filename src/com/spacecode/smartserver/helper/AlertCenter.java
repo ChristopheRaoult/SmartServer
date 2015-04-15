@@ -37,6 +37,7 @@ public final class AlertCenter
     private static DaoAlert _daoAlert;
     private static DaoAlertHistory _daoAlertHistory;
     private static DaoAlertType _daoAlertType;
+    private static DaoAlertTemperature _daoAlertTemperature;
 
     /** Must not be instantiated */
     private AlertCenter()
@@ -77,8 +78,14 @@ public final class AlertCenter
      */
     private static boolean initializeSmtpServer()
     {
-        final SmtpServerEntity sse =
-                ((DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class)).getSmtpServerConfig();
+        DaoSmtpServer daoSmtpServer = (DaoSmtpServer) DbManager.getDao(SmtpServerEntity.class);
+        
+        if(daoSmtpServer == null)
+        {
+            return false;
+        }
+        
+        final SmtpServerEntity sse = daoSmtpServer.getSmtpServerConfig();
 
         if(sse == null)
         {
@@ -110,7 +117,8 @@ public final class AlertCenter
     }
 
     /**
-     * Get the Alert Repository to keep it at hand.
+     * Get the Alert* DAO's to keep it at hand.
+     * 
      * @return  true if succeeded, false otherwise.
      */
     private static boolean initializeRepositories()
@@ -118,10 +126,12 @@ public final class AlertCenter
         _daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
         _daoAlertHistory = (DaoAlertHistory) DbManager.getDao(AlertHistoryEntity.class);
         _daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
+        _daoAlertTemperature = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
 
         return  _daoAlert != null &&
                 _daoAlertHistory != null &&
-                _daoAlertType != null;
+                _daoAlertType != null &&
+                _daoAlertTemperature != null;
     }
 
     /**
@@ -250,18 +260,24 @@ public final class AlertCenter
         public void authenticationSuccess(final User grantedUser,
                                           AccessType accessType, final boolean isMaster)
         {
+            DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+            
+            if(daoUser == null)
+            {
+                return;
+            }
+            
             _lastAuthenticatedUsername = grantedUser.getUsername();
 
-            // we're only interested in fingerprint authentications for "thief finger" alert.
+            // we're only interested in fingerprint authentications for "thief finger" alert
             if(accessType != AccessType.FINGERPRINT)
             {
                 return;
             }
 
-            DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-            UserEntity gue = userRepo.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
+            UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
 
-            // no matching user, or user has no "finger thief" index set.
+            // no matching user, or user has no "finger thief" index set
             if(gue == null || gue.getThiefFingerIndex() == null)
             {
                 return;
@@ -319,8 +335,8 @@ public final class AlertCenter
             }
 
             // get the attached AlertTemperature entities
-            DaoAlertTemperature atRepo = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
-            List<AlertTemperatureEntity> atList = atRepo.getEntitiesWhereIn(AlertTemperatureEntity.ALERT_ID, alertIds);
+            List<AlertTemperatureEntity> atList = 
+                    _daoAlertTemperature.getEntitiesWhereIn(AlertTemperatureEntity.ALERT_ID, alertIds);
 
             Map<Entity, AlertEntity> matchingAlerts = new HashMap<>();
 

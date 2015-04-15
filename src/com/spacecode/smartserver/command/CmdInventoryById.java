@@ -3,7 +3,7 @@ package com.spacecode.smartserver.command;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.database.dao.DaoEntity;
+import com.spacecode.smartserver.database.dao.DaoInventory;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +32,9 @@ public class CmdInventoryById extends ClientCommand
             throw new ClientCommandException("Invalid number of parameters [InventoryById].");
         }
 
-        if(DeviceHandler.getDevice() == null)
+        DaoInventory repoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+
+        if(DeviceHandler.getDevice() == null || repoInventory == null)
         {
             SmartServer.sendMessage(ctx, RequestCode.INVENTORY_BY_ID, "");
             return;
@@ -43,8 +45,7 @@ public class CmdInventoryById extends ClientCommand
         try
         {
             int id = Integer.parseInt(inventoryId);
-            DaoEntity repoInventory = DbManager.getDao(InventoryEntity.class);
-            InventoryEntity invEntity = (InventoryEntity) repoInventory.getEntityById(id);
+            InventoryEntity invEntity = repoInventory.getEntityById(id);
 
             if(invEntity == null)
             {

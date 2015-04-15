@@ -118,10 +118,10 @@ class ScAdmin
                 {
                     Process process = processBuilder.start();
                     InputStream is = process.getInputStream();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
                     String hostname = bufferedReader.readLine();
-
+                    bufferedReader.close();
                     if (hostname != null)
                     {
                         SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.HOSTNAME, hostname);
@@ -266,7 +266,7 @@ class ScAdmin
                 {
                     Process process = processBuilder.start();
                     InputStream is = process.getInputStream();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
                     Map<String, String> netConf = new HashMap<>();
                     netConf.put("ip address", "");
@@ -303,6 +303,8 @@ class ScAdmin
 
                         line = bufferedReader.readLine();
                     }
+                    
+                    bufferedReader.close();
 
                     SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.NETWORK_SETTINGS,
                             netConf.get("ip address"), netConf.get("subnet"), netConf.get("gateway"));
@@ -662,7 +664,7 @@ class ScAdmin
                     }
 
                     // write the new interfaces settings
-                    PrintWriter out = new PrintWriter("/etc/network/interfaces");
+                    PrintWriter out = new PrintWriter("/etc/network/interfaces", "UTF-8");
                     out.println(sb.toString());
                     out.close();
 

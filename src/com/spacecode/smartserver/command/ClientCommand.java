@@ -19,7 +19,7 @@ abstract class ClientCommand
      * @param ctx                       Channel between SmartServer and the client.
      * @param parameters                String array containing parameters (if any) provided by the client.
      *
-     * @throws ClientCommandException   If any error occurs during Command call & execution.
+     * @throws ClientCommandException   If any error occurs during the execution of the command.
      */
     public abstract void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException;
 

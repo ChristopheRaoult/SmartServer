@@ -23,7 +23,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 @ChannelHandler.Sharable
-public class WebSocketHandler extends SimpleChannelInboundHandler<Object>
+class WebSocketHandler extends SimpleChannelInboundHandler<Object>
 {
     private WebSocketServerHandshaker _handshaker;
     private static final ClientCommandRegister COMMAND_REGISTER = new ClientCommandRegister();

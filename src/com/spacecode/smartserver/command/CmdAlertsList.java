@@ -5,6 +5,8 @@ import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.database.dao.DaoAlert;
+import com.spacecode.smartserver.database.dao.DaoAlertTemperature;
 import com.spacecode.smartserver.database.dao.DaoAlertType;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
@@ -29,11 +31,19 @@ public class CmdAlertsList extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
     {
-        AlertTypeEntity alertTypeTemperature =
-                ((DaoAlertType) DbManager.getDao(AlertTypeEntity.class))
-                        .fromAlertType(AlertType.TEMPERATURE);
-
         List<String> responsePackets = new ArrayList<>();
+        
+        DaoAlertType daoAlertType = (DaoAlertType) DbManager.getDao(AlertTypeEntity.class);
+        DaoAlert daoAlert = (DaoAlert) DbManager.getDao(AlertEntity.class);
+        DaoAlertTemperature daoAlertTemperature = (DaoAlertTemperature) DbManager.getDao(AlertTemperatureEntity.class);
+        
+        if(daoAlertType == null || daoAlert == null || daoAlertTemperature == null)
+        {
+            SmartServer.sendMessage(ctx, responsePackets.toArray(new String[responsePackets.size()]));
+            return;
+        }
+        
+        AlertTypeEntity alertTypeTemperature = daoAlertType.fromAlertType(AlertType.TEMPERATURE);
 
         if(alertTypeTemperature == null)
         {
@@ -43,12 +53,10 @@ public class CmdAlertsList extends ClientCommand
         }
 
         // first, get the simple alerts (made with only an AlertEntity instance)
-        List<AlertEntity> simpleAlertsFromDb =
-                DbManager.getDao(AlertEntity.class)
-                        .getEntitiesWhereNotEqual(AlertEntity.ALERT_TYPE_ID, alertTypeTemperature.getId());
-        // then get all AlertTemperature ~
-        List<AlertTemperatureEntity> alertsTemperatureFromDb =
-                DbManager.getDao(AlertTemperatureEntity.class).getAll();
+        List<AlertEntity> simpleAlertsFromDb = 
+                daoAlert.getEntitiesWhereNotEqual(AlertEntity.ALERT_TYPE_ID, alertTypeTemperature.getId());
+        // then get all AlertTemperature
+        List<AlertTemperatureEntity> alertsTemperatureFromDb = daoAlertTemperature.getAll();
 
 
         List<Alert> serializableAlerts = new ArrayList<>();

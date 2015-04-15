@@ -135,10 +135,15 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
         @Override
         public Void call() throws Exception
         {
-            DaoUser userRepo = (DaoUser) DbManager.getDao(UserEntity.class);
-            DaoEntity accessTypeRepo = DbManager.getDao(AccessTypeEntity.class);
-            DaoEntity rfidTagRepo = DbManager.getDao(RfidTagEntity.class);
-            DaoEntity inventTagRepo = DbManager.getDao(InventoryRfidTag.class);
+            DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
+            DaoAccessType daoAccessType = (DaoAccessType) DbManager.getDao(AccessTypeEntity.class);
+            DaoRfidTag daoTag = (DaoRfidTag) DbManager.getDao(RfidTagEntity.class);
+            DaoInventoryRfidTag daoInventoryTag = (DaoInventoryRfidTag) DbManager.getDao(InventoryRfidTag.class);
+            
+            if(daoUser == null || daoAccessType == null || daoTag == null || daoInventoryTag == null)
+            {
+                throw new SQLException("Unable to retrieve required DAO's");
+            }
 
             UserEntity gue = null;
 
@@ -146,15 +151,15 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             {
                 // the scan was not manual, there is a user corresponding to this inventory
                 // we don't care if "gue" is null, as if it is, it means that the username is invalid
-                gue = userRepo.getEntityBy(UserEntity.USERNAME, _inventory.getUsername());
+                gue = daoUser.getEntityBy(UserEntity.USERNAME, _inventory.getUsername());
             }
 
-            AccessTypeEntity ate = ((DaoAccessType) accessTypeRepo).fromAccessType(_inventory.getAccessType());
+            AccessTypeEntity ate = daoAccessType.fromAccessType(_inventory.getAccessType());
 
             if(ate == null)
             {
                 // GrantedUser can be null for an inventory (if manually started) but AccessType can't
-                throw new SQLException("Invalid access type. Unable to insert Inventory in database.");
+                throw new SQLException("Invalid access type. Unable to insert Inventory in database");
             }
 
             // create the entity to be inserted in the DB
@@ -163,7 +168,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             if(!insert(ie))
             {
                 // INSERT query failed
-                throw new SQLException("Failed when inserting new Inventory.");
+                throw new SQLException("Failed when inserting new Inventory");
             }
 
             Map<String, RfidTagEntity> uidToEntity = new HashMap<>();
@@ -173,11 +178,11 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             // browse all UID's (tags added, present, removed) to fill the map with entities
             for(String tagUid : allUids)
             {
-                RfidTagEntity rte = ((DaoRfidTag) rfidTagRepo).createIfNotExists(tagUid);
+                RfidTagEntity rte = daoTag.createIfNotExists(tagUid);
 
                 if(rte == null)
                 {
-                    throw new SQLException("Unable to createIfNotExists a tag in database.");
+                    throw new SQLException("Unable to createIfNotExists a tag in database");
                 }
 
                 uidToEntity.put(tagUid, rte);
@@ -209,9 +214,9 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
                 inventoryRfidTags.add(new InventoryRfidTag(ie, uidToEntity.get(tagUid), -1, shelveNbr));
             }
 
-            if(!inventTagRepo.insert(inventoryRfidTags))
+            if(!daoInventoryTag.insert(inventoryRfidTags))
             {
-                throw new SQLException("Unable to insert all tags and movements from new inventory in database.");
+                throw new SQLException("Unable to insert all tags and movements from new inventory in database");
             }
 
             // this Callable doesn't need a return value

@@ -76,7 +76,7 @@ public class DeviceHandlerTest
         Whitebox.setInternalState(SmartLogger.class, "LOGGER", _smartLogger);
         doReturn(_smartLogger).when(SmartLogger.class, "getLogger");
         doNothing().when(_smartLogger).warning(anyString());
-        whenNew(SmartLogger.class).withArguments(eq("SmartLogger"), anyString()).thenReturn(_smartLogger);
+        whenNew(SmartLogger.class).withNoArguments().thenReturn(_smartLogger);
 
         Whitebox.setInternalState(DeviceHandler.class, _device);
 

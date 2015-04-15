@@ -15,7 +15,7 @@ import java.util.logging.Level;
  * Handle any exception caught by Netty.
  */
 @ChannelHandler.Sharable
-public final class SmartServerHandler extends SimpleChannelInboundHandler<String>
+final class SmartServerHandler extends SimpleChannelInboundHandler<String>
 {
     private static final ClientCommandRegister COMMAND_REGISTER = new ClientCommandRegister();
 
