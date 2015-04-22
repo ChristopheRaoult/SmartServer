@@ -72,6 +72,7 @@ class ScAdmin
             if( !DeviceHandler.isAvailable() || 
                 DeviceHandler.getDevice().getStatus() == DeviceStatus.FLASHING_FIRMWARE)
             {
+                SmartLogger.getLogger().warning("Flashing Firmware - Failure: Device not available");
                 SmartServer.sendAllClients(ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);
                 return;
             }
