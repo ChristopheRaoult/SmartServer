@@ -3,7 +3,6 @@ package com.spacecode.smartserver;
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DbManager;
-import com.spacecode.smartserver.helper.AlertCenter;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import com.spacecode.smartserver.helper.TemperatureCenter;
@@ -172,6 +171,7 @@ public final class SmartServer
             @Override
             public void run()
             {
+                TemperatureCenter.stop();
                 DeviceHandler.disconnectDevice();
                 DbManager.close();
                 stop();
@@ -182,11 +182,14 @@ public final class SmartServer
     /**
      * <ul>
      *  <li>* Create the device in the DB, if it does not exist</li>
-     *  <li>* Connect modules if any (fingerprint/badge readers, temperature probe)</li>
-     *  <li>* Load the authorized users in the UsersService of the Device instance</li>
-     *  <li>Load the last inventory (if any) in the Device instance</li>
-     *  <li>Start the Alert Center</li>
-     *  <li>Start the Temperature Center (if required)</li>
+     *  <li>Done by {@link DeviceHandler}:</li>
+     *  <ul>      
+     *    <li>* Connect modules if any (fingerprint/badge readers, temperature probe)</li>
+     *    <li>* Load the authorized users in the UsersService of the Device instance</li>
+     *    <li>Load the last inventory (if any) in the Device instance</li>
+     *    <li>Start the Alert Center</li>
+     *    <li>Start the Temperature Center (if required)</li>
+     *  </ul>
      * </ul>
      *
      * @return True if the whole initialization succeeded (* mandatory steps), false otherwise.
@@ -204,27 +207,7 @@ public final class SmartServer
             return false;
         }
 
-        // Use the configuration to connect/load modules.
-        // TODO: do something if any failure (try to reconnect each module which fails to connect, or any other way)
-        DeviceHandler.connectModules();
-
-        // Load users from DB into Device's UsersService.
-        if(!DeviceHandler.loadUsers())
-        {
-            SmartLogger.getLogger().severe("Users could not be loaded from database. SmartServer won't start.");
-            return false;
-        }
-
-        // Load last inventory from DB and load it into device.
-        if(!DeviceHandler.loadLastInventory())
-        {
-            SmartLogger.getLogger().info("No \"last\" Inventory loaded: none found.");
-        }
-
-        AlertCenter.initialize();
-        TemperatureCenter.initialize();
-
-        return true;
+        return DeviceHandler.onConnected();
     }
 
     /**

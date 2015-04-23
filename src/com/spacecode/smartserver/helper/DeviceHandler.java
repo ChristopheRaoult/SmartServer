@@ -109,18 +109,7 @@ public final class DeviceHandler
                 // let all the clients know that the device is "Ready" again
                 SmartServer.sendAllClients(EventCode.STATUS_CHANGED, DeviceStatus.READY.name());
 
-                // reconnect modules, reload the users and the last inventory
-                connectModules();
-
-                if(!loadUsers())
-                {
-                    SmartLogger.getLogger().warning("Failed on loading authorized users when reconnecting the Device.");
-                }
-
-                if(!loadLastInventory())
-                {
-                    SmartLogger.getLogger().warning("Failed on loading the last inventory when reconnecting the Device.");
-                }
+                onConnected();
                 break;
             }
 
@@ -272,7 +261,7 @@ public final class DeviceHandler
      */
     public static boolean loadUsers()
     {
-        if(!DeviceHandler.isAvailable())
+        if(!isAvailable())
         {
             return false;
         }
@@ -332,6 +321,45 @@ public final class DeviceHandler
 
         _device.setLastInventory(lastInventoryRecorded);
         return true;
+    }
+
+    /**
+     * Called once the device is (re)connected.
+     * 
+     * <ul>
+     *  <li>Connect the modules (temperature probe, fingerprint readers, badge readers).</li>
+     *  <li>Load the users from DB.</li>
+     *  <li>Load the last Inventory (if any).</li>
+     *  <li>Initialize AlertCenter and TemperatureCenter.</li>
+     * </ul>
+     * 
+     * @return False if Loading Users failed. True otherwise.
+     */
+    public static boolean onConnected()
+    {
+        boolean result = true;
+        
+        // Use the configuration to connect/load modules.
+        // TODO: do something if any failure (try to reconnect each module which fails to connect, or any other way)
+        connectModules();
+
+        // Load users from DB into Device's UsersService.
+        if(!loadUsers())
+        {
+            SmartLogger.getLogger().severe("FATAL ERROR: Users could not be loaded from Database.");
+            result = false;
+        }
+
+        // Load last inventory from DB and load it into device.
+        if(!loadLastInventory())
+        {
+            SmartLogger.getLogger().info("No \"last\" Inventory loaded: none found.");
+        }
+
+        AlertCenter.initialize();
+        TemperatureCenter.initialize();
+
+        return result;
     }
 
     /**
@@ -450,15 +478,6 @@ public final class DeviceHandler
         {
             SmartServer.sendAllClients(EventCode.BADGE_SCANNED, badgeNumber);
         }
-
-        /*
-        @Override
-        public void tagPresence()
-        {
-            SmartLogger.getLogger().info("Tag presence.");
-            SmartServer.sendAllClients(EventCode.TAG_PRESENCE);
-        }
-        */
 
         @Override
         public void scanCancelledByDoor()

@@ -176,13 +176,7 @@ public class DeviceHandlerTest
         verifyStatic();
         DeviceHandler.connectDevice();
         verifyStatic();
-        DeviceHandler.connectModules();
-        verifyStatic();
-        DeviceHandler.loadUsers();
-        verifyStatic();
-        DeviceHandler.loadLastInventory();
-        // SmartLogger warned twice: failure of loading authorized users and failure of loading the last inventory
-        verify(_smartLogger, times(2)).warning(anyString());
+        DeviceHandler.onConnected();
     }
 
     @Test
@@ -201,9 +195,6 @@ public class DeviceHandlerTest
         DeviceHandler.connectModules();
 
         verifyPrivate(DeviceHandler.class, never()).invoke("connectProbeIfEnabled");
-
-        // warning that device is null
-        verify(_smartLogger).warning(anyString());
     }
 
     @Test

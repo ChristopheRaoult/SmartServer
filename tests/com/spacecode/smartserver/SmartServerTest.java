@@ -164,7 +164,7 @@ public class SmartServerTest
         verifyStatic();
         DbManager.createDeviceIfNotExists(serialNumber);
         verifyStatic();
-        DeviceHandler.connectModules();
+        DeviceHandler.onConnected();
     }
 
     @Test
@@ -177,7 +177,7 @@ public class SmartServerTest
         doReturn(serialNumber).when(device).getSerialNumber();
         doReturn(device).when(DeviceHandler.class, "getDevice");
         doReturn(true).when(DbManager.class, "createDeviceIfNotExists", serialNumber);
-        doReturn(true).when(DeviceHandler.class, "loadUsers");
+        doReturn(true).when(DeviceHandler.class, "onConnected");
         doReturn(true).when(ConfManager.class, "isDevTemperature");
 
         assertTrue((boolean) Whitebox.invokeMethod(SmartServer.class, "init"));
@@ -186,15 +186,7 @@ public class SmartServerTest
         verifyStatic();
         DbManager.createDeviceIfNotExists(serialNumber);
         verifyStatic();
-        DeviceHandler.connectModules();
-        verifyStatic();
-        DeviceHandler.loadUsers();
-        verifyStatic();
-        DeviceHandler.loadLastInventory();
-        verifyStatic();
-        AlertCenter.initialize();
-        verifyStatic();
-        TemperatureCenter.initialize();
+        DeviceHandler.onConnected();
     }
 
     @Test

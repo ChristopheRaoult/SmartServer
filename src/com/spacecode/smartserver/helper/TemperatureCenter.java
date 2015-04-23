@@ -8,6 +8,10 @@ import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
 
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Handle persistence of temperature measures in database.
  * New value will be inserted in database only if it's different from the previous one.
@@ -16,7 +20,13 @@ import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
  */
 public class TemperatureCenter
 {
-    private static double _lastValue = TemperatureProbe.ERROR_VALUE;
+    private static double _lastMeasureValue = TemperatureProbe.ERROR_VALUE;
+    private static Date _lastMeasureTime;
+    
+    // timer doing a periodic measure, regardless the settings (delay/delta) of the Probe 
+    private static Timer _measurementTimer;
+    // delay of this periodic measure, in milliseconds
+    private static final long DELAY_MS_FORCE_MEASURE = 10 * 60 * 1000;
 
     /** Must not be instantiated */
     private TemperatureCenter()
@@ -24,14 +34,90 @@ public class TemperatureCenter
     }
 
     /**
-     * Add an events listener for Temperature events.
+     * <ul>
+     *     <li>Add an events listener for Temperature events.</li>
+     *     <li>Start a timer which periodically records a temperature measure.</li>
+     * </ul>
      */
     public static void initialize()
     {
-        if(ConfManager.isDevTemperature())
+        if(!ConfManager.isDevTemperature())
         {
-            DeviceHandler.getDevice().addListener(new TemperatureMeasureHandler());
+            return;
         }
+        
+        // listen for temperature events
+        DeviceHandler.getDevice().addListener(new TemperatureMeasureHandler());
+        
+        // 
+        _measurementTimer = new Timer();
+        _measurementTimer.scheduleAtFixedRate(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                if(!DeviceHandler.isAvailable())
+                {
+                    return;
+                }
+                
+                double currentTemp = DeviceHandler.getDevice().getCurrentTemperature();
+                
+                if(currentTemp == TemperatureProbe.ERROR_VALUE)
+                {
+                    return;
+                }
+                
+                Date dateNow = new Date();
+                
+                if(_lastMeasureTime == null || (dateNow.getTime() - _lastMeasureTime.getTime()) < DELAY_MS_FORCE_MEASURE)
+                {
+                    recordNewMeasure(currentTemp);
+                }
+                
+            }
+        }, 0, DELAY_MS_FORCE_MEASURE);
+    }
+
+    /**
+     * Cancel the timer responsible for periodically recording a temperature measure.
+     */
+    public static void stop()
+    {
+        if(!ConfManager.isDevTemperature())
+        {
+            return;
+        }
+        
+        if(_measurementTimer != null)
+        {
+            _measurementTimer.cancel();
+        }
+    }
+
+    /**
+     * Round the given measure to one decimal digit, update the "last measure value", insert it in DB.
+     * If DB insertion succeeds, update the "last measure time".
+     * 
+     * @param valueFromProbe Measure given by the TemperatureProbe.
+     */
+    private static void recordNewMeasure(double valueFromProbe)
+    {
+        // keep only one decimal place (ie 4.57 => 4.6 // 4.22 => 4.2)
+        double roundedValue = (double) Math.round(valueFromProbe * 10) / 10;
+
+        _lastMeasureValue = roundedValue;
+
+        DaoTemperatureMeasurement daoTempMeasurement =
+                (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
+
+        if(!daoTempMeasurement.insert(new TemperatureMeasurementEntity(roundedValue)))
+        {
+            SmartLogger.getLogger().severe("Unable to insert new temperature measure ("+ _lastMeasureValue +").");
+            return;
+        }
+
+        _lastMeasureTime = new Date();
     }
 
     private static class TemperatureMeasureHandler implements DeviceEventHandler, TemperatureEventHandler
@@ -41,27 +127,11 @@ public class TemperatureCenter
         {
             if(value == TemperatureProbe.ERROR_VALUE)
             {
+                SmartLogger.getLogger().warning("ERROR_VALUE sent with the Temperature Probe event!");
                 return;
             }
             
-            // keep only one decimal place (ie 4.57 => 4.6 // 4.22 => 4.2)
-            double roundedValue = (double) Math.round(value * 10) / 10;
-
-            if(Math.abs(_lastValue - roundedValue) < 0.01)
-            {
-                return;
-            }
-
-            DaoTemperatureMeasurement daoTempMeasurement = 
-                    (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
-
-            if(!daoTempMeasurement.insert(new TemperatureMeasurementEntity(roundedValue)))
-            {
-                SmartLogger.getLogger().severe("Unable to insert new temperature measure.");
-                return;
-            }
-
-            _lastValue = roundedValue;
+            recordNewMeasure(value);
         }
 
         @Override
