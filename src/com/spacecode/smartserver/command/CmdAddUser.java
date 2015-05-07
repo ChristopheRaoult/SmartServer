@@ -12,32 +12,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * AddUser command.
  */
+@CommandContract(paramCount = 1, deviceRequired = true)
 public class CmdAddUser extends ClientCommand
 {
     /**
      * Request to add a new User to granted users list. Send (string) "true" if succeed, "false" otherwise.
      *
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    Serialized User. Optional 2nd parameter: True or False ("Override Templates"). 
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for only 1 parameter: serialized User, and OPTIONAL 2nd parameter: true/false ("override template").
-        if(parameters.length < 1)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [AddUser].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.ADD_USER, FALSE);
-            return;
-        }
-
         User newUser = User.deserialize(parameters[0]);
         
         if(newUser == null)            

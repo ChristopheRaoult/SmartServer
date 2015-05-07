@@ -19,24 +19,16 @@ import java.util.logging.Level;
  * Provide reports (if any) for alert raised during a certain period (start/end date provided).
  * Sends Alert IDs instead of sending serialized alerts, in order to minimize risk to exceed the TCP frame size.
  */
+@CommandContract(paramCount = 2, strictCount = true, responseWhenInvalid = "")
 public class CmdAlertReports extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    "Start" and "End" dates (period).
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: start date, end date.
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.ALERT_REPORTS);
-            throw new ClientCommandException("Invalid number of parameters [AlertReports].");
-        }
-
         long timestampStart;
         long timestampEnd;
 

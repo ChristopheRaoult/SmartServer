@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
  * See Command pattern: http://en.wikipedia.org/wiki/Command_pattern
  * To be implemented in order to create new command (executed when a request is received).
  */
+@CommandContract
 abstract class ClientCommand
 {
     static final String TRUE = "true";

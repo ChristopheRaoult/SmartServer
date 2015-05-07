@@ -21,8 +21,6 @@ import org.powermock.reflect.Whitebox;
 
 import java.util.Date;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.powermock.api.mockito.PowerMockito.*;
 
@@ -68,17 +66,6 @@ public class CmdLastInventoryTest
         _daoInventory = null;
         _inventory1 = null;
         _inventory2 = null;
-    }
-
-    @Test
-    public void testExecuteNullDevice() throws Exception
-    {
-        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(false);
-
-        _command.execute(_ctx, null);
-
-        verifyStatic(never());
-        SmartServer.sendMessage(eq(_ctx), eq(RequestCode.LAST_INVENTORY), anyString());
     }
 
     @Test

@@ -13,13 +13,11 @@ public class CmdProbeSettings extends ClientCommand
     /**
      * Send Probe settings for the current device.
      *
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
         SmartServer.sendMessage(ctx, RequestCode.PROBE_SETTINGS,
                 String.valueOf(ConfManager.getDevTemperatureDelay()),

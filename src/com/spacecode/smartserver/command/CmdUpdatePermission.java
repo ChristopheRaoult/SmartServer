@@ -15,32 +15,18 @@ import java.util.logging.Level;
 /**
  * UpdatePermission command.
  */
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true)
 public class CmdUpdatePermission extends ClientCommand
 {
     /**
      * Request to update an user's permission type to this device. Return true if operation succeeded, false otherwise.
-     * 
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *                                  
-     * @throws ClientCommandException   If number of parameters is invalid.
+     *
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Username, GrantType.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: username and new Grant Type (permission on device).
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [UpdatePermission].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_PERMISSION, FALSE);
-            return;
-        }
-
         String username = parameters[0];
         String newPermission = parameters[1];
         GrantType grantType;

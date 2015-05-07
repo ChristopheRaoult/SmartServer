@@ -14,6 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * Provide device's last inventory (serialized).
  */
+@CommandContract(deviceRequired = true, responseWhenInvalid = "")
 public class CmdLastInventory extends ClientCommand
 {
     private Inventory _lastInventory = null;
@@ -21,19 +22,12 @@ public class CmdLastInventory extends ClientCommand
     /**
      * Serialize device's last inventory and send it to current context.
      *
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        if(!DeviceHandler.isAvailable())
-        {
-            return;
-        }
-
         // no inventory in cache, try to get the last inventory from Database
         if(_lastInventory == null)
         {

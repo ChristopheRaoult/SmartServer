@@ -20,27 +20,18 @@ import java.util.regex.Pattern;
 class ScAdmin
 {
     /** Command BrSerial */
+    @CommandContract(paramCount = 1, strictCount = true)
     static class CmdBrSerial extends ClientCommand
     {
         /**
          * Request to get the serial port name of the Badge reader, master or slave, according to the given parameter.
-         * 
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *                                  
-         * @throws ClientCommandException
+         *
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Master (true) or Slave (false) reader.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 1 parameter: true (master reader) or false (slave reader).
-            if(parameters.length != 1)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.BR_SERIAL);
-                throw new ClientCommandException("Invalid number of parameters [BrSerial].");
-            }
-
-            //SmartLogger.getLogger().info(parameters[0]);
             boolean isMaster = Boolean.parseBoolean(parameters[0]);
             String serialPortName = isMaster ? ConfManager.getDevBrMaster() : ConfManager.getDevBrSlave();
 
@@ -49,31 +40,22 @@ class ScAdmin
     }
 
     /** Command FlashFirmware */
+    @CommandContract(paramCount = 1, strictCount = true, deviceRequired = true)
     static class CmdFlashFirmware extends ClientCommand
     {
         /**
          * Start a Firmware Flashing operation with the given firmware (provided as String).
          * Send "True" if the operation did started. False otherwise. The progress of the operation is given by events.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException   Invalid number of parameters received.
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Full firmware (in one string).
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(parameters.length != 1)
+            if(DeviceHandler.getDevice().getStatus() == DeviceStatus.FLASHING_FIRMWARE)
             {
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [FlashFirmware].");
-            }
-
-            if( !DeviceHandler.isAvailable() || 
-                DeviceHandler.getDevice().getStatus() == DeviceStatus.FLASHING_FIRMWARE)
-            {
-                SmartLogger.getLogger().warning("Flashing Firmware - Failure: Device not available");
-                SmartServer.sendAllClients(ClientCommandRegister.AppCode.FLASH_FIRMWARE, FALSE);
                 return;
             }
 
@@ -96,7 +78,7 @@ class ScAdmin
          * @throws ClientCommandException   Invalid number of parameters received.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
             // get the os name
             String osName = System.getProperty("os.name");
@@ -157,26 +139,18 @@ class ScAdmin
     }
 
     /** Command FprSerial */
+    @CommandContract(paramCount = 1, strictCount = true)
     static class CmdFprSerial extends ClientCommand
     {
         /**
          * Request to get the serial number of the Fingerprint reader, master or slave, according to the given parameter.
-         * 
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *                                  
-         * @throws ClientCommandException
+         *
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Master (true) or Slave (false) reader.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 1 parameter: true (master reader) or false (slave reader).
-            if(parameters.length != 1)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.FPR_SERIAL);
-                throw new ClientCommandException("Invalid number of parameters [FprSerial].");
-            }
-
             boolean isMaster = Boolean.parseBoolean(parameters[0]);
             String serialPortNumber = isMaster ? ConfManager.getDevFprMaster() : ConfManager.getDevFprSlave();
 
@@ -190,13 +164,11 @@ class ScAdmin
         /**
          * Send Network settings for the current device.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    String array containing parameters (if any) provided by the client.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
             // get the os name
             String osName = System.getProperty("os.name");
@@ -326,6 +298,7 @@ class ScAdmin
     }
 
     /** Command SignInAdmin */
+    @CommandContract(paramCount = 2, strictCount = true)
     static class CmdSignInAdmin extends ClientCommand
     {
         private static final String ADMIN_USERNAME = "testrfid";
@@ -334,21 +307,12 @@ class ScAdmin
         /**
          * Add the current ChannelHandlerContext to the list of authenticated (administrator) contexts.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException   Invalid number of parameters received.
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Username, Password.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 2 parameters: username, password
-            if (parameters.length != 2)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SIGN_IN_ADMIN, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SignInAdmin].");
-            }
-
             String username = parameters[0];
             String password = parameters[1];
 
@@ -373,6 +337,7 @@ class ScAdmin
      * Forwarding is made with "socat". From port ttyGS0 (g_serial emulated port) to ttyUSB0 (FTDI_IO USB to Serial port).
      * If the command is sent again, then stop the port forwarding and wake the server up.
      */
+    @CommandContract(paramCount = 1, strictCount = true, noResponseWhenInvalid = true)
     static class CmdSerialBridge extends ClientCommand
     {
         private static Process _portForwardingProcess = null;
@@ -381,18 +346,11 @@ class ScAdmin
          * According to parameter ("ON"/"OFF"), enable or disable Serial Port forwarding ("Serial Bridge").
          *
          * @param ctx           Channel between SmartServer and the client.
-         * @param parameters    String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param parameters    "ON" or "OFF".
          */
         @Override
-        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(parameters.length == 0)
-            {
-                return;
-            }
-
             if(!"ON".equals(parameters[0]) && !"OFF".equals(parameters[0]))
             {
                 return;
@@ -459,27 +417,19 @@ class ScAdmin
     }
 
     /** Command SetBrSerial */
+    @CommandContract(paramCount = 2, strictCount = true)
     static class CmdSetBrSerial extends ClientCommand
     {
         /**
          * Request to set/update the serial port name of the desired badge reader.
          * Return true (if operation succeeded) or false (if failure).
          *
-         * @param ctx        Channel between SmartServer and the client.
-         * @param parameters String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException Invalid number of parameters received.
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Serial number and isMasterReader.
          */
         @Override
-        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 2 parameters: serial and isMaster (true/false)
-            if (parameters.length != 2)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_BR_SERIAL, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SetBrSerial].");
-            }
-
             String serial = parameters[0] == null ? "" : parameters[0].trim();
             boolean isMaster = Boolean.parseBoolean(parameters[1]);
             boolean result = isMaster ? ConfManager.setDevBrMaster(serial) : ConfManager.setDevBrSlave(serial);
@@ -489,27 +439,19 @@ class ScAdmin
     }
 
     /** Command SetFprSerial */
+    @CommandContract(paramCount = 2, strictCount = true)
     static class CmdSetFprSerial extends ClientCommand
     {
         /**
          * Request to set/update the serial number of the desired fingerprint reader.
          * Return true (if operation succeeded) or false (if failure).
          *
-         * @param ctx        Channel between SmartServer and the client.
-         * @param parameters String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException Invalid number of parameters received.
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Serial number and isMasterReader.
          */
         @Override
-        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 2 parameters: serial and isMaster (true/false)
-            if (parameters.length != 2)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SET_FPR_SERIAL, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SetFprSerial].");
-            }
-
             String serial = parameters[0] == null ? "" : parameters[0].trim();
             boolean isMaster = Boolean.parseBoolean(parameters[1]);
             boolean result = isMaster ? ConfManager.setDevFprMaster(serial) : ConfManager.setDevFprSlave(serial);
@@ -519,6 +461,7 @@ class ScAdmin
     }
     
     /** Command SetNetworkSettings */
+    @CommandContract(paramCount = 1)
     static class CmdSetNetworkSettings extends ClientCommand
     {
         private static final String VALID_IPV4_REGEX = 
@@ -529,7 +472,7 @@ class ScAdmin
          * Request to set/update the network settings (IP address, subnet mask, gateway) of the current device.
          *
          * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
+         * @param parameters                (DHCP) || (Device IP, Subnet Mask. Optional 3rd: Gateway address)
          *
          * @throws ClientCommandException   Invalid number of parameters received.
          */
@@ -698,12 +641,10 @@ class ScAdmin
          * Launch the auto-update script (update.py) with the python runtime.
          *
          * @param ctx           Channel between SmartServer and the client.
-         * @param parameters    String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param parameters    None expected.
          */
         @Override
-        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
         {
             // do not execute anything if the process exists (= not terminated)
             if(_pythonProcess != null)
@@ -730,6 +671,7 @@ class ScAdmin
     }
 
     /** Command UpdateReport */
+    @CommandContract(paramCount = 1, strictCount = true, noResponseWhenInvalid = true)
     static class CmdUpdateReport extends ClientCommand
     {
         // if true, the cmd sends a Progress Report, otherwise, it sends a "start" notification
@@ -748,18 +690,11 @@ class ScAdmin
          * when the update has just started.
          *
          * @param ctx           Channel between SmartServer and the client.
-         * @param parameters    String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param parameters    0 for update successful, -1 for failure. Otherwise, the patch number currently updated.
          */
         @Override
-        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(parameters.length == 0 || parameters[0] == null)
-            {
-                return;
-            }
-
             String parameter = parameters[0].trim();
 
             try

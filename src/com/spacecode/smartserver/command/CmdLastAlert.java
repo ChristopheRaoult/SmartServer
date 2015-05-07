@@ -8,32 +8,24 @@ import com.spacecode.smartserver.database.dao.DaoAlertTemperature;
 import com.spacecode.smartserver.database.entity.AlertEntity;
 import com.spacecode.smartserver.database.entity.AlertHistoryEntity;
 import com.spacecode.smartserver.database.entity.AlertTemperatureEntity;
-import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
  * LastAlert command.
  * Provide device's last alert raised (serialized).
  */
+@CommandContract(deviceRequired = true, responseWhenInvalid = "")
 public class CmdLastAlert extends ClientCommand
 {
     /**
      * Serialize the last alert raised and send it to current context.
      *
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.LAST_ALERT, "");
-            return;
-        }
-
         DaoAlertHistory daoAlertHistory = (DaoAlertHistory)
                 DbManager.getDao(AlertHistoryEntity.class);
         DaoAlertTemperature daoAlertTemp = (DaoAlertTemperature)

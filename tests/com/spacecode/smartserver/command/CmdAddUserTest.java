@@ -26,8 +26,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.Collection;
 import java.util.Iterator;
 
-import static org.junit.Assert.fail;
-
 /**
  * JUnit "CmdAddUser" testing class.
  */
@@ -75,21 +73,6 @@ public class CmdAddUserTest
         _usersService = null;
         _daoUser = null;
         _serializedUser = null;
-    }
-
-    @Test
-    public void testExecuteInvalidNumberOfParams() throws Exception
-    {
-        try
-        {
-            _command.execute(_ctx, new String[0]);
-            fail("ClientCommandException not thrown.");
-        } catch(ClientCommandException cce)
-        {
-        }
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.ADD_USER, ClientCommand.FALSE);
     }
 
     @Test

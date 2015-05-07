@@ -13,24 +13,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveAlert command.
  */
+@CommandContract(paramCount = 1, strictCount = true)
 public class CmdRemoveAlert extends ClientCommand
 {
     /**
      * Request to remove an Alert from database. Send (string) "true" if succeed, "false" otherwise.
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * 
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Serialized Alert.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 1 parameter: serialized alert to be removed
-        if(parameters.length != 1)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_ALERT, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [CmdRemoveAlert].");
-        }
-
         Alert alert = Alert.deserialize(parameters[0]);
 
         if(alert == null)

@@ -20,7 +20,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 
 /**
@@ -54,21 +53,6 @@ public class CmdAddAlertTest
         _ctx = null;
         _command = null;
         _daoAlert = null;
-    }
-
-    @Test
-    public void testExecuteInvalidNumberOfParams() throws Exception
-    {
-        try
-        {
-            _command.execute(_ctx, new String[0]);
-            fail("ClientCommandException not thrown.");
-        } catch(ClientCommandException cce)
-        {
-        }
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.ADD_ALERT, ClientCommand.FALSE);
     }
 
     @Test

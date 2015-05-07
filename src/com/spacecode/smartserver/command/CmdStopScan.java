@@ -6,22 +6,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * StopScan command.
  */
+@CommandContract(deviceRequired = true, noResponseWhenInvalid = true)
 public class CmdStopScan extends ClientCommand
 {
     /**
      * Request the device to stop its scan. No data is sent/returned. Device events are handled by events handler.
+     * 
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        if(!DeviceHandler.isAvailable())
-        {
-            return;
-        }
-
         DeviceHandler.getDevice().stopScan();
     }
 }

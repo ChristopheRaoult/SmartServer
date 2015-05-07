@@ -20,8 +20,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.fail;
-
 /**
  * JUnit "CmdRemoveUser" testing class.
  */
@@ -65,32 +63,6 @@ public class CmdRemoveUserTest
         _device = null;
         _usersService = null;
         _daoUser = null;
-    }
-
-    @Test
-    public void testExecuteInvalidNumberOfParams() throws Exception
-    {
-        try
-        {
-            _command.execute(_ctx, new String[0]);
-            fail("ClientCommandException not thrown.");
-        } catch(ClientCommandException cce)
-        {
-        }
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.REMOVE_USER, ClientCommand.FALSE);
-    }
-
-    @Test
-    public void testExecuteDeviceNull() throws Exception
-    {
-        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
-
-        _command.execute(_ctx, new String[] { _username });
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.REMOVE_USER, ClientCommand.FALSE);
     }
 
     @Test

@@ -13,27 +13,19 @@ import java.util.logging.Level;
 /**
  * Command SetDbSettings.
  */
+@CommandContract(paramCount = 6, strictCount = true)
 public class CmdSetDbSettings extends ClientCommand
 {
     /**
      * Request to set/update the DB settings for the current device.
      * Return true (if operation succeeded) or false (if failure).
      *
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException   Invalid number of parameters received.
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Host, Port, DB Name, Username, Password, DBMS.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 6 parameters: host, port, db name, username, password, dbms.
-        if(parameters.length != 6)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.SET_DB_SETTINGS, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [SetDbSettings].");
-        }
-
         try
         {
             String host = parameters[0];

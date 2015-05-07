@@ -21,24 +21,16 @@ import java.util.logging.Level;
  *
  * Provide authentications recorded during a certain period, if any.
  */
+@CommandContract(paramCount = 2, strictCount = true, responseWhenInvalid = "")
 public class CmdAuthenticationsList extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    "Start" and "End" dates (period).
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: start date, end date.
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.AUTHENTICATIONS_LIST);
-            throw new ClientCommandException("Invalid number of parameters [AuthenticationList].");
-        }
-
         long timestampStart;
         long timestampEnd;
 

@@ -11,8 +11,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 /**
@@ -39,16 +37,6 @@ public class CmdUpdateReportTest
     {
         _ctx = null;
         _command = null;
-    }
-
-    @Test
-    public void testExecuteInvalidParameter() throws Exception
-    {
-        _command.execute(_ctx, new String[] { "" });
-        _command.execute(_ctx, new String[0]);
-        _command.execute(_ctx, new String[] { "A" });
-        verifyStatic(never());
-        SmartServer.sendAllClients(anyString(), anyString());
     }
 
     @Test

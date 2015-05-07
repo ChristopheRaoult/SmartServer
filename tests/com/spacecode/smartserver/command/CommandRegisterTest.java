@@ -1,6 +1,8 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Before;
@@ -23,7 +25,7 @@ import static org.mockito.Mockito.*;
  * JUnit "ClientCommandRegister" testing class.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(ClientCommandRegister.class)
+@PrepareForTest({ ClientCommandRegister.class, SmartLogger.class, SmartServer.class})
 public class CommandRegisterTest
 {
     private ClientCommandRegister _commandRegister;
@@ -97,6 +99,12 @@ public class CommandRegisterTest
     @Test
     public void testExecuteAntiFloodNotPassing() throws ClientCommandException, InterruptedException
     {
+        // Required as SmartLogger is used in this test
+        PowerMockito.mockStatic(SmartServer.class);
+        PowerMockito.mockStatic(SmartLogger.class);
+        /*SmartLogger logger = PowerMockito.mock(SmartLogger.class);
+        doReturn(logger).when(SmartLogger.getLogger());*/
+        
         CmdAddAlert cmd = PowerMockito.mock(CmdAddAlert.class);
         _commands.put(RequestCode.ADD_ALERT, cmd);
 
@@ -110,26 +118,27 @@ public class CommandRegisterTest
         verify(cmd).execute(_ctx, new String[]{"fake_serialized_alert"});
 
         // with more than 1 parameter
-        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
-        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "c"});
-        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a", "b", "z"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a" });
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a" });
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "a" });
 
         // must be called once, not twice
-        verify(cmd).execute(_ctx, new String[]{"a", "b", "c"});
+        verify(cmd).execute(_ctx, new String[]{"a"});
         // called only once: should be called once
-        verify(cmd).execute(_ctx, new String[]{"a", "b", "z"});        
+        verify(cmd).execute(_ctx, new String[]{"a"});        
 
         // repeat the same request twice, but wait for the anti-flood delay before
-        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1", "2"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1"});
         Thread.sleep(ClientCommandRegister.DELAY_BETWEEN_EXEC);
-        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1", "2"});
-        verify(cmd, times(2)).execute(_ctx, new String[]{"1", "2"});
+        _commandRegister.execute(_ctx, new String[]{RequestCode.ADD_ALERT, "1"});
+        verify(cmd, times(2)).execute(_ctx, new String[]{"1"});
     }
 
     @Test
     public void testExecuteKnownRequestCodeWithParameters() throws ClientCommandException
     {
         ClientCommand command = PowerMockito.mock(ClientCommand.class);
+        
         String requestCode = "FakeRequest";
         String[] params = new String[] { requestCode, "param1", "param2" };
 
@@ -140,5 +149,20 @@ public class CommandRegisterTest
         _commandRegister.execute(_ctx, params);
         // verify the command has been executed
         verify(command).execute(_ctx, new String[] { "param1", "param2"});
+    }
+    
+    @Test
+    public void testExecuteAddUsertWithInvalidContract() throws ClientCommandException
+    {
+        CmdAddUser command = PowerMockito.mock(CmdAddUser.class);
+
+        String[] params = new String[] { RequestCode.ADD_USER, "param1", "param2" };
+
+        _commandRegister.addCommand(RequestCode.ADD_USER, command);
+        
+        // execute the command
+        _commandRegister.execute(_ctx, params);
+        // verify the command has been executed
+        verify(command, never()).execute(_ctx, new String[] { "param1", "param2"});
     }
 }

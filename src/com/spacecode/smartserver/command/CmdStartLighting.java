@@ -12,6 +12,7 @@ import java.util.Arrays;
 /**
  * StartLighting command.
  */
+@CommandContract(paramCount = 1, deviceRequired = true)
 public class CmdStartLighting extends ClientCommand
 {
     /**
@@ -19,25 +20,11 @@ public class CmdStartLighting extends ClientCommand
      * Send to the context, as a result, the list of tags UID's that could not be lighted.
      *
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    The list of tags to be lighted (at least 1, otherwise the contract is not respected).
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // if there is no parameter, then there is no tags to light
-        if(parameters.length == 0)
-        {
-            throw new ClientCommandException("Invalid number of parameters [StartLighting].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING, FALSE);
-            return;
-        }
-
         if(DeviceHandler.getDevice().getStatus() != DeviceStatus.READY)
         {
             SmartServer.sendMessage(ctx, RequestCode.START_LIGHTING, FALSE);

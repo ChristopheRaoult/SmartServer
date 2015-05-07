@@ -17,32 +17,18 @@ import java.util.logging.Level;
 /**
  * EnrollFinger command.
  */
+@CommandContract(paramCount = 3, deviceRequired = true)
 public class CmdEnrollFinger extends ClientCommand
 {
     /**
      * Try to start an enrollment process for a given user and finger index. Sends back "true" if succeed, "false" otherwise.
-     * 
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *                                  
-     * @throws ClientCommandException
+     *
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Username, Finger Index, "is Master Reader". Optional 4th: Finger Template.
      */
     @Override
-    public synchronized void execute(final ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(final ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 3 parameters: username, finger index, "is Master reader?", OPTIONAL 4th: fingerprint template
-        if(parameters.length < 3)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [EnrollFinger].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.ENROLL_FINGER, FALSE);
-            return;
-        }
-
         final String username = parameters[0];
         final FingerIndex fingerIndex;
         final boolean masterReader = Boolean.parseBoolean(parameters[2]);

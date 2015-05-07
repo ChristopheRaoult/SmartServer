@@ -13,6 +13,7 @@ import java.util.logging.Level;
 /**
  * Command SetProbeSettings.
  */
+@CommandContract(paramCount = 3, strictCount = true, deviceRequired = true)
 public class CmdSetProbeSettings extends ClientCommand
 {
     /**
@@ -20,26 +21,11 @@ public class CmdSetProbeSettings extends ClientCommand
      * Return true (if operation succeeded) or false (if failure).
      *
      * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException   Invalid number of parameters received.
+     * @param parameters                Delay, Delta, Enabled.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 3 parameters: delay, delta, state (enabled/disabled).
-        if(parameters.length != 3)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.SET_PROBE_SETTINGS, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [SetProbeSettings].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.SET_PROBE_SETTINGS, FALSE);
-            return;
-        }
-
         try
         {
             int delay = Integer.parseInt(parameters[0]);

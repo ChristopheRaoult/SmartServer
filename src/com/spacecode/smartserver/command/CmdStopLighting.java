@@ -8,25 +8,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * StopLighting command.
  */
+@CommandContract(deviceRequired = true)
 public class CmdStopLighting extends ClientCommand
 {
     /**
      * Send StopLighting command to the current Device. True or false returned to client.
      *
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, FALSE);
-            return;
-        }
-
         boolean result = DeviceHandler.getDevice().stopLightingTagsLed();
         SmartServer.sendMessage(ctx, RequestCode.STOP_LIGHTING, result ? TRUE : FALSE);
     }

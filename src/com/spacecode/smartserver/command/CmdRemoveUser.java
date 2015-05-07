@@ -14,32 +14,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveUser command.
  */
+@CommandContract(paramCount = 1, strictCount = true, deviceRequired = true)
 public class CmdRemoveUser extends ClientCommand
 {
     /**
      * Request to remove a User from granted users list. Send (string) "true" if succeed, "false" otherwise.
-     * 
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *                                  
-     * @throws ClientCommandException
+     *
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Username.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 1 parameter: username of the user to be removed
-        if(parameters.length != 1)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [RemoveUser].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_USER, FALSE);
-            return;
-        }
-
         String username = parameters[0];
         
         User user = DeviceHandler.getDevice().getUsersService().getUserByName(username);

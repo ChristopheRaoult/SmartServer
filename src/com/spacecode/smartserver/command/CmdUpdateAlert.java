@@ -13,24 +13,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * UpdateAlert command.
  */
+@CommandContract(paramCount = 1, strictCount = true)
 public class CmdUpdateAlert extends ClientCommand
 {
     /**
      * Request to update an alert (in database). Return true (if operation succeeded) or false (if failure).
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * 
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Serialized Alert.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 1 parameters: serialized Alert.
-        if(parameters.length != 1)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_ALERT, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [UpdateAlert].");
-        }
-
         Alert alert = Alert.deserialize(parameters[0]);
 
         if(alert == null)

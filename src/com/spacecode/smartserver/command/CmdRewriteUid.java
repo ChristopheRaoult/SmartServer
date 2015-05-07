@@ -8,31 +8,20 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * RewriteUid command.
+ * "ERROR" (RewriteUidResult.ERROR.name()) is sent back if the contract is not respected.
  */
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseWhenInvalid = "ERROR")
 public class CmdRewriteUid extends ClientCommand
 {
     /**
      * Get the two parameters provided by Client (old Uid, new Uid), try to rewrite it and send the RewriteUIDResult code to the context.
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * 
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    UID of the Tag to be rewritten, New UID.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for two parameters: old UID and new UID of the tag to be rewritten
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, RewriteUidResult.ERROR.name());
-            throw new ClientCommandException("Invalid number of parameters [RewriteUid].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, RewriteUidResult.ERROR.name());
-            return;
-        }
-
         RewriteUidResult result = DeviceHandler.getDevice().rewriteUid(parameters[0], parameters[1]);
         SmartServer.sendMessage(ctx, RequestCode.REWRITE_UID, result.name());
     }

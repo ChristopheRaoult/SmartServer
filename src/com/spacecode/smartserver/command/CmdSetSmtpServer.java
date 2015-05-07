@@ -14,27 +14,19 @@ import java.util.logging.Level;
 /**
  * SetSmtpServer command.
  */
+@CommandContract(paramCount = 5, strictCount = true)
 public class CmdSetSmtpServer extends ClientCommand
 {
     /**
      * Request to set/update SMTP server configuration for current device.
      * Return true (if operation succeeded) or false (if failure).
      *
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException   Invalid number of parameters received.
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Server Address, TCP Port, Username, Password, SSL enabled.
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 5 parameters: server address, tcp port, username,  password, sslEnabled boolean.
-        if(parameters.length != 5)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.SET_SMTP_SERVER, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [SetSmtpServer].");
-        }
-
         String address = parameters[0];
         int port;
         String username = parameters[2], password = parameters[3];

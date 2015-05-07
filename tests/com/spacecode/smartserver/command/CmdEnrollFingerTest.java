@@ -24,7 +24,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 
@@ -78,32 +79,6 @@ public class CmdEnrollFingerTest
         _device = null;
         _usersService = null;
         _daoUser = null;
-    }
-
-    @Test
-    public void testExecuteInvalidNumberOfParams() throws Exception
-    {
-        try
-        {
-            _command.execute(_ctx, new String[2]);
-            fail("ClientCommandException not thrown.");
-        } catch(ClientCommandException cce)
-        {
-        }
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.ENROLL_FINGER, ClientCommand.FALSE);
-    }
-
-    @Test
-    public void testExecuteDeviceNull() throws Exception
-    {
-        PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(false);
-
-        _command.execute(_ctx, new String[] { _username, String.valueOf(FingerIndex.LEFT_INDEX.getIndex()), "true" });
-
-        PowerMockito.verifyStatic();
-        SmartServer.sendMessage(_ctx, RequestCode.ENROLL_FINGER, ClientCommand.FALSE);
     }
     
     @Test

@@ -1,8 +1,12 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.network.communication.RequestCode;
+import com.spacecode.smartserver.SmartServer;
+import com.spacecode.smartserver.helper.DeviceHandler;
+import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.lang.annotation.Annotation;
 import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -176,8 +180,79 @@ public final class ClientCommandRegister extends ClientCommand
 
         if(executeCommand)
         {
-            cmd.execute(ctx, Arrays.copyOfRange(parameters, 1, parameters.length));
+            // remove the RequestCode and keep the other packets: parameters for the command
+            executeOrFail(cmd, ctx, requestCode, Arrays.copyOfRange(parameters, 1, parameters.length));
         }
+    }
+
+
+    /**
+     * Check the command CommandContract: 
+     * If invalid, the {@link CommandContract#responseWhenInvalid()} will be sent back. Otherwise, cmd is executed.
+     *
+     * @param cmd           Command to be executed.
+     * @param ctx           Channel of the client used to send the request.
+     * @param requestCode   RequestCode of the request.
+     * @param cmdParams     Parameters given with the request.
+     */
+    public void executeOrFail(ClientCommand cmd, ChannelHandlerContext ctx, String requestCode, String[] cmdParams) 
+            throws ClientCommandException
+    {
+        for(Annotation annotation : cmd.getClass().getAnnotations())
+        {
+            if(!(annotation instanceof CommandContract))
+            {
+                continue;
+            }
+
+            CommandContract contract = (CommandContract) annotation;
+
+            boolean logException = true;
+
+            try
+            {
+                // either the number of param is "enough" (not-strict mode), either it needs to be exactly the same 
+                if (cmdParams.length < contract.paramCount() ||
+                        (contract.strictCount() && cmdParams.length != contract.paramCount()))
+                {
+                    throw new ClientCommandException("Invalid number of parameters [" + requestCode + "]");
+                }
+
+                if(contract.deviceRequired() && !DeviceHandler.isAvailable())
+                {
+                    logException = false;
+                    throw new ClientCommandException("Device not available [" + requestCode + "]");
+                }
+
+                if (contract.adminRequired() && !SmartServer.isAdministrator(ctx.channel().remoteAddress()))
+                {
+                    logException = false;
+                    throw new ClientCommandException("User is not an Administrator [" + requestCode + "]");
+                }
+            } catch(ClientCommandException cce)
+            {
+                if(logException)
+                {
+                    SmartLogger.getLogger().severe(cce.getMessage());
+                }
+
+                if(!contract.noResponseWhenInvalid())
+                {
+                    if(contract.responseSentToAllWhenInvalid())
+                    {
+                        SmartServer.sendAllClients(contract.responseWhenInvalid());
+                    }
+                    
+                    else
+                    {
+                        SmartServer.sendMessage(ctx, requestCode, contract.responseWhenInvalid());
+                    }
+                }
+                return;
+            }
+        }
+
+        cmd.execute(ctx, cmdParams);
     }
 
     /** Internal RequestCode, used by the SmartApp or the embedded shell scripts. */

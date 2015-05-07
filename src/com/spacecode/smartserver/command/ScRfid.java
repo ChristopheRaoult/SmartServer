@@ -15,31 +15,18 @@ class ScRfid
     /**
      * [ADMIN] Command AxisCount (number of axis known/used by the device).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "-1")
     static class CmdRfidAxisCount extends ClientCommand
     {
         /**
          * Send the device's board's number of axis in use.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_AXIS_COUNT, "-1");
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_AXIS_COUNT, "-1");
-                return;
-            }
-
             Object queryAxisCount = DeviceHandler.getDevice().adminQuery("axis_count");
 
             if(!(queryAxisCount instanceof Byte))
@@ -58,31 +45,18 @@ class ScRfid
     /**
      * [ADMIN] Command Calibrate (get and send 256 values of the "full image" of the carrier signal).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
     static class CmdRfidCalibrate extends ClientCommand
     {
         /**
          * Send the device's board's "full image" (256 values) of the carrier signal.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_CALIBRATE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_CALIBRATE);
-                return;
-            }
-
             Object queryCalibrationValues = DeviceHandler.getDevice().adminQuery("calibration");
 
             if(!(queryCalibrationValues instanceof byte[]))
@@ -106,31 +80,18 @@ class ScRfid
     /**
      * [ADMIN] Command DecFrequency (allow decreasing the period of the carrier signal).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true)
     static class CmdRfidDecFrequency extends ClientCommand
     {
         /**
          * Send true if the correlation threshold was updated, false otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DEC_FREQUENCY, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DEC_FREQUENCY, FALSE);
-                return;
-            }
-
             Object queryFrequency = DeviceHandler.getDevice().adminQuery("decrease_frequency");
 
             if(!(queryFrequency instanceof Boolean))
@@ -147,31 +108,18 @@ class ScRfid
     /**
      * [ADMIN] Command DutyCycle ("bridge type" and duty cycle values, in the RFID board memory).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
     static class CmdRfidDutyCycle extends ClientCommand
     {
         /**
          * Send the device's board's duty cycle "bridge type" (half/full) and values (for both types).
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DUTY_CYCLE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_DUTY_CYCLE);
-                return;
-            }
-
             Object queryDcu = DeviceHandler.getDevice().adminQuery("duty_cycle");
 
             if(!(queryDcu instanceof short[]))
@@ -197,31 +145,18 @@ class ScRfid
     /**
      * [ADMIN] Command Frequency (Carrier Period and Antenna Voltage).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
     static class CmdRfidFrequency extends ClientCommand
     {
         /**
          * Send the device's board's Carrier Period and Antenna Voltage
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_FREQUENCY);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_FREQUENCY);
-                return;
-            }
-
             Object queryCarrier = DeviceHandler.getDevice().adminQuery("carrier_period");
 
             if(!(queryCarrier instanceof int[]))
@@ -247,31 +182,18 @@ class ScRfid
     /**
      * [ADMIN] Command IncFrequency (allow increasing the period of the carrier signal).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true)
     static class CmdRfidIncFrequency extends ClientCommand
     {
         /**
          * Send true if the correlation threshold was updated, false otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_INC_FREQUENCY, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_INC_FREQUENCY, FALSE);
-                return;
-            }
-
             Object queryFrequency = DeviceHandler.getDevice().adminQuery("increase_frequency");
 
             if(!(queryFrequency instanceof Boolean))
@@ -288,31 +210,18 @@ class ScRfid
     /**
      * [ADMIN] Command SaveDutyCycle ("bridge type" and duty cycle values, in the RFID board memory).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true)
     static class CmdRfidSaveDutyCycle extends ClientCommand
     {
         /**
          * Send TRUE if the current settings could be applied, FALSE otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
         public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SAVE_DUTY_CYCLE, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SAVE_DUTY_CYCLE, FALSE);
-                return;
-            }
-
             Object querySaveDcu = DeviceHandler.getDevice().adminQuery("save_duty_cycle");
 
             if(!(querySaveDcu instanceof Boolean))
@@ -327,38 +236,18 @@ class ScRfid
     }
 
     /** [ADMIN] Command SelectAxis (ask the RFID board to Switch Axis) */
+    @CommandContract(paramCount = 1, strictCount = true, deviceRequired = true, adminRequired = true)
     static class CmdRfidSelectAxis extends ClientCommand
     {
         /**
          * Send true if the "Switch Axis" order was sent to the board, false otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Selected Axis.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 1 parameter: the axis to be selected
-            if(parameters.length != 1)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SELECT_AXIS, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SelectAxis].");
-            }
-
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SELECT_AXIS, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SELECT_AXIS, FALSE);
-                return;
-            }
-
             byte axis;
 
             try
@@ -392,38 +281,18 @@ class ScRfid
     /**
      * [ADMIN] Command SetDoorState (Allows opening/closing the master or the slave door(s)).
      */
+    @CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, adminRequired = true)
     static class CmdRfidSetDoorState extends ClientCommand
     {
         /**
          * Send true if the order was successfully sent to the RFID board. False otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Master (true) or Slave (false) door, and State (true: open, false: closed).
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 2 parameters: the door type (true: master, false: slave) and the state (true: open)
-            if(parameters.length != 2)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DOOR_STATE, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SetDoorState].");
-            }
-
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DOOR_STATE, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DOOR_STATE, FALSE);
-                return;
-            }
-
             boolean isMaster = Boolean.parseBoolean(parameters[0]);
             boolean state = Boolean.parseBoolean(parameters[1]);
 
@@ -443,38 +312,18 @@ class ScRfid
     /**
      * [ADMIN] Command SetDutyCycle ("bridge type" and duty cycle values, in the RFID board memory).
      */
+    @CommandContract(paramCount = 3, strictCount = true, deviceRequired = true, adminRequired = true)
     static class CmdRfidSetDutyCycle extends ClientCommand
     {
         /**
          * Send true if the duty cycle was updated (values and bridge type), false otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Bridge type (full / half), and a numeric value for both bridge types.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 3 parameters: the bridge type (full / half), and a numeric value for both types.
-            if(parameters.length != 3)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DUTY_CYCLE, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SetDutyCycle].");
-            }
-
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DUTY_CYCLE, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_DUTY_CYCLE, FALSE);
-                return;
-            }
-
             short bridgeType, dcuFull, dcuHalf;
 
             try
@@ -519,38 +368,18 @@ class ScRfid
     /**
      * [ADMIN] Command SetThreshold (correlation threshold of the RFID board).
      */
+    @CommandContract(paramCount = 1, strictCount = true, deviceRequired = true, adminRequired = true)
     static class CmdRfidSetThreshold extends ClientCommand
     {
         /**
          * Send true if the correlation threshold was updated, false otherwise.
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    New Threshold.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 1 parameter: the new threshold
-            if(parameters.length != 1)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_THRESHOLD, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [SetThreshold].");
-            }
-
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_THRESHOLD, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_SET_THRESHOLD, FALSE);
-                return;
-            }
-
             short threshold;
 
             try
@@ -585,31 +414,18 @@ class ScRfid
     /**
      * [ADMIN] Command Threshold (correlation threshold of the RFID board).
      */
+    @CommandContract(deviceRequired = true, adminRequired = true)
     static class CmdRfidThreshold extends ClientCommand
     {
         /**
          * Send the device's board's correlation threshold (or "-1" in case of error).
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    None expected.
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD, "-1");
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD, "-1");
-                return;
-            }
-
             Object queryThreshold = DeviceHandler.getDevice().adminQuery("threshold");
 
             if(!(queryThreshold instanceof Integer) && !(queryThreshold instanceof Short))
@@ -627,6 +443,7 @@ class ScRfid
     /**
      * [ADMIN] Command ThresholdSampling (correlation measures of the RFID board).
      */
+    @CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, adminRequired = true)
     static class CmdRfidThresholdSampling extends ClientCommand
     {
         private static short[] _presentSamples = new short[256];
@@ -635,33 +452,12 @@ class ScRfid
         /**
          * Send the device's board's correlation threshold (or "-1" in case of error).
          *
-         * @param ctx                       Channel between SmartServer and the client.
-         * @param parameters                String array containing parameters (if any) provided by the client.
-         *
-         * @throws ClientCommandException
+         * @param ctx           Channel between SmartServer and the client.
+         * @param parameters    Samples count, Mode (cycling or refreshing).
          */
         @Override
-        public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+        public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
-            // waiting for 2 parameter: the samples count and the mode (cycling or refreshing)
-            if(parameters.length != 2)
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD_SAMPLING, FALSE);
-                throw new ClientCommandException("Invalid number of parameters [ThresholdSampling].");
-            }
-
-            if(!SmartServer.isAdministrator(ctx.channel().remoteAddress()))
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD_SAMPLING, FALSE);
-                return;
-            }
-
-            if(!DeviceHandler.isAvailable())
-            {
-                SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.RFID_THRESHOLD_SAMPLING, FALSE);
-                return;
-            }
-
             int samplesCount;
             boolean cycling = "true".equals(parameters[1]);
 

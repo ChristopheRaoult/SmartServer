@@ -11,25 +11,18 @@ import java.util.List;
 /**
  * Unregistered Users List command.
  */
+@CommandContract(deviceRequired = true, responseWhenInvalid = "")
 public class CmdUnregisteredUsers extends ClientCommand
 {
     /**
      * Request to get the unregistered users list. Send the names of unregistered Users as.
-     * 
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     *                                  
-     * @throws ClientCommandException
+     *
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    None expected.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.USERS_UNREGISTERED);
-            return;
-        }
-
         List<String> responsePackets = new ArrayList<>();
 
         // add the request code first

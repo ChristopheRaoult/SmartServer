@@ -5,7 +5,6 @@ import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
-import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -19,30 +18,16 @@ import java.util.logging.Level;
  *
  * Provide temperature measurements over a given period (start/end date provided), if any.
  */
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseWhenInvalid = "")
 public class CmdTemperatureList extends ClientCommand
 {
     /**
      * @param ctx           Channel between SmartServer and the client.
-     * @param parameters    String array containing parameters (if any) provided by the client.
-     *
-     * @throws ClientCommandException
+     * @param parameters    "Start" and "End" dates (period).
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: start date, end date.
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_LIST);
-            throw new ClientCommandException("Invalid number of parameters [TemperatureList].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.TEMPERATURE_LIST);
-            return;
-        }
-
         long timestampStart;
         long timestampEnd;
 

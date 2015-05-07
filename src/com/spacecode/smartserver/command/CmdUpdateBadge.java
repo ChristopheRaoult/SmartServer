@@ -13,30 +13,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * UpdateBadge command.
  */
+@CommandContract(paramCount = 1, deviceRequired = true)
 public class CmdUpdateBadge extends ClientCommand
 {
     /**
      * Request to update an user's badge number. Return true (if operation succeeded) or false (if failure).
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * 
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Username. Optional: badge number (if none is given, the badge is empty).
      */
     @Override
-    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public synchronized void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: username and badge number. Badge number is optional (none = empty badge number)
-        if(parameters.length < 1)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [UpdateBadge].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.UPDATE_BADGE, FALSE);
-            return;
-        }
-
         String username = parameters[0];
         String badgeNumber = parameters.length > 1 ? parameters[1] : "";
 

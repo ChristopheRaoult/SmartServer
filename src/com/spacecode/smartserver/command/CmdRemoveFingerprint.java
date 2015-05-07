@@ -13,30 +13,18 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * RemoveFingerprint command.
  */
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true)
 public class CmdRemoveFingerprint extends ClientCommand
 {
     /**
      * Request to add a new User to granted users list. Send (string) "true" if succeed, "false" otherwise.
-     * @param ctx                       Channel between SmartServer and the client.
-     * @param parameters                String array containing parameters (if any) provided by the client.
-     * @throws ClientCommandException
+     * 
+     * @param ctx           Channel between SmartServer and the client.
+     * @param parameters    Username, Finger Index.
      */
     @Override
-    public void execute(ChannelHandlerContext ctx, String[] parameters) throws ClientCommandException
+    public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
-        // waiting for 2 parameters: username and finger index
-        if(parameters.length != 2)
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
-            throw new ClientCommandException("Invalid number of parameters [RemoveFingerprint].");
-        }
-
-        if(!DeviceHandler.isAvailable())
-        {
-            SmartServer.sendMessage(ctx, RequestCode.REMOVE_FINGERPRINT, FALSE);
-            return;
-        }
-
         String username = parameters[0];
         FingerIndex fingerIndex;
 
