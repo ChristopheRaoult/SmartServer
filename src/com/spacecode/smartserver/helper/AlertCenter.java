@@ -2,7 +2,7 @@ package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.event.AccessControlEventHandler;
-import com.spacecode.sdk.device.event.DeviceEventHandler;
+import com.spacecode.sdk.device.event.BasicEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
@@ -175,7 +175,7 @@ public final class AlertCenter
     /**
      * Listener subscribing to appropriate Device events in order to raise alerts.
      */
-    private static class AlertEventHandler implements DeviceEventHandler,
+    private static class AlertEventHandler implements BasicEventHandler,
             DoorEventHandler,
             AccessControlEventHandler,
             TemperatureEventHandler

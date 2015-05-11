@@ -365,7 +365,7 @@ public final class DeviceHandler
     /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
-    static class SmartEventHandler implements DeviceEventHandler, ScanEventHandler, DoorEventHandler,
+    static class SmartEventHandler implements BasicEventHandler, ScanEventHandler, DoorEventHandler,
             AccessControlEventHandler, AccessModuleEventHandler, TemperatureEventHandler, LedEventHandler,
             MaintenanceEventHandler
     {

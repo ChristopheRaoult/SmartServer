@@ -1,7 +1,5 @@
 package com.spacecode.smartserver.helper;
 
-import com.spacecode.sdk.device.data.DeviceStatus;
-import com.spacecode.sdk.device.event.DeviceEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.smartserver.database.DbManager;
@@ -120,7 +118,7 @@ public class TemperatureCenter
         _lastMeasureTime = new Date();
     }
 
-    private static class TemperatureMeasureHandler implements DeviceEventHandler, TemperatureEventHandler
+    private static class TemperatureMeasureHandler implements TemperatureEventHandler
     {
         @Override
         public void temperatureMeasure(double value)
@@ -132,18 +130,6 @@ public class TemperatureCenter
             }
             
             recordNewMeasure(value);
-        }
-
-        @Override
-        public void deviceDisconnected()
-        {
-            // not needed
-        }
-
-        @Override
-        public void deviceStatusChanged(DeviceStatus status)
-        {
-            // not needed
         }
     }
 }
