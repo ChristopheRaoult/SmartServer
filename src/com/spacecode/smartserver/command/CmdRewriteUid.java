@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
  * RewriteUid command.
  * "ERROR" (RewriteUidResult.ERROR.name()) is sent back if the contract is not respected.
  */
-@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseWhenInvalid = "ERROR")
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseIfInvalid = "ERROR")
 public class CmdRewriteUid extends ClientCommand
 {
     /**

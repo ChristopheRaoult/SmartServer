@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * Provide device's last temperature (if any) or TemperatureProbe.ERROR_VALUE ("777").
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "777")
+@CommandContract(deviceRequired = true, responseIfInvalid = "777")
 public class CmdTemperatureCurrent extends ClientCommand
 {
     /**

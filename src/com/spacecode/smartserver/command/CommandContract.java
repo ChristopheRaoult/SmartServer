@@ -20,11 +20,11 @@ import java.lang.annotation.*;
     boolean adminRequired() default false;
     
     /** String to be sent back to the client when a clause of the contract is not respected */
-    String responseWhenInvalid() default ClientCommand.FALSE;
+    String responseIfInvalid() default ClientCommand.FALSE;
 
     /** If true, no response is sent back to the Client when the contract is invalid */
     boolean noResponseWhenInvalid() default false;
     
-    /** If true, the "responseWhenInvalid" is sent to ALL clients */
-    boolean responseSentToAllWhenInvalid() default false;
+    /** If true, the "responseIfInvalid" is sent to ALL clients */
+    boolean respondToAllIfInvalid() default false;
 }

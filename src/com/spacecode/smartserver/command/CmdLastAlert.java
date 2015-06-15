@@ -14,7 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
  * LastAlert command.
  * Provide device's last alert raised (serialized).
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(deviceRequired = true, responseIfInvalid = "")
 public class CmdLastAlert extends ClientCommand
 {
     /**

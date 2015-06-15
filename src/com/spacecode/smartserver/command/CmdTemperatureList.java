@@ -18,7 +18,7 @@ import java.util.logging.Level;
  *
  * Provide temperature measurements over a given period (start/end date provided), if any.
  */
-@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(paramCount = 2, strictCount = true, deviceRequired = true, responseIfInvalid = "")
 public class CmdTemperatureList extends ClientCommand
 {
     /**

@@ -188,7 +188,7 @@ public final class ClientCommandRegister extends ClientCommand
 
     /**
      * Check the command CommandContract: 
-     * If invalid, the {@link CommandContract#responseWhenInvalid()} will be sent back. Otherwise, cmd is executed.
+     * If invalid, the {@link CommandContract#responseIfInvalid()} will be sent back. Otherwise, cmd is executed.
      *
      * @param cmd           Command to be executed.
      * @param ctx           Channel of the client used to send the request.
@@ -238,14 +238,14 @@ public final class ClientCommandRegister extends ClientCommand
 
                 if(!contract.noResponseWhenInvalid())
                 {
-                    if(contract.responseSentToAllWhenInvalid())
+                    if(contract.respondToAllIfInvalid())
                     {
-                        SmartServer.sendAllClients(contract.responseWhenInvalid());
+                        SmartServer.sendAllClients(contract.responseIfInvalid());
                     }
                     
                     else
                     {
-                        SmartServer.sendMessage(ctx, requestCode, contract.responseWhenInvalid());
+                        SmartServer.sendMessage(ctx, requestCode, contract.responseIfInvalid());
                     }
                 }
                 return;

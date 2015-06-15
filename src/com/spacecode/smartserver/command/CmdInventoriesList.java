@@ -19,7 +19,7 @@ import java.util.logging.Level;
  *
  * Provide inventories over a given period (start/end date provided), if any.
  */
-@CommandContract(paramCount = 2, strictCount = true, responseWhenInvalid = "")
+@CommandContract(paramCount = 2, strictCount = true, responseIfInvalid = "")
 public class CmdInventoriesList extends ClientCommand
 {
     /**

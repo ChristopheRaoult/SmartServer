@@ -15,7 +15,7 @@ class ScRfid
     /**
      * [ADMIN] Command AxisCount (number of axis known/used by the device).
      */
-    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "-1")
+    @CommandContract(deviceRequired = true, adminRequired = true, responseIfInvalid = "-1")
     static class CmdRfidAxisCount extends ClientCommand
     {
         /**
@@ -45,7 +45,7 @@ class ScRfid
     /**
      * [ADMIN] Command Calibrate (get and send 256 values of the "full image" of the carrier signal).
      */
-    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
+    @CommandContract(deviceRequired = true, adminRequired = true, responseIfInvalid = "")
     static class CmdRfidCalibrate extends ClientCommand
     {
         /**
@@ -108,7 +108,7 @@ class ScRfid
     /**
      * [ADMIN] Command DutyCycle ("bridge type" and duty cycle values, in the RFID board memory).
      */
-    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
+    @CommandContract(deviceRequired = true, adminRequired = true, responseIfInvalid = "")
     static class CmdRfidDutyCycle extends ClientCommand
     {
         /**
@@ -145,7 +145,7 @@ class ScRfid
     /**
      * [ADMIN] Command Frequency (Carrier Period and Antenna Voltage).
      */
-    @CommandContract(deviceRequired = true, adminRequired = true, responseWhenInvalid = "")
+    @CommandContract(deviceRequired = true, adminRequired = true, responseIfInvalid = "")
     static class CmdRfidFrequency extends ClientCommand
     {
         /**

@@ -9,7 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * InventoryById command.
  */
-@CommandContract(paramCount = 1, strictCount = true, deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(paramCount = 1, strictCount = true, deviceRequired = true, responseIfInvalid = "")
 public class CmdInventoryById extends ClientCommand
 {
     /**

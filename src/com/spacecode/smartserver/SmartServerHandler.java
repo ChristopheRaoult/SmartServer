@@ -11,8 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.logging.Level;
 
 /**
- * Handle new connections and messages from clients.
- * Handle any exception caught by Netty.
+ * Default ChannelHandler, used to perform asynchronous communication through regular sockets (TCP/IP).
  */
 @ChannelHandler.Sharable
 final class SmartServerHandler extends SimpleChannelInboundHandler<String>

@@ -22,6 +22,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+/**
+ * ChannelHandler dedicated to WebSocket frames, mostly used by the JavaScript API.
+ */
 @ChannelHandler.Sharable
 class WebSocketHandler extends SimpleChannelInboundHandler<Object>
 {

@@ -21,7 +21,7 @@ import java.util.logging.Level;
  *
  * Provide authentications recorded during a certain period, if any.
  */
-@CommandContract(paramCount = 2, strictCount = true, responseWhenInvalid = "")
+@CommandContract(paramCount = 2, strictCount = true, responseIfInvalid = "")
 public class CmdAuthenticationsList extends ClientCommand
 {
     /**

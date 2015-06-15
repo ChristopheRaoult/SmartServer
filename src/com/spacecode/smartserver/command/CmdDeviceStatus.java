@@ -9,7 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
  * DeviceStatus command.
  * Provide immediate device status. Or DeviceStatus.ERROR.name() ("ERROR") if the device is not available.
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "ERROR")
+@CommandContract(deviceRequired = true, responseIfInvalid = "ERROR")
 public class CmdDeviceStatus extends ClientCommand
 {
     /**

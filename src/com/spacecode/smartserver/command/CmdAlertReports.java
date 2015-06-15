@@ -19,7 +19,7 @@ import java.util.logging.Level;
  * Provide reports (if any) for alert raised during a certain period (start/end date provided).
  * Sends Alert IDs instead of sending serialized alerts, in order to minimize risk to exceed the TCP frame size.
  */
-@CommandContract(paramCount = 2, strictCount = true, responseWhenInvalid = "")
+@CommandContract(paramCount = 2, strictCount = true, responseIfInvalid = "")
 public class CmdAlertReports extends ClientCommand
 {
     /**

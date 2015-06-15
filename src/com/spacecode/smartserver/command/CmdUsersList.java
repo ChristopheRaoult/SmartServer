@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Granted Users List command.
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(deviceRequired = true, responseIfInvalid = "")
 public class CmdUsersList extends ClientCommand
 {
     /**

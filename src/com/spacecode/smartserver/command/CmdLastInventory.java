@@ -14,7 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * Provide device's last inventory (serialized).
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(deviceRequired = true, responseIfInvalid = "")
 public class CmdLastInventory extends ClientCommand
 {
     private Inventory _lastInventory = null;

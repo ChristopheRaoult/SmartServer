@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Unregistered Users List command.
  */
-@CommandContract(deviceRequired = true, responseWhenInvalid = "")
+@CommandContract(deviceRequired = true, responseIfInvalid = "")
 public class CmdUnregisteredUsers extends ClientCommand
 {
     /**
