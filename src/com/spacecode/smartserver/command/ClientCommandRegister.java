@@ -11,6 +11,7 @@ import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * ClientCommandRegister contains the mapping of Request Codes to Commands.<br/> 
@@ -233,7 +234,9 @@ public final class ClientCommandRegister extends ClientCommand
             {
                 if(logException)
                 {
-                    SmartLogger.getLogger().severe(cce.getMessage());
+                    SmartLogger.getLogger().log(Level.WARNING, 
+                            "An error occurred while executing a command [" + requestCode + "]",
+                            cce);
                 }
 
                 if(!contract.noResponseWhenInvalid())

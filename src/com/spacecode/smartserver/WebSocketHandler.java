@@ -165,7 +165,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
-        cause.printStackTrace();
+        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by handler", cause);
         ctx.close();
     }
 }

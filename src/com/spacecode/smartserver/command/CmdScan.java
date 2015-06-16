@@ -8,6 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Scan command.
@@ -35,7 +36,7 @@ public class CmdScan extends ClientCommand
                     scanOptions.add(ScanOption.valueOf(option));
                 } catch(IllegalArgumentException iae)
                 {
-                    SmartLogger.getLogger().warning("Invalid ScanOption provided: "+option);
+                    SmartLogger.getLogger().log(Level.WARNING, "Invalid ScanOption provided: "+option, iae);
                 }
             }
         }

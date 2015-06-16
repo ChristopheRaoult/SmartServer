@@ -77,10 +77,12 @@ public class ConfManager
                 SmartLogger.getLogger().warning("Configuration file was not present. Now created.");
             }
 
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(CONFIG_FILE), "UTF-8");
+            FileInputStream fis = new FileInputStream(CONFIG_FILE);
+            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
 
             configProp.load(isr);
             isr.close();
+            fis.close();
         } catch (IOException ioe)
         {
             SmartLogger.getLogger().log(Level.SEVERE, "An I/O error occurred while loading properties.", ioe);

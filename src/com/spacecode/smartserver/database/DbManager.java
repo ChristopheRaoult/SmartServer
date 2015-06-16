@@ -30,11 +30,10 @@ public class DbManager
     private static final String DB_PORT             = "3306";
     private static final String DB_NAME             = "smartserver";
     private static final String DB_USER             = "spacecode";
-    private static final String DB_PASSWORD         = "Spacecode4sql";
 
     // JDBC connection string used to connect to the database
     private static final String CONNECTION_STRING   =
-            "jdbc:mysql://"+DB_HOST+":"+DB_PORT+"/"+DB_NAME+"?user="+DB_USER+"&password="+DB_PASSWORD;
+            "jdbc:mysql://"+DB_HOST+":"+DB_PORT+"/"+DB_NAME+"?user="+DB_USER+"&password=Spacecode4sql";
 
     // Connection pool, contains active connections to the DB
     private static JdbcPooledConnectionSource _pooledConnectionSrc;
@@ -204,14 +203,14 @@ public class DbManager
      */
     private static void onTableCreated(Class entityClass, Dao<Entity, Integer> dao) throws SQLException
     {
-        if(entityClass.getName().equals(AccessTypeEntity.class.getName()))
+        if(entityClass.equals(AccessTypeEntity.class))
         {
             dao.create(new AccessTypeEntity(AccessType.UNDEFINED.name()));
             dao.create(new AccessTypeEntity(AccessType.BADGE.name()));
             dao.create(new AccessTypeEntity(AccessType.FINGERPRINT.name()));
         }
 
-        else if(entityClass.getName().equals(AlertTypeEntity.class.getName()))
+        else if(entityClass.equals(AlertTypeEntity.class))
         {
             dao.create(new AlertTypeEntity(AlertType.DEVICE_DISCONNECTED.name()));
             dao.create(new AlertTypeEntity(AlertType.DOOR_OPEN_DELAY.name()));
@@ -219,7 +218,7 @@ public class DbManager
             dao.create(new AlertTypeEntity(AlertType.THIEF_FINGER.name()));
         }
 
-        else if(entityClass.getName().equals(GrantTypeEntity.class.getName()))
+        else if(entityClass.equals(GrantTypeEntity.class))
         {
             dao.create(new GrantTypeEntity(GrantType.UNDEFINED.name()));
             dao.create(new GrantTypeEntity(GrantType.SLAVE.name()));

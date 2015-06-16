@@ -12,6 +12,8 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -302,7 +304,7 @@ class ScAdmin
     static class CmdSignInAdmin extends ClientCommand
     {
         private static final String ADMIN_USERNAME = "testrfid";
-        private static final String ADMIN_PASSWORD = "testrfid123456";
+        private static final String ADMIN_HASH = "f4b98ca124c933f0b5c2736efd1b931f3a4d27c621db7390d35ec964ee8b210a";
 
         /**
          * Add the current ChannelHandlerContext to the list of authenticated (administrator) contexts.
@@ -314,9 +316,9 @@ class ScAdmin
         public void execute(ChannelHandlerContext ctx, String[] parameters)
         {
             String username = parameters[0];
-            String password = parameters[1];
+            String password = sha256(parameters[1]);
 
-            if(!ADMIN_USERNAME.equals(username) || !ADMIN_PASSWORD.equals(password))
+            if(!ADMIN_USERNAME.equals(username) || !ADMIN_HASH.equals(password))
             {
                 SmartLogger.getLogger().info(String.format("Authentication Failure! (%s/%s)", username, password));
                 SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SIGN_IN_ADMIN, FALSE);
@@ -325,6 +327,41 @@ class ScAdmin
 
             SmartServer.addAdministrator(ctx.channel().remoteAddress());
             SmartServer.sendMessage(ctx, ClientCommandRegister.AppCode.SIGN_IN_ADMIN, TRUE);
+        }
+
+        /**
+         * Get a SHA-256 hash from a given string (password input from User).
+         *
+         * @param base User input (password).
+         *
+         * @return SHA-256 hash.
+         */
+        private static String sha256(String base)
+        {
+            try
+            {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = digest.digest(base.getBytes("UTF-8"));
+                StringBuilder hexString = new StringBuilder();
+
+                for (byte aHash : hash)
+                {
+                    String hex = Integer.toHexString(0xff & aHash);
+
+                    if (hex.length() == 1)
+                    {
+                        hexString.append('0');
+                    }
+
+                    hexString.append(hex);
+                }
+
+                return hexString.toString();
+            } catch (NoSuchAlgorithmException | UnsupportedEncodingException e)
+            {
+                SmartLogger.getLogger().log(Level.SEVERE, "Unable to get a SHA256 hash of the given password", e);
+                return "";
+            }
         }
     }
 
