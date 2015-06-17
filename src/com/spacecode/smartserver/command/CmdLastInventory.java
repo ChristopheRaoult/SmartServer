@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
@@ -28,6 +29,19 @@ public class CmdLastInventory extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
+        // if the user asked NOT TO save the last inventory in the DB, we have to provide an inventory "from memory":
+        // an inventory which has not been saved into the DB, and which has not been selected from the DB with an ID
+        if(!DeviceHandler.getRecordInventory())
+        {
+            // if the device is not scanning, otherwise it means that a new inventory is coming and that
+            // "Record Inventory" may have been set to "false" with the current scan operation, not the previous one
+            if(DeviceHandler.getDevice().getStatus() != DeviceStatus.SCANNING)
+            {
+                sendInventory(ctx, DeviceHandler.getDevice().getLastInventory());
+                return;
+            }
+        }
+        
         // no inventory in cache, try to get the last inventory from Database
         if(_lastInventory == null)
         {
@@ -55,11 +69,12 @@ public class CmdLastInventory extends ClientCommand
     private void getAndSendLastInventory(ChannelHandlerContext ctx)
     {
         _lastInventory = ((DaoInventory) DbManager.getDao(InventoryEntity.class)).getLastInventory();
+        sendInventory(ctx, _lastInventory);
+    }
 
-        // if we got an inventory from DB, send it, otherwise, send an empty response
-        SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY,
-                _lastInventory == null
-                        ? ""
-                        : _lastInventory.serialize());
+    private void sendInventory(ChannelHandlerContext ctx, Inventory inventory)
+    {
+        // inventory may be null (for instance if the reference is given by a request from the DAO)
+        SmartServer.sendMessage(ctx, RequestCode.LAST_INVENTORY, inventory == null ? "" : inventory.serialize());
     }
 }

@@ -174,6 +174,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             for(String tagUid : allUids)
             {
                 // TODO: Optimize this! => For X tags: X "SELECT" + [0;X] "INSERT"... (X to 2X) 
+                // TODO: Maybe do a SELECT all tags WHERE uid IN (... uids of the new inventory ...) to only create the one NOT EXISTING
                 RfidTagEntity rte = daoTag.createIfNotExists(tagUid);
 
                 if(rte == null)

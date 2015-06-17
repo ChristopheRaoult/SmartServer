@@ -1,5 +1,6 @@
 package com.spacecode.smartserver.command;
 
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.ScanOption;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.smartserver.helper.DeviceHandler;
@@ -17,7 +18,7 @@ import java.util.logging.Level;
 public class CmdScan extends ClientCommand
 {
     /**
-     * Request a scan on current device. No data is sent/returned. Device events are handled by events handler.
+     * Request a scan on current device. No data is sent/returned by this command. Scan events are handled by {@link DeviceHandler}
      * 
      * @param ctx           Channel between SmartServer and the client.
      * @param parameters    {@link ScanOption}s could be provided by the client.
@@ -25,6 +26,12 @@ public class CmdScan extends ClientCommand
     @Override
     public void execute(ChannelHandlerContext ctx, String[] parameters)
     {
+        if(DeviceHandler.getDevice().getStatus() == DeviceStatus.SCANNING)
+        {
+            SmartLogger.getLogger().warning("Trying to start a scan whereas the Device is already 'SCANNING'!");
+            return;
+        }
+        
         List<ScanOption> scanOptions = new ArrayList<>();
         
         if(parameters.length > 0)
@@ -40,7 +47,11 @@ public class CmdScan extends ClientCommand
                 }
             }
         }
+
+        // if the user asked for a scan which result should not be recorded in the database
+        DeviceHandler.setRecordInventory(!scanOptions.contains(ScanOption.NO_RECORD));
         
+        // start the scan process with the given options (if any)
         DeviceHandler.getDevice().requestScan(scanOptions.toArray(new ScanOption[scanOptions.size()]));
     }
 }

@@ -30,10 +30,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -78,7 +75,7 @@ public class DeviceHandlerTest
         doNothing().when(_smartLogger).warning(anyString());
         whenNew(SmartLogger.class).withNoArguments().thenReturn(_smartLogger);
 
-        Whitebox.setInternalState(DeviceHandler.class, _device);
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", _device);
 
         doReturn(_devSerial).when(_device).getSerialNumber();
         doReturn(_swVersion).when(_device).getSoftwareVersion();
@@ -106,7 +103,7 @@ public class DeviceHandlerTest
     public void testConnectDeviceNoDevice() throws Exception
     {
         // _device must be null if we want to try to connect it
-        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", (Object) null);
 
         mockStatic(Device.class);
         doReturn(new TreeMap<String, PluggedDevice>())
@@ -120,7 +117,7 @@ public class DeviceHandlerTest
     public void testConnectDeviceFailInstantiate() throws Exception
     {
         // _device must be null if we want to try to connect it
-        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", (Object) null);
 
         // information about the mocked connected device
         Map<String, PluggedDevice> pluggedDevices = new TreeMap<>();
@@ -138,8 +135,8 @@ public class DeviceHandlerTest
     @Test
     public void testConnectDevice() throws Exception
     {
-        // _device must be null if we want to try to connect it
-        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
+        // DEVICE must be null if we want to try to connect it
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", (Object) null);
 
         // information about the mocked connected device
         Map<String, PluggedDevice> pluggedDevices = new TreeMap<>();
@@ -188,7 +185,7 @@ public class DeviceHandlerTest
     @Test
     public void testConnectModulesDeviceNull() throws Exception
     {
-        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", (Object) null);
 
         mockStatic(DeviceHandler.class);
         when(DeviceHandler.class, "connectModules").thenCallRealMethod();
@@ -304,7 +301,7 @@ public class DeviceHandlerTest
     @Test
     public void testLoadAuthorizedUsersDeviceNull() throws Exception
     {
-        Whitebox.setInternalState(DeviceHandler.class, "_device", (Object) null);
+        Whitebox.setInternalState(DeviceHandler.class, "DEVICE", (Object) null);
         assertFalse(DeviceHandler.loadUsers());
     }
 
@@ -347,7 +344,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerDeviceDisconnected() throws Exception
+    public void testEventDeviceDisconnected() throws Exception
     {
         PowerMockito.mockStatic(DeviceHandler.class);
 
@@ -360,7 +357,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerDoorOpened() throws Exception
+    public void testEventDoorOpened() throws Exception
     {
         _eventHandler.doorOpened();
 
@@ -369,7 +366,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerDoorClosed() throws Exception
+    public void testEventDoorClosed() throws Exception
     {
         _eventHandler.doorClosed();
 
@@ -378,7 +375,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerDoorOpenDelay() throws Exception
+    public void testEventDoorOpenDelay() throws Exception
     {
         _eventHandler.doorOpenDelay();
 
@@ -387,7 +384,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerScanStarted() throws Exception
+    public void testEventScanStarted() throws Exception
     {
         _eventHandler.scanStarted();
 
@@ -396,7 +393,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerScanCancelledByHost() throws Exception
+    public void testEventScanCancelledByHost() throws Exception
     {
         _eventHandler.scanCancelledByHost();
 
@@ -405,21 +402,77 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerScanCompleted() throws Exception
+    public void testEventScanCompletedNoRecord() throws Exception
     {
         DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
         doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
-
+        // No record: we don't want to save the inventory
+        Whitebox.setInternalState(DeviceHandler.class, "RECORD_INVENTORY", false);
+        
+        // fire the Scan Completed event
         _eventHandler.scanCompleted();
 
         PowerMockito.verifyStatic();
+        // make sure the event has been sent to the clients
         SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
 
-        verify(inventoryRepo).persist(any(Inventory.class));
+        // make sure that no inventory is persisted, as "No Record" is enabled
+        verify(inventoryRepo, never()).persist(any(Inventory.class));
     }
 
     @Test
-    public void testEventHandlerScanFailed() throws Exception
+    public void testEventScanCompletedWithRecordAndBlankInventory() throws Exception
+    {
+        // create a "blank" / empty inventory: we don't want to persist it, as it contains no relevant information
+        Inventory newInventory = new Inventory();
+        doReturn(newInventory).when(_device).getLastInventory();
+
+        // Recording: we do want the "inventory recording" to be enabled
+        Whitebox.setInternalState(DeviceHandler.class, "RECORD_INVENTORY", true);
+        
+        // DAO mock
+        DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
+        doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
+
+        // fire the Scan Completed event
+        _eventHandler.scanCompleted();
+
+        PowerMockito.verifyStatic();
+        // make sure the event has been sent to the clients
+        SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
+
+        // make sure that the inventory is not persisted, as it is empty / "blank"
+        verify(inventoryRepo, never()).persist(any(Inventory.class));
+    }
+
+    @Test
+    public void testEventScanCompletedWithRecordAndRelevantInventory() throws Exception
+    {
+        // create a "relevant" inventory, which contains data that we would persist, if recording is enabled
+        Inventory newInventory = 
+                new Inventory(0, Arrays.asList("3000000001", "3000000002"), null, null, null, null, new Date());
+        doReturn(newInventory).when(_device).getLastInventory();
+
+        // Recording: we do want the "inventory recording" to be enabled
+        Whitebox.setInternalState(DeviceHandler.class, "RECORD_INVENTORY", true);
+
+        // DAO mock
+        DaoInventory inventoryRepo = PowerMockito.mock(DaoInventory.class);
+        doReturn(inventoryRepo).when(DbManager.class, "getDao", InventoryEntity.class);
+
+        // fire the Scan Completed event
+        _eventHandler.scanCompleted();
+
+        PowerMockito.verifyStatic();
+        // make sure the event has been sent to the clients
+        SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
+
+        // make sure that the inventory is not persisted, as it is empty / "blank"
+        verify(inventoryRepo).persist(newInventory);
+    }
+
+    @Test
+    public void testEventScanFailed() throws Exception
     {
         _eventHandler.scanFailed();
 
@@ -428,7 +481,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerTagAdded() throws Exception
+    public void testEventTagAdded() throws Exception
     {
         String tagUid = "3001234567";
         _eventHandler.tagAdded(tagUid);
@@ -438,7 +491,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerAuthenticationSuccess() throws Exception
+    public void testEventAuthenticationSuccess() throws Exception
     {
         DaoAuthentication authenticationRepo = PowerMockito.mock(DaoAuthentication.class);
         doReturn(authenticationRepo).when(DbManager.class, "getDao", AuthenticationEntity.class);
@@ -456,7 +509,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerAuthenticationFailure() throws Exception
+    public void testEventAuthenticationFailure() throws Exception
     {
         AccessType accessType = AccessType.BADGE;
         User user = new User("Vincent", GrantType.MASTER);
@@ -469,7 +522,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerFingerTouched() throws Exception
+    public void testEventFingerTouched() throws Exception
     {
         _eventHandler.fingerTouched(true);
 
@@ -483,7 +536,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerFingerEnrollmentSample() throws Exception
+    public void testEventFingerEnrollmentSample() throws Exception
     {
         _eventHandler.fingerprintEnrollmentSample((byte) 5);
 
@@ -497,7 +550,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerBadgeScanned() throws Exception
+    public void testEventBadgeScanned() throws Exception
     {
         _eventHandler.badgeScanned("ABCDEFG");
 
@@ -511,7 +564,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerTemperatureMeasure() throws Exception
+    public void testEventTemperatureMeasure() throws Exception
     {
         _eventHandler.temperatureMeasure(4.56);
 
@@ -525,7 +578,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerLightingStartedNoTagsLeft() throws Exception
+    public void testEventLightingStartedNoTagsLeft() throws Exception
     {
         List<String> tagsLeft = Arrays.asList();
         _eventHandler.lightingStarted(tagsLeft);
@@ -535,7 +588,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerLightingStarted() throws Exception
+    public void testEventLightingStarted() throws Exception
     {
         String tag1 = "3001234567", tag2 = "3002345678";
         List<String> tagsLeft = Arrays.asList(tag1, tag2);
@@ -546,7 +599,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerLightingStopped() throws Exception
+    public void testEventLightingStopped() throws Exception
     {
         _eventHandler.lightingStopped();
 
@@ -555,7 +608,7 @@ public class DeviceHandlerTest
     }
 
     @Test
-    public void testEventHandlerDeviceStatusChanged() throws Exception
+    public void testEventDeviceStatusChanged() throws Exception
     {
         _eventHandler.deviceStatusChanged(DeviceStatus.READY);
 
@@ -570,7 +623,7 @@ public class DeviceHandlerTest
 
 
     @Test
-    public void testEventHandlerFlashingProgress() throws Exception
+    public void testEventFlashingProgress() throws Exception
     {
         _eventHandler.flashingProgress(2, 200);
 

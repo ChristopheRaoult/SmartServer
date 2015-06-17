@@ -30,9 +30,13 @@ import java.util.logging.Level;
  */
 public final class DeviceHandler
 {
-    private volatile static Device _device;
+    // 
+    private volatile static Device DEVICE;
+    
+    // if true, the new inventories will be saved in the database (if false, they won't be)
+    private volatile static boolean RECORD_INVENTORY = true;
 
-    // allows the CmdSerialBridge to set the current state of device (usb / ethernet).
+    // allows the CmdSerialBridge to set the current state of device (usb / ethernet)
     private static boolean SERIAL_PORT_FORWARDING = false;
 
     /** Must not be instantiated. */
@@ -48,7 +52,7 @@ public final class DeviceHandler
      */
     public synchronized static boolean connectDevice()
     {
-        if(_device != null)
+        if(DEVICE != null)
         {
             return true;
         }
@@ -65,8 +69,8 @@ public final class DeviceHandler
 
         try
         {
-            _device = new Device(null, deviceInfo.getSerialPort());
-            _device.addListener(new SmartEventHandler());
+            DEVICE = new Device(null, deviceInfo.getSerialPort());
+            DEVICE.addListener(new SmartEventHandler());
         } catch (DeviceCreationException dce)
         {
             SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
@@ -81,10 +85,10 @@ public final class DeviceHandler
      */
     public synchronized static void disconnectDevice()
     {
-        if(_device != null)
+        if(DEVICE != null)
         {
-            _device.release();
-            _device = null;
+            DEVICE.release();
+            DEVICE = null;
         }
     }
 
@@ -131,7 +135,7 @@ public final class DeviceHandler
      */
     public static Device getDevice()
     {
-        return _device;
+        return DEVICE;
     }
 
     /**
@@ -139,7 +143,7 @@ public final class DeviceHandler
      */
     public static void connectModules()
     {
-        if(_device == null)
+        if(DEVICE == null)
         {
             SmartLogger.getLogger().warning("Unable to connect modules, the device is not initialized.");
             return;
@@ -161,8 +165,8 @@ public final class DeviceHandler
                     }
 
                     else if(!
-                            (_device.addFingerprintReader(fprMaster, true)
-                            && _device.addFingerprintReader(fprSlave, false))
+                            (DEVICE.addFingerprintReader(fprMaster, true)
+                            && DEVICE.addFingerprintReader(fprSlave, false))
                             )
                     {
                         SmartLogger.getLogger().warning("Couldn't connect the two fingerprint readers.");
@@ -177,7 +181,7 @@ public final class DeviceHandler
                         SmartLogger.getLogger().warning("Couldn't initialize the fingerprint reader.");
                     }
 
-                    else if(!_device.addFingerprintReader(fprMaster, true))
+                    else if(!DEVICE.addFingerprintReader(fprMaster, true))
                     {
                         SmartLogger.getLogger().warning("Couldn't connect the fingerprint reader.");
                     }
@@ -194,12 +198,12 @@ public final class DeviceHandler
 
         if(brMaster != null && !brMaster.trim().isEmpty())
         {
-            if(!_device.addBadgeReader(brMaster, true))
+            if(!DEVICE.addBadgeReader(brMaster, true))
             {
                 SmartLogger.getLogger().warning("Unable to add Master Badge Reader on "+brMaster);
             }
 
-            if(brSlave != null && !brSlave.trim().isEmpty() && !_device.addBadgeReader(brSlave, false))
+            if(brSlave != null && !brSlave.trim().isEmpty() && !DEVICE.addBadgeReader(brSlave, false))
             {
                 SmartLogger.getLogger().warning("Unable to add Slave Badge Reader on "+brSlave);
             }
@@ -221,7 +225,7 @@ public final class DeviceHandler
             measurementDelta = measurementDelta == -1 ? 0.3 : measurementDelta;
 
             // TODO: Don't get Stuck at this point if VirtualHub cannot be contacted or the probe is unavailable
-            if(!_device.addTemperatureProbe("tempProbe1", measurementDelay, measurementDelta))
+            if(!DEVICE.addTemperatureProbe("tempProbe1", measurementDelay, measurementDelta))
             {
                 SmartLogger.getLogger().warning("Unable to add the Temperature probe.");
             }
@@ -232,7 +236,7 @@ public final class DeviceHandler
      */
     public static void reloadTemperatureProbe()
     {
-        _device.disconnectTemperatureProbe();
+        DEVICE.disconnectTemperatureProbe();
         connectProbeIfEnabled();
     }
 
@@ -251,7 +255,7 @@ public final class DeviceHandler
      */
     public static boolean isAvailable()
     {
-        return !SERIAL_PORT_FORWARDING && _device != null;
+        return !SERIAL_PORT_FORWARDING && DEVICE != null;
     }
 
     /**
@@ -277,7 +281,7 @@ public final class DeviceHandler
             return false;
         }
         
-        List<User> notAddedUsers = _device.getUsersService().addUsers(authorizedUsers);
+        List<User> notAddedUsers = DEVICE.getUsersService().addUsers(authorizedUsers);
 
         // if an authorized user could not be added...
         if(!notAddedUsers.isEmpty())
@@ -287,7 +291,7 @@ public final class DeviceHandler
         }
 
         // Add all "unregistered" users and then remove them (to put them in the "unregistered" list...)
-        notAddedUsers = _device.getUsersService().addUsers(unregisteredUsers);
+        notAddedUsers = DEVICE.getUsersService().addUsers(unregisteredUsers);
 
         // if an unregistered user could not be added...
         if(!notAddedUsers.isEmpty())
@@ -298,7 +302,7 @@ public final class DeviceHandler
         
         for(User unregUser : unregisteredUsers)
         {
-            _device.getUsersService().removeUser(unregUser.getUsername());    
+            DEVICE.getUsersService().removeUser(unregUser.getUsername());    
         }        
 
         return true;
@@ -319,7 +323,7 @@ public final class DeviceHandler
             return false;
         }
 
-        _device.setLastInventory(lastInventoryRecorded);
+        DEVICE.setLastInventory(lastInventoryRecorded);
         return true;
     }
 
@@ -363,6 +367,26 @@ public final class DeviceHandler
     }
 
     /**
+     * Enable or disable the recording (in the database) of inventories.
+     * 
+     * @param state If true, the inventories will be recorded in the database. Otherwise, they won't.
+     */
+    public static void setRecordInventory(boolean state)
+    {
+        RECORD_INVENTORY = state;
+    }
+
+    /**
+     * Allow other classes to know if the DeviceHandler is currently set to record the new inventories in the database.
+     * 
+     * @return True if the inventories are recorded, false otherwise.
+     */
+    public static boolean getRecordInventory()
+    {
+        return RECORD_INVENTORY;
+    }
+
+    /**
      * Handle Device events and proceed according to expected SmartServer behavior.
      */
     static class SmartEventHandler implements BasicEventHandler, ScanEventHandler, DoorEventHandler,
@@ -375,7 +399,7 @@ public final class DeviceHandler
             SmartLogger.getLogger().info("Device Disconnected...");
 
             SmartServer.sendAllClients(EventCode.DEVICE_DISCONNECTED);
-            _device = null;
+            DEVICE = null;
 
             reconnectDevice();
         }
@@ -410,12 +434,26 @@ public final class DeviceHandler
             SmartServer.sendAllClients(EventCode.SCAN_CANCELLED_BY_HOST);
         }
 
-        @Override
+        @Override 
+        
         public void scanCompleted()
         {
-            DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
-            // todo: thread this? The point is about "getLastInventory" command, which MUST return the VERY last
-            daoInventory.persist(_device.getLastInventory());     
+            Inventory newInventory = DEVICE.getLastInventory();
+            
+            // insert the new inventory in the DB only if the user wants to
+            if(RECORD_INVENTORY)
+            {
+                // insert it only if it has some relevant information (moves, authentication)
+                if(     newInventory.getNumberAdded() != 0 || 
+                        newInventory.getNumberRemoved() != 0 || 
+                        newInventory.getNumberPresent() != 0 ||
+                        newInventory.getAccessType() != AccessType.UNDEFINED)
+                {
+                    DaoInventory daoInventory = (DaoInventory) DbManager.getDao(InventoryEntity.class);
+                    // todo: thread this? The point is about "getLastInventory" command, which MUST return the VERY last
+                    daoInventory.persist(newInventory);
+                }
+            }     
 
             SmartServer.sendAllClients(EventCode.SCAN_COMPLETED);
         }

@@ -1,6 +1,7 @@
 package com.spacecode.smartserver.command;
 
 import com.spacecode.sdk.device.Device;
+import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
@@ -9,7 +10,6 @@ import com.spacecode.smartserver.database.dao.DaoInventory;
 import com.spacecode.smartserver.database.entity.InventoryEntity;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import io.netty.channel.ChannelHandlerContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,10 @@ import org.powermock.reflect.Whitebox;
 
 import java.util.Date;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
@@ -53,25 +56,15 @@ public class CmdLastInventoryTest
 
         PowerMockito.mockStatic(SmartServer.class);
         PowerMockito.mockStatic(DeviceHandler.class);
+        PowerMockito.when(DeviceHandler.class, "getRecordInventory").thenReturn(true);
         PowerMockito.when(DeviceHandler.class, "isAvailable").thenReturn(true);
+        doReturn(_device).when(DeviceHandler.class, "getDevice");
         PowerMockito.mockStatic(DbManager.class);
-    }
-
-    @After
-    public void tearDown()
-    {
-        _ctx = null;
-        _command = null;
-        _device = null;
-        _daoInventory = null;
-        _inventory1 = null;
-        _inventory2 = null;
     }
 
     @Test
     public void testExecuteNoCache() throws Exception
     {
-        doReturn(_device).when(DeviceHandler.class, "getDevice");
         Whitebox.setInternalState(_command, "_lastInventory", (Object) null);
 
         String serializedInventory = "serialized_inventory";
@@ -99,7 +92,6 @@ public class CmdLastInventoryTest
         // inventory1 is the cache, inventory2 the last inventory known by the Device
         Whitebox.setInternalState(_command, "_lastInventory", _inventory1);
         doReturn(_inventory2).when(_device).getLastInventory();
-        doReturn(_device).when(DeviceHandler.class, "getDevice");
 
         _command.execute(_ctx, null);
 
@@ -125,7 +117,6 @@ public class CmdLastInventoryTest
         // inventory1 is the cache, inventory2 the last inventory known by the Device
         Whitebox.setInternalState(_command, "_lastInventory", _inventory1);
         doReturn(_inventory2).when(_device).getLastInventory();
-        doReturn(_device).when(DeviceHandler.class, "getDevice");
         doReturn(_inventory2).when(_daoInventory).getLastInventory();
         doReturn(_daoInventory).when(DbManager.class, "getDao", InventoryEntity.class);
 
@@ -137,5 +128,40 @@ public class CmdLastInventoryTest
         SmartServer.sendMessage(_ctx, RequestCode.LAST_INVENTORY, serializedNewInv);
         verifyStatic(never());
         SmartServer.sendMessage(_ctx, RequestCode.LAST_INVENTORY, serializedOldInv);
+    }
+    
+    @Test
+    public void testExecuteWithNoInventoryRecordAndDeviceReady() throws Exception
+    {
+        PowerMockito.when(DeviceHandler.class, "getRecordInventory").thenReturn(false);
+        doReturn(DeviceStatus.READY).when(_device).getStatus();
+        
+        _command.execute(_ctx, null);
+        
+        verifyPrivate(_command, never()).invoke("getAndSendLastInventory", _ctx);
+        verifyPrivate(_command).invoke("sendInventory", eq(_ctx), any(Inventory.class));
+        verify(_device).getLastInventory();
+    }
+
+    @Test
+    public void testExecuteWithNoInventoryRecordAndDeviceScanning() throws Exception
+    {
+        // let's assume that there is no inventory in cache
+        Whitebox.setInternalState(_command, "_lastInventory", (Object) null);
+        String serializedInventory = "serialized_inventory";
+        doReturn(serializedInventory).when(_inventory1).serialize();
+        doReturn(_inventory1).when(_daoInventory).getLastInventory();
+        doReturn(_daoInventory).when(DbManager.class, "getDao", InventoryEntity.class);
+        
+        // and the "Inventory Record" is disabled
+        PowerMockito.when(DeviceHandler.class, "getRecordInventory").thenReturn(false);
+        
+        // and the device is scanning
+        doReturn(DeviceStatus.SCANNING).when(_device).getStatus();
+
+        _command.execute(_ctx, null);
+
+        // check that "sendInventory" is called
+        verifyPrivate(_command).invoke("getAndSendLastInventory", _ctx);
     }
 }
