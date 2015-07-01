@@ -221,21 +221,26 @@ public final class SmartServer
         int portTcp, portWs;
         
         try
-        {
-            String confPortTcp  = ConfManager.getAppPortTcp();
-            String confPortWs   = ConfManager.getAppPortWs();
-                        
-            portTcp = Integer.parseInt(confPortTcp);
-            portWs = Integer.parseInt(confPortWs);
-
-            SmartLogger.getLogger().info(String.format("TCP Ports: %s, WebSocket: %s", confPortTcp, confPortWs));
+        {                        
+            portTcp = Integer.parseInt(ConfManager.getAppPortTcp());
         } catch(NumberFormatException nfe)
         {
-            portTcp = TCP_IP_PORT;
-            portWs = WS_PORT;
-            
-            SmartLogger.getLogger().info("Using default port numbers for TCP/IP and WebSocket channels");
+            portTcp = TCP_IP_PORT;            
+            SmartLogger.getLogger().info("Using default TCP port for TCP/IP channel");
         }
+        
+        try
+        {                        
+            portWs = Integer.parseInt(ConfManager.getAppPortWs());
+        } catch(NumberFormatException nfe)
+        {
+            portWs = WS_PORT;
+
+            SmartLogger.getLogger().info("Using default TCP port for WebSocket channel");
+        }
+
+
+        SmartLogger.getLogger().info(String.format("TCP Ports - TCP/IP: %d, WebSocket: %d", portTcp, portWs));
         
         // start the netty communication layer
         try
