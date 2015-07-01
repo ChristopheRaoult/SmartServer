@@ -3,6 +3,7 @@ package com.spacecode.smartserver;
 import com.spacecode.sdk.device.Device;
 import com.spacecode.sdk.network.communication.MessageHandler;
 import com.spacecode.smartserver.database.DbManager;
+import com.spacecode.smartserver.helper.ConfManager;
 import com.spacecode.smartserver.helper.DeviceHandler;
 import com.spacecode.smartserver.helper.SmartLogger;
 import com.spacecode.smartserver.helper.TemperatureCenter;
@@ -216,6 +217,27 @@ public final class SmartServer
      */
     private static void startListening()
     {
+        // Try to either read the ports number from the conf or use the default values
+        int portTcp, portWs;
+        
+        try
+        {
+            String confPortTcp  = ConfManager.getAppPortTcp();
+            String confPortWs   = ConfManager.getAppPortWs();
+                        
+            portTcp = Integer.parseInt(confPortTcp);
+            portWs = Integer.parseInt(confPortWs);
+
+            SmartLogger.getLogger().info(String.format("TCP Ports: %s, WebSocket: %s", confPortTcp, confPortWs));
+        } catch(NumberFormatException nfe)
+        {
+            portTcp = TCP_IP_PORT;
+            portWs = WS_PORT;
+            
+            SmartLogger.getLogger().info("Using default port numbers for TCP/IP and WebSocket channels");
+        }
+        
+        // start the netty communication layer
         try
         {
             ServerBootstrap tcpIpBootStrap = new ServerBootstrap();
@@ -241,7 +263,7 @@ public final class SmartServer
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
-            _channel = tcpIpBootStrap.bind(TCP_IP_PORT).sync().channel();
+            _channel = tcpIpBootStrap.bind(portTcp).sync().channel();
 
             ServerBootstrap wsBootStrap = new ServerBootstrap();
             wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
@@ -257,7 +279,7 @@ public final class SmartServer
                         }
                     });
 
-             _wsChannel = wsBootStrap.bind(WS_PORT).sync().channel();
+             _wsChannel = wsBootStrap.bind(portWs).sync().channel();
 
             // Before the main thread got stuck waiting, load the module g_serial, if required
             SmartLogger.getLogger().info("Loading module g_serial (if necessary)...");

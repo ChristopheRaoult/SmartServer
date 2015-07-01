@@ -43,6 +43,12 @@ public class ConfManager
     public static final String DB_NAME     = "db_name";
     public static final String DB_USER     = "db_user";
     public static final String DB_PASSWORD = "db_password";
+    
+    /** TCP port number used by SmartServer for the raw TCP/IP channel handler */
+    public static final String APP_PORT_TCP     = "app_port_tcp";
+    
+    /** TCP port number used by SmartServer for the WebSocket channel handler */
+    public static final String APP_PORT_WS      = "app_port_ws";
 
     /** Contains serial-port name of the Master badge reader. */
     public static final String DEV_BR_MASTER    = "dev_br_master";
@@ -165,6 +171,18 @@ public class ConfManager
     public static String getDbPassword()
     {
         return LazyHolder.INSTANCE.getProperty(DB_PASSWORD);
+    }
+
+    /** @return Application's TCP port for the raw TCP/IP channel handler. */
+    public static String getAppPortTcp() 
+    {
+        return LazyHolder.INSTANCE.getProperty(APP_PORT_TCP);
+    }
+    
+    /** @return Application's TCP port for the WebSocket channel handler. */
+    public static String getAppPortWs() 
+    {
+        return LazyHolder.INSTANCE.getProperty(APP_PORT_WS);
     }
 
     /** @return Serial number of the master badge reader (can be empty), or null if the property is not existing. */
