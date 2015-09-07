@@ -14,7 +14,7 @@ public final class DeviceEntity extends Entity
 
     public static final String SERIAL_NUMBER = "serial_number";
 
-    @DatabaseField(unique = true, columnName = SERIAL_NUMBER, canBeNull = false)
+    @DatabaseField(unique = true, columnName = SERIAL_NUMBER, canBeNull = false, width = 30)
     private String _serialNumber;
 
     /**

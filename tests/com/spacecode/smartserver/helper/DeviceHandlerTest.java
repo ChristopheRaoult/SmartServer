@@ -449,8 +449,16 @@ public class DeviceHandlerTest
     public void testEventScanCompletedWithRecordAndRelevantInventory() throws Exception
     {
         // create a "relevant" inventory, which contains data that we would persist, if recording is enabled
-        Inventory newInventory = 
-                new Inventory(0, Arrays.asList("3000000001", "3000000002"), null, null, null, null, new Date());
+        Inventory newInventory = new Inventory(0,
+                Arrays.asList("3000000001", "3000000002"),
+                null,
+                null,
+                null,
+                null,
+                (byte) -1,
+                new Date()
+            );
+
         doReturn(newInventory).when(_device).getLastInventory();
 
         // Recording: we do want the "inventory recording" to be enabled

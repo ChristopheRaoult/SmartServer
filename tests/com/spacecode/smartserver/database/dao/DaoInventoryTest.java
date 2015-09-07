@@ -86,7 +86,14 @@ public class DaoInventoryTest
         daoUser.create(_userEntity);
 
         // create a first inventory in the DB
-        daoInv.create(new InventoryEntity(new Inventory(), _userEntity, ateRepo.fromAccessType(AccessType.BADGE)));
+        daoInv.create(
+                new InventoryEntity(
+                        new Inventory(),
+                        _userEntity,
+                        ateRepo.fromAccessType(AccessType.BADGE),
+                        (byte) 1
+                )
+        );
 
         Inventory lastInventory = invRepo.getLastInventory();
         assertNotNull(lastInventory);
@@ -94,7 +101,14 @@ public class DaoInventoryTest
         assertEquals(lastInventory.getAccessType(), AccessType.BADGE);
 
         // create a NEWER "last inventory" to make sure we always get the last one
-        daoInv.create(new InventoryEntity(new Inventory(), null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
+        daoInv.create(
+                new InventoryEntity(
+                        new Inventory(),
+                        null,
+                        ateRepo.fromAccessType(AccessType.UNDEFINED),
+                        (byte) -1
+                )
+        );
 
         lastInventory = invRepo.getLastInventory();
         assertNotNull(lastInventory);
@@ -132,12 +146,26 @@ public class DaoInventoryTest
         daoUser.create(_userEntity);
 
         // create a first inventory in the DB
-        daoInv.create(new InventoryEntity(new Inventory(), _userEntity, ateRepo.fromAccessType(AccessType.BADGE)));
+        daoInv.create(
+                new InventoryEntity(
+                        new Inventory(),
+                        _userEntity,
+                        ateRepo.fromAccessType(AccessType.BADGE),
+                        (byte) 1
+                )
+        );
 
         // VIRTUALLY change the Device which write in the database
         doReturn(otherDevice).when(DbManager.class, "getDevEntity");
         // and Add a new inventory
-        daoInv.create(new InventoryEntity(new Inventory(), null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
+        daoInv.create(
+                new InventoryEntity(
+                        new Inventory(),
+                        null,
+                        ateRepo.fromAccessType(AccessType.UNDEFINED),
+                        (byte) -1
+                )
+        );
 
         // VIRTUALLY get back to our true device
         doReturn(_devEntity).when(DbManager.class, "getDevEntity");
@@ -171,9 +199,9 @@ public class DaoInventoryTest
         // one last later
         doReturn(new Date(955123)).when(inv3).getCreationDate();
         // insert them in DB
-        daoInv.create(new InventoryEntity(inv1, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
-        daoInv.create(new InventoryEntity(inv2, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
-        daoInv.create(new InventoryEntity(inv3, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
+        daoInv.create(new InventoryEntity(inv1, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
+        daoInv.create(new InventoryEntity(inv2, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
+        daoInv.create(new InventoryEntity(inv3, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
 
         // select inv1 & inv2
         List<Inventory> inventories = invRepo.getInventories(new Date(123001), new Date(123101));
@@ -213,8 +241,8 @@ public class DaoInventoryTest
         // one last later
         doReturn(new Date(955123)).when(inv3).getCreationDate();
         // insert inv1 & inv2 as inventories of our "current" device
-        daoInv.create(new InventoryEntity(inv1, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
-        daoInv.create(new InventoryEntity(inv2, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
+        daoInv.create(new InventoryEntity(inv1, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
+        daoInv.create(new InventoryEntity(inv2, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
         // insert the second device in the database
         DeviceEntity otherDevice = new DeviceEntity("SecondDevice");
         daoDev.create(otherDevice);
@@ -222,7 +250,7 @@ public class DaoInventoryTest
         // VIRTUALLY change the Device which write in the database
         doReturn(otherDevice).when(DbManager.class, "getDevEntity");
         // and Add a third inventory as made by the "second device"
-        daoInv.create(new InventoryEntity(inv3, null, ateRepo.fromAccessType(AccessType.UNDEFINED)));
+        daoInv.create(new InventoryEntity(inv3, null, ateRepo.fromAccessType(AccessType.UNDEFINED), (byte) -1));
         // VIRTUALLY get back to our true device
         doReturn(_devEntity).when(DbManager.class, "getDevEntity");
 
@@ -261,8 +289,14 @@ public class DaoInventoryTest
         List<String> tagsPresent = Arrays.asList("4567", "5678");
         List<String> tagsRemoved = Arrays.asList("9876");
 
-        Inventory newInventory = new Inventory(2, tagsAdded, tagsPresent, tagsRemoved,
-                _userEntity.getUsername(), AccessType.FINGERPRINT, new Date());
+        Inventory newInventory = new Inventory(2,
+                tagsAdded,
+                tagsPresent,
+                tagsRemoved,
+                _userEntity.getUsername(),
+                AccessType.FINGERPRINT,
+                (byte) 0,
+                new Date());
 
         // mock the "Tag to Axis Number" Map in the Device instance
         // tags added
@@ -273,7 +307,7 @@ public class DaoInventoryTest
         // tags present
         tagToAxis.put("4567", (byte) 1);
         tagToAxis.put("5678", (byte) 1);
-        doReturn(tagToAxis).when(_device).getTagToAxis();
+        doReturn(tagToAxis).when(_device).getTagToDrawerNumber();
 
         long inventoriesCount = daoInv.countOf();
 

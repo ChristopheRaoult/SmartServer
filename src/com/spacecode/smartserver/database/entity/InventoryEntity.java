@@ -24,6 +24,7 @@ public final class InventoryEntity extends Entity
     public static final String DEVICE_ID = "device_id";
     public static final String USER_ID = "user_id";
     public static final String ACCESS_TYPE_ID = "access_type_id";
+    public static final String DOOR_NUMBER = "door_number";
     public static final String TOTAL_ADDED = "total_added";
     public static final String TOTAL_PRESENT = "total_present";
     public static final String TOTAL_REMOVED = "total_removed";
@@ -37,6 +38,9 @@ public final class InventoryEntity extends Entity
 
     @DatabaseField(foreign = true, columnName = ACCESS_TYPE_ID, canBeNull = false, foreignAutoRefresh = true)
     private AccessTypeEntity _accessType;
+
+    @DatabaseField(columnName = DOOR_NUMBER, canBeNull = false, defaultValue = "-1")
+    private byte _doorNumber;
 
     @DatabaseField(columnName = TOTAL_ADDED, canBeNull = false)
     private int _totalAdded;
@@ -63,15 +67,17 @@ public final class InventoryEntity extends Entity
     /**
      * Default constructor.
      *
-     * @param inventory Inventory [SDK] instance to take values from.
-     * @param gue       UserEntity (if any) attached to this inventory.
-     * @param ate       AcessTypeEntity (Manual, Fingerprint, Badge...) attached to this inventory.
+     * @param inventory     Inventory [SDK] instance to take values from.
+     * @param gue           UserEntity (if any) attached to this inventory.
+     * @param ate           AccessTypeEntity (Manual, Fingerprint, Badge...) attached to this inventory.
+     * @param doorNumber    Number of the door which made the scan start when closed (or -1, default).
      */
-    public InventoryEntity(Inventory inventory, UserEntity gue, AccessTypeEntity ate)
+    public InventoryEntity(Inventory inventory, UserEntity gue, AccessTypeEntity ate, byte doorNumber)
     {
         _device = DbManager.getDevEntity();
         _user = gue;
         _accessType = ate;
+        _doorNumber = doorNumber;
 
         _totalAdded = inventory.getNumberAdded();
         _totalPresent = inventory.getNumberPresent();
@@ -96,6 +102,12 @@ public final class InventoryEntity extends Entity
     public AccessTypeEntity getAccessType()
     {
         return _accessType;
+    }
+
+    /** @return Door number (door which was closed, starting the scan) or -1 (default value, manual scan). */
+    public byte getDoorNumber()
+    {
+        return _doorNumber;
     }
 
     /** @return Number of tags "Added" in the device, since the last inventory. */
@@ -166,6 +178,7 @@ public final class InventoryEntity extends Entity
                tagsRemoved,
                _user != null ? _user.getUsername() : "",
                DaoAccessType.asAccessType(_accessType),
+               _doorNumber,
                _createdAt);
     }
 }

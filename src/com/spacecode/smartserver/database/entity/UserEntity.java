@@ -22,7 +22,7 @@ public final class UserEntity extends Entity
     public static final String THIEF_FINGER_INDEX = "thief_finger_index";
     public static final String UPDATED_AT = "updated_at";
 
-    @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true)
+    @DatabaseField(columnName = USERNAME, canBeNull = false, unique = true, width = 64)
     private String _username;
 
     @DatabaseField(columnName = BADGE_NUMBER)

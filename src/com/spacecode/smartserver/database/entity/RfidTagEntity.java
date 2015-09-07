@@ -14,7 +14,7 @@ public final class RfidTagEntity extends Entity
 
     public static final String UID = "uid";
 
-    @DatabaseField(columnName = UID, canBeNull = false, unique = true)
+    @DatabaseField(columnName = UID, canBeNull = false, unique = true, width = 120)
     private String _uid;
 
     /**

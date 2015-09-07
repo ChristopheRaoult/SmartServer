@@ -159,7 +159,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             }
 
             // create the entity to be inserted in the DB
-            InventoryEntity ie = new InventoryEntity(_inventory, gue, ate);
+            InventoryEntity ie = new InventoryEntity(_inventory, gue, ate, _inventory.getDoorNumber());
 
             if(!insert(ie))
             {
@@ -189,7 +189,7 @@ public class DaoInventory extends DaoEntity<InventoryEntity, Integer>
             List<InventoryRfidTag> inventoryRfidTags = new ArrayList<>();
 
             // get the matrix containing the axis number where each tag has been detected for the last time
-            Map<String, Byte> tagToAxis = DeviceHandler.getDevice().getTagToAxis();
+            Map<String, Byte> tagToAxis = DeviceHandler.getDevice().getTagToDrawerNumber();
 
             int shelveNbr;
 
