@@ -7,7 +7,7 @@ import com.spacecode.sdk.device.data.DeviceType;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.device.data.PluggedDevice;
 import com.spacecode.sdk.device.event.DeviceEventHandler;
-import com.spacecode.sdk.device.module.authentication.FingerprintReader;
+import com.spacecode.sdk.device.module.AuthenticationModule;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.UsersService;
@@ -48,7 +48,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DeviceHandler.class, Device.class, SmartLogger.class, SmartServer.class,
-        DbManager.class, Inventory.class, ConfManager.class, FingerprintReader.class })
+        DbManager.class, Inventory.class, ConfManager.class, AuthenticationModule.class })
 public class DeviceHandlerTest
 {
     private DeviceHandler.SmartEventHandler _eventHandler;
@@ -221,8 +221,8 @@ public class DeviceHandlerTest
         doReturn(null).when(ConfManager.class, "getDevBrMaster");
         doReturn(null).when(ConfManager.class, "getDevBrSlave");
 
-        mockStatic(FingerprintReader.class);
-        doReturn(1).when(FingerprintReader.class, "connectFingerprintReader");
+        mockStatic(AuthenticationModule.class);
+        doReturn(1).when(AuthenticationModule.class, "connectFingerprintReaders", 1);
 
         mockStatic(DeviceHandler.class);
         when(DeviceHandler.class, "connectModules").thenCallRealMethod();
@@ -243,8 +243,8 @@ public class DeviceHandlerTest
         doReturn(null).when(ConfManager.class, "getDevBrMaster");
         doReturn(null).when(ConfManager.class, "getDevBrSlave");
 
-        mockStatic(FingerprintReader.class);
-        doReturn(2).when(FingerprintReader.class, "connectFingerprintReaders", 2);
+        mockStatic(AuthenticationModule.class);
+        doReturn(2).when(AuthenticationModule.class, "connectFingerprintReaders", 2);
 
         // the "add" of master reader must succeeds if we wanna verify that the second has been added
         doReturn(true).when(_device).addFingerprintReader(fprMaster, true);
@@ -270,15 +270,15 @@ public class DeviceHandlerTest
         doReturn(brSlave).when(ConfManager.class, "getDevBrSlave");
 
         // the "add" of master reader must succeeds if we wanna verify that the second has been added
-        doReturn(true).when(_device).addBadgeReader(brMaster, true);
-        doReturn(true).when(_device).addBadgeReader(brSlave, true);
+        doReturn(true).when(_device).addBadgeReader("BR1", brMaster, true);
+        doReturn(true).when(_device).addBadgeReader("BR2", brSlave, true);
 
         mockStatic(DeviceHandler.class);
         when(DeviceHandler.class, "connectModules").thenCallRealMethod();
         DeviceHandler.connectModules();
 
-        verify(_device).addBadgeReader(brMaster, true);
-        verify(_device).addBadgeReader(brSlave, false);
+        verify(_device).addBadgeReader("BR1", brMaster, true);
+        verify(_device).addBadgeReader("BR2", brSlave, false);
     }
 
     @Test
@@ -505,13 +505,17 @@ public class DeviceHandlerTest
         doReturn(authenticationRepo).when(DbManager.class, "getDao", AuthenticationEntity.class);
 
         AccessType accessType = AccessType.BADGE;
-        User user = new User("Vincent", GrantType.MASTER);
 
-        _eventHandler.authenticationSuccess(user, accessType, true);
+        User user = new User("Vincent", GrantType.MASTER);
+        AuthenticationModule authModule = PowerMockito.mock(AuthenticationModule.class);
+        doReturn(accessType).when(authModule).getAccessType();
+        doReturn(true).when(authModule).isMaster();
+        doReturn("Serialized").when(authModule).serialize();
+
+        _eventHandler.authenticationSuccess(authModule, user);
 
         PowerMockito.verifyStatic();
-        SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, user.serialize(), accessType.name(),
-                String.valueOf(true));
+        SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, "Serialized", user.serialize());
 
         verify(authenticationRepo).persist(user, accessType);
     }
@@ -519,14 +523,14 @@ public class DeviceHandlerTest
     @Test
     public void testEventAuthenticationFailure() throws Exception
     {
-        AccessType accessType = AccessType.BADGE;
         User user = new User("Vincent", GrantType.MASTER);
+        AuthenticationModule authModule = PowerMockito.mock(AuthenticationModule.class);
+        doReturn("Serialized").when(authModule).serialize();
 
-        _eventHandler.authenticationFailure(user, accessType, true);
+        _eventHandler.authenticationFailure(authModule, user);
 
         PowerMockito.verifyStatic();
-        SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, user.serialize(), accessType.name(),
-                String.valueOf(true));
+        SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, "Serialized", user.serialize());
     }
 
     @Test

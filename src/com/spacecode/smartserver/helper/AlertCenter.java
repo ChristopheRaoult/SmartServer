@@ -5,6 +5,7 @@ import com.spacecode.sdk.device.event.AccessControlEventHandler;
 import com.spacecode.sdk.device.event.BasicEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
+import com.spacecode.sdk.device.module.AuthenticationModule;
 import com.spacecode.sdk.device.module.TemperatureProbe;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
@@ -225,19 +226,18 @@ public final class AlertCenter
         }
 
         @Override
-        public void authenticationSuccess(final User grantedUser,
-                                          AccessType accessType, final boolean isMaster)
+        public void authenticationSuccess(AuthenticationModule authModule, final User user)
         {
             DaoUser daoUser = (DaoUser) DbManager.getDao(UserEntity.class);
-            _lastAuthenticatedUsername = grantedUser.getUsername();
+            _lastAuthenticatedUsername = user.getUsername();
 
             // we're only interested in fingerprint authentications for "thief finger" alert
-            if(accessType != AccessType.FINGERPRINT)
+            if(authModule.getAccessType() != AccessType.FINGERPRINT)
             {
                 return;
             }
 
-            UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, grantedUser.getUsername());
+            UserEntity gue = daoUser.getEntityBy(UserEntity.USERNAME, user.getUsername());
 
             // no matching user, or user has no "finger thief" index set
             if(gue == null || gue.getThiefFingerIndex() == null)
@@ -246,10 +246,22 @@ public final class AlertCenter
             }
 
             // get the FingerIndex value of the last fingerprint scanned
-            FingerIndex index = DeviceHandler.getDevice().getUsersService().getLastVerifiedFingerIndex(isMaster);
+            FingerIndex fingerIndex;
+
+            try
+            {
+                fingerIndex = FingerIndex.valueOf(authModule.getLastRecord());
+            } catch(IllegalArgumentException iae)
+            {
+                SmartLogger.getLogger().log(Level.WARNING, "Invalid FingerIndex provided by Auth. module", iae);
+                return;
+            }
+
             AlertTypeEntity alertTypeThiefFinger = _daoAlertType.fromAlertType(AlertType.THIEF_FINGER);
 
-            if(index == null || alertTypeThiefFinger == null || index.getIndex() != gue.getThiefFingerIndex())
+            if( fingerIndex == null ||
+                alertTypeThiefFinger == null ||
+                fingerIndex.getIndex() != gue.getThiefFingerIndex())
             {
                 return;
             }
@@ -370,7 +382,7 @@ public final class AlertCenter
         }
 
         @Override
-        public void authenticationFailure(User grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationFailure(AuthenticationModule authModule, User user)
         {
             // not required
         }

@@ -6,8 +6,8 @@ import com.spacecode.sdk.device.data.DeviceStatus;
 import com.spacecode.sdk.device.data.Inventory;
 import com.spacecode.sdk.device.data.PluggedDevice;
 import com.spacecode.sdk.device.event.*;
-import com.spacecode.sdk.device.module.authentication.FingerprintReader;
-import com.spacecode.sdk.device.module.authentication.FingerprintReaderException;
+import com.spacecode.sdk.device.module.AuthenticationModule;
+import com.spacecode.sdk.device.module.FingerprintReaderException;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
 import com.spacecode.sdk.user.data.AccessType;
@@ -159,7 +159,7 @@ public final class DeviceHandler
                 // 2 readers
                 if(fprSlave != null && !fprSlave.trim().isEmpty())
                 {
-                    if(FingerprintReader.connectFingerprintReaders(2) != 2)
+                    if(AuthenticationModule.connectFingerprintReaders(2) != 2)
                     {
                         SmartLogger.getLogger().warning("Couldn't initialize the two fingerprint readers.");
                     }
@@ -176,7 +176,7 @@ public final class DeviceHandler
                 // 1 reader
                 else
                 {
-                    if(FingerprintReader.connectFingerprintReader() != 1)
+                    if(AuthenticationModule.connectFingerprintReaders(1) != 1)
                     {
                         SmartLogger.getLogger().warning("Couldn't initialize the fingerprint reader.");
                     }
@@ -198,12 +198,12 @@ public final class DeviceHandler
 
         if(brMaster != null && !brMaster.trim().isEmpty())
         {
-            if(!DEVICE.addBadgeReader(brMaster, true))
+            if(!DEVICE.addBadgeReader("BR1", brMaster, true))
             {
                 SmartLogger.getLogger().warning("Unable to add Master Badge Reader on "+brMaster);
             }
 
-            if(brSlave != null && !brSlave.trim().isEmpty() && !DEVICE.addBadgeReader(brSlave, false))
+            if(brSlave != null && !brSlave.trim().isEmpty() && !DEVICE.addBadgeReader("BR2", brSlave, false))
             {
                 SmartLogger.getLogger().warning("Unable to add Slave Badge Reader on "+brSlave);
             }
@@ -471,20 +471,18 @@ public final class DeviceHandler
         }
 
         @Override
-        public void authenticationSuccess(User grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationSuccess(AuthenticationModule authModule, User user)
         {
-            SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, grantedUser.serialize(),
-                    accessType.name(), String.valueOf(isMaster));
+            SmartServer.sendAllClients(EventCode.AUTHENTICATION_SUCCESS, authModule.serialize(), user.serialize());
 
             DaoAuthentication daoAuthentication = (DaoAuthentication) DbManager.getDao(AuthenticationEntity.class);            
-            daoAuthentication.persist(grantedUser, accessType);
+            daoAuthentication.persist(user, authModule.getAccessType());
         }
 
         @Override
-        public void authenticationFailure(User grantedUser, AccessType accessType, boolean isMaster)
+        public void authenticationFailure(AuthenticationModule authModule, User user)
         {
-            SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, grantedUser.serialize(),
-                    accessType.name(), String.valueOf(isMaster));
+            SmartServer.sendAllClients(EventCode.AUTHENTICATION_FAILURE, authModule.serialize(), user.serialize());
         }
 
         @Override

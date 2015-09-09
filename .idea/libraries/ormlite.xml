@@ -4,13 +4,7 @@
       <root url="jar://$PROJECT_DIR$/lib/ormlite-core.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/ormlite-jdbc.jar!/" />
     </CLASSES>
-    <JAVADOC>
-      <root url="jar://$USER_HOME$/Downloads/ormlite-jdbc-4.48-javadoc.jar!/" />
-      <root url="jar://$USER_HOME$/Downloads/ormlite-core-4.48-javadoc.jar!/" />
-    </JAVADOC>
-    <SOURCES>
-      <root url="jar://$USER_HOME$/Downloads/ormlite-core-4.48-sources.jar!/" />
-      <root url="jar://$USER_HOME$/Downloads/ormlite-jdbc-4.48-sources.jar!/" />
-    </SOURCES>
+    <JAVADOC />
+    <SOURCES />
   </library>
 </component>
