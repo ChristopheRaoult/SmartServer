@@ -34,10 +34,14 @@ The tests suit adds these additional dependencies:
 
 At the system's level, the required dependencies are:
 
-*   The Python runtime (2.7+) *(used by the update script)*
 *   The Update script "update.py" *(started by SmartServer with a dedicated command)*
+*   The Python runtime (2.7+) *(used by the update script)*
 *   Socat *(used by the serial-port forwarding feature)*
 *   The Serial Bridge script "serialbridge.sh" *(using socat, see details below)*
+*   "binutils" package *(JSSC uses "readelf" command to determine "soft" or "hard" float)*
+*   JAVA_HOME defined as an environment variable (used by JSSC to readelf on JAVA_HOME/bin/java)
+
+*   The DigitalPersona libraries and module if fingerprint readers are used
 *   Virtual Hub (Yoctopuce), if a temperature probe *(PT100)* is used
 
 
