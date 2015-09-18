@@ -6,7 +6,7 @@ import com.spacecode.sdk.device.event.BasicEventHandler;
 import com.spacecode.sdk.device.event.DoorEventHandler;
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
 import com.spacecode.sdk.device.module.AuthenticationModule;
-import com.spacecode.sdk.device.module.TemperatureProbe;
+import com.spacecode.sdk.device.module.data.ProbeSettings;
 import com.spacecode.sdk.network.alert.AlertType;
 import com.spacecode.sdk.network.communication.EventCode;
 import com.spacecode.sdk.user.User;
@@ -280,7 +280,7 @@ public final class AlertCenter
         @Override
         public void temperatureMeasure(double value)
         {
-            if(value == TemperatureProbe.ERROR_VALUE)
+            if(value == ProbeSettings.ERROR_VALUE)
             {
                 return;
             }

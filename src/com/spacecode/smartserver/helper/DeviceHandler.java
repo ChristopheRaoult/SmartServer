@@ -232,7 +232,8 @@ public final class DeviceHandler
         }
     }
 
-    /** Disconnect the temperature probe, if any, and reconnect it using last parameters (see ConfManager).
+    /**
+     * Disconnect the temperature probe, if any, and reconnect it using last parameters (see ConfManager).
      */
     public static void reloadTemperatureProbe()
     {

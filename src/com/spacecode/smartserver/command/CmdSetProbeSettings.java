@@ -1,6 +1,6 @@
 package com.spacecode.smartserver.command;
 
-import com.spacecode.sdk.device.module.TemperatureProbe;
+import com.spacecode.sdk.device.module.data.ProbeSettings;
 import com.spacecode.sdk.network.communication.RequestCode;
 import com.spacecode.smartserver.SmartServer;
 import com.spacecode.smartserver.helper.ConfManager;
@@ -32,7 +32,7 @@ public class CmdSetProbeSettings extends ClientCommand
             double delta = Double.parseDouble(parameters[1]);
             boolean state = Boolean.parseBoolean(parameters[2]);
 
-            TemperatureProbe.Settings settings = new TemperatureProbe.Settings(delay, delta, state);
+            ProbeSettings settings = new ProbeSettings(delay, delta, state);
 
             if(!ConfManager.setProbeConfiguration(settings))
             {

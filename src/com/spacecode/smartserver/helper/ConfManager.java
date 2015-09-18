@@ -1,6 +1,6 @@
 package com.spacecode.smartserver.helper;
 
-import com.spacecode.sdk.device.module.TemperatureProbe;
+import com.spacecode.sdk.device.module.data.ProbeSettings;
 import com.spacecode.sdk.network.DbConfiguration;
 import com.spacecode.smartserver.SmartServer;
 
@@ -341,7 +341,7 @@ public class ConfManager
      *
      * @return True if the operation succeeded, false otherwise (I/O error).
      */
-    public static boolean setProbeConfiguration(TemperatureProbe.Settings settings)
+    public static boolean setProbeConfiguration(ProbeSettings settings)
     {
         return  setDevTemperatureDelay(settings.getDelay()) &&
                 setDevTemperatureDelta(settings.getDelta()) &&

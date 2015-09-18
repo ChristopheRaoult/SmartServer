@@ -1,7 +1,7 @@
 package com.spacecode.smartserver.helper;
 
 import com.spacecode.sdk.device.event.TemperatureEventHandler;
-import com.spacecode.sdk.device.module.TemperatureProbe;
+import com.spacecode.sdk.device.module.data.ProbeSettings;
 import com.spacecode.smartserver.database.DbManager;
 import com.spacecode.smartserver.database.dao.DaoTemperatureMeasurement;
 import com.spacecode.smartserver.database.entity.TemperatureMeasurementEntity;
@@ -18,7 +18,6 @@ import java.util.TimerTask;
  */
 public class TemperatureCenter
 {
-    private static double _lastMeasureValue = TemperatureProbe.ERROR_VALUE;
     private static Date _lastMeasureTime;
     
     // timer doing a periodic measure, regardless the settings (delay/delta) of the Probe 
@@ -47,7 +46,7 @@ public class TemperatureCenter
         // listen for temperature events
         DeviceHandler.getDevice().addListener(new TemperatureMeasureHandler());
         
-        // 
+        // set up a timer to force recording at least one measure every DELAY_MS_FORCE_MEASURE milliseconds
         _measurementTimer = new Timer();
         _measurementTimer.scheduleAtFixedRate(new TimerTask()
         {
@@ -61,7 +60,7 @@ public class TemperatureCenter
                 
                 double currentTemp = DeviceHandler.getDevice().getCurrentTemperature();
                 
-                if(currentTemp == TemperatureProbe.ERROR_VALUE)
+                if(currentTemp == ProbeSettings.ERROR_VALUE)
                 {
                     return;
                 }
@@ -104,14 +103,12 @@ public class TemperatureCenter
         // keep only one decimal place (ie 4.57 => 4.6 // 4.22 => 4.2)
         double roundedValue = (double) Math.round(valueFromProbe * 10) / 10;
 
-        _lastMeasureValue = roundedValue;
-
         DaoTemperatureMeasurement daoTempMeasurement =
                 (DaoTemperatureMeasurement) DbManager.getDao(TemperatureMeasurementEntity.class);
 
         if(!daoTempMeasurement.insert(new TemperatureMeasurementEntity(roundedValue)))
         {
-            SmartLogger.getLogger().severe("Unable to insert new temperature measure ("+ _lastMeasureValue +").");
+            SmartLogger.getLogger().severe("Unable to insert new temperature measure ("+ roundedValue +").");
             return;
         }
 
@@ -123,7 +120,7 @@ public class TemperatureCenter
         @Override
         public void temperatureMeasure(double value)
         {
-            if(value == TemperatureProbe.ERROR_VALUE)
+            if(value == ProbeSettings.ERROR_VALUE)
             {
                 SmartLogger.getLogger().warning("ERROR_VALUE sent with the Temperature Probe event!");
                 return;
