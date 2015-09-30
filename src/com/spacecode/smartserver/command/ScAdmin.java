@@ -410,8 +410,9 @@ class ScAdmin
                     // disconnect the device, release the serial port
                     DeviceHandler.disconnectDevice();
 
-                    // execute command for port forwarding
-                    String socatCmd = "socat /dev/ttyGS0,raw,echo=0,crnl /dev/ttyUSB0,raw,echo=0,crnl";
+                    // execute socat and proceed to "serial port forwarding"
+                    String devSerialPort = DeviceHandler.getSerialPortName();
+                    String socatCmd = "socat /dev/ttyGS0,raw,echo=0,crnl "+ devSerialPort +",raw,echo=0,crnl";
                     _portForwardingProcess = new ProcessBuilder("/bin/sh", "-c", socatCmd).start();
 
                     SmartLogger.getLogger().severe("Running Port Forwarding command.");

@@ -30,8 +30,11 @@ import java.util.logging.Level;
  */
 public final class DeviceHandler
 {
-    // 
+    // Instance of Device currently being used
     private volatile static Device DEVICE;
+
+    // Serial port in use. Required by the CmdSerialBridge to forward the information to the Device (using socat).
+    private static String _serialPort = "/dev/ttyUSB0";
     
     // if true, the new inventories will be saved in the database (if false, they won't be)
     private volatile static boolean RECORD_INVENTORY = true;
@@ -71,6 +74,7 @@ public final class DeviceHandler
         {
             DEVICE = new Device(null, deviceInfo.getSerialPort());
             DEVICE.addListener(new SmartEventHandler());
+            _serialPort = deviceInfo.getSerialPort();
         } catch (DeviceCreationException dce)
         {
             SmartLogger.getLogger().log(Level.INFO, "Unable to instantiate a device.", dce);
@@ -90,6 +94,17 @@ public final class DeviceHandler
             DEVICE.release();
             DEVICE = null;
         }
+    }
+
+    /**
+     * Allow {@link com.spacecode.smartserver.command.ScAdmin.CmdSerialBridge } to forward data coming from
+     * /dev/ttyGS0 (gadget driver) to the appropriate serial port (RFID board) using socat.
+     *
+     * @return Serial port name.
+     */
+    public static String getSerialPortName()
+    {
+        return _serialPort;
     }
 
     /**
