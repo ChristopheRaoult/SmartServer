@@ -72,6 +72,7 @@ public final class DeviceHandler
 
         try
         {
+            SmartLogger.getLogger().info("Serial Port: "+deviceInfo.getSerialPort());
             DEVICE = new Device(null, deviceInfo.getSerialPort());
             DEVICE.addListener(new SmartEventHandler());
             _serialPort = deviceInfo.getSerialPort();

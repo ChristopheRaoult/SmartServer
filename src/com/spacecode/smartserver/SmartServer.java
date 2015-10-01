@@ -109,9 +109,8 @@ public final class SmartServer
     public static void main(String[] args) throws IOException, SQLException
     {
         // SDK: Only display its SEVERE logs.
-        com.spacecode.sdk.SmartLogger.getLogger().setLevel(Level.SEVERE);
-        
-        // SmartServer: initialize the Server's logger.
+        com.spacecode.sdk.SmartLogger.getLogger().setLevel(Level.ALL);
+        // initialize the Server's logger.
         SmartLogger.initialize();
 
         initializeShutdownHook();

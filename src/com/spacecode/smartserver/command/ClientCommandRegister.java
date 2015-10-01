@@ -188,7 +188,6 @@ public final class ClientCommandRegister extends ClientCommand
         }
     }
 
-
     /**
      * Check the command CommandContract: 
      * If invalid, the {@link CommandContract#responseIfInvalid()} will be sent back. Otherwise, cmd is executed.
@@ -234,12 +233,9 @@ public final class ClientCommandRegister extends ClientCommand
                 }
             } catch(ClientCommandException cce)
             {
-                if(logException)
-                {
-                    SmartLogger.getLogger().log(Level.WARNING, 
-                            "An error occurred while executing a command [" + requestCode + "]",
-                            cce);
-                }
+                SmartLogger.getLogger().log(logException ? Level.WARNING : Level.INFO,
+                        "An error occurred while executing a command [" + requestCode + "]",
+                        cce);
 
                 if(!contract.noResponseWhenInvalid())
                 {
@@ -253,6 +249,7 @@ public final class ClientCommandRegister extends ClientCommand
                         SmartServer.sendMessage(ctx, requestCode, contract.responseIfInvalid());
                     }
                 }
+
                 return;
             }
         }
