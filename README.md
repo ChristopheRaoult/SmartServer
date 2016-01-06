@@ -11,7 +11,7 @@ Although it can perfectly run on Windows if all dependencies are installed, some
 will not be functional.
 
 SmartServer has been developed to run on an ARM single-board computer. The first development SBC (thereafter used for
-sales) was an Odroid U3 from [HardKernel](http://hardkernel.com), able to run ("natively") both Ubuntu and Debian. This
+sales) was an Odroid U3 from [HardKernel](http://hardkernel.com), able to run on many Linux distributions. This
 package (Application &amp; SBC) aimed to replace the *old* solution using Windows XP PC's and SmartTracker.
 
 
@@ -58,7 +58,7 @@ Both handlers wait for messages composed of:
 *   A "Request Code"
 *   One or more parameters *(optional)*
 
-Messages packets (request code and parameter(s)) are separated by a delimiter, and end of messages is marked with
+Messages packets (request code and parameter(s)) are separated by a delimiter, and the end of messages is marked with
 another delimiter (both are defined in the Spacecode SDK).  
 Example: setprobesettings\x1C60\x1C\0.3\x1Ctrue\x04  
 Where *setprobesettings* is the request code, *{60, 0.3, true}* are the parameters, *\x1C* is the packet-delimiter,
@@ -70,8 +70,10 @@ With the above example, the CmdSetProbeSettings with parameters 60 (delay in sec
 and "true" (probe enabled).
 
 Is an answer to the request is expected by the client who sent it, it takes the following format:  
-RequestCode\x1C{list of response packets separated by \x1C}\0x04  
-Example: setprobesettings\x1Ctrue\x04
+\<request code\>\[\<\x1C\>\<packet\>...\]\0x04  
+**Example**: setprobesettings\x1Ctrue\x04
+
+If no parameter is required, only the request code and the end of message delimiter need to be sent.
 
 ### Services or "Helpers"
 
