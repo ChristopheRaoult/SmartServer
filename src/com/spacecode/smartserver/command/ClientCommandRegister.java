@@ -74,6 +74,8 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.TAG_TO_DRAWER,        new CmdTagToDrawer());
         _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CmdTemperatureCurrent());
         _commands.put(RequestCode.TEMPERATURE_LIST,     new CmdTemperatureList());
+        _commands.put(RequestCode.START_LIGHTING_ACROSS, new CmdStartLightingAcrossReader());
+        _commands.put(RequestCode.STOP_LIGHTING_ACROSS, new CmdStopLightingAcrossReader());
 
         // RequestCodes not open to SDK/API users: Spacecode's internal usage only
         _commands.put(AppCode.BR_SERIAL,                new ScAdmin.CmdBrSerial());
