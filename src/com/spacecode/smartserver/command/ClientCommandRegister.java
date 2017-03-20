@@ -72,6 +72,7 @@ public final class ClientCommandRegister extends ClientCommand
         _commands.put(RequestCode.USERS_LIST,           new CmdUsersList());
         _commands.put(RequestCode.USERS_UNREGISTERED,   new CmdUnregisteredUsers());
         _commands.put(RequestCode.TAG_TO_DRAWER,        new CmdTagToDrawer());
+        _commands.put(RequestCode.TAG_TO_DRAWER_BY_ID,  new CmdTagToDrawerById());
         _commands.put(RequestCode.TEMPERATURE_CURRENT,  new CmdTemperatureCurrent());
         _commands.put(RequestCode.TEMPERATURE_LIST,     new CmdTemperatureList());
         _commands.put(RequestCode.START_LIGHTING_ACROSS, new CmdStartLightingAcrossReader());
