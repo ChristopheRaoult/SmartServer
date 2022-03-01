@@ -34,6 +34,8 @@ public class DbManager
     // JDBC connection string used to connect to the database
     private static final String CONNECTION_STRING   =
             "jdbc:mysql://"+DB_HOST+":"+DB_PORT+"/"+DB_NAME+"?user="+DB_USER+"&password=Spacecode4sql";
+   /* private static final String CONNECTION_STRING   =
+            "jdbc:mariadb://"+DB_HOST+":"+DB_PORT+"/"+DB_NAME+"?user="+DB_USER+"&password=Spacecode4sql";*/
 
     // Connection pool, contains active connections to the DB
     private static JdbcPooledConnectionSource _pooledConnectionSrc;

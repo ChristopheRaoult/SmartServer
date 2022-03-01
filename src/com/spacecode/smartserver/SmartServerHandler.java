@@ -73,7 +73,7 @@ final class SmartServerHandler extends SimpleChannelInboundHandler<String>
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
-        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by handler", cause);
+        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by SmartServerhandler", cause);
         ctx.close();
     }
 }

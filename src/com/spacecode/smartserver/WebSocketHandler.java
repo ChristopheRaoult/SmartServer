@@ -37,19 +37,22 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
     public void channelActive(final ChannelHandlerContext ctx)
     {
         SmartServer.addClientChannel(ctx.channel(), ctx.handler());
-        SmartLogger.getLogger().info("Connection from " + ctx.channel().remoteAddress());
+        SmartLogger.getLogger().info("Receive Connection from " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg)
     {
+        //SmartLogger.getLogger().log(Level.INFO, "Enter Chanel Read0 :" + msg.toString());
         if (msg instanceof FullHttpRequest)
         {
+           // SmartLogger.getLogger().log(Level.INFO, "handleHttpRequest");
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         }
 
         else if (msg instanceof WebSocketFrame)
         {
+            //SmartLogger.getLogger().log(Level.INFO, "WebSocketFrame");
             handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         }
     }
@@ -65,6 +68,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
         // Handle a bad request.
         if (!req.getDecoderResult().isSuccess())
         {
+            SmartLogger.getLogger().log(Level.INFO, "Decode is bad request");
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
             return;
         }
@@ -72,6 +76,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
         // Allow only GET methods.
         if (req.getMethod() != GET)
         {
+            SmartLogger.getLogger().log(Level.INFO, "Decode is bad forbidden");
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, FORBIDDEN));
             return;
         }
@@ -79,15 +84,18 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
         // Handshake
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                 "ws://" + req.headers().get(HOST), null, false, SmartServer.MAX_FRAME_LENGTH);
+
         _handshaker = wsFactory.newHandshaker(req);
 
         if (_handshaker == null)
         {
+            SmartLogger.getLogger().log(Level.INFO, "unsupported version");
             WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel());
         }
 
         else
         {
+            //SmartLogger.getLogger().log(Level.INFO, "Handsake " + req.toString());
             _handshaker.handshake(ctx.channel(), req);
         }
     }
@@ -96,6 +104,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
     {
         if (frame instanceof CloseWebSocketFrame)
         {
+            //SmartLogger.getLogger().log(Level.INFO, "frame is  CloseWebSocketFrame");
             _handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             return;
         }
@@ -120,19 +129,18 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
 
         if(!frame.isFinalFragment())
         {
+            SmartLogger.getLogger().log(Level.INFO, "frame is not FinalFragment()");
             return;
         }
 
         request = _continuousBuffer.toString();
         _continuousBuffer.setLength(0);
-
         if(request.trim().isEmpty())
         {
             return;
         }
 
         String[] parameters = request.split(Character.toString(MessageHandler.DELIMITER));
-
         SmartLogger.getLogger().info(ctx.channel().remoteAddress().toString()+" - "+parameters[0]);
 
         try
@@ -165,7 +173,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object>
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
-        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by handler", cause);
+        SmartLogger.getLogger().log(Level.WARNING, "Exception caught by WebSockethandler", cause);
         ctx.close();
     }
 }

@@ -55,13 +55,15 @@ public final class DeviceHandler
      */
     public synchronized static boolean connectDevice()
     {
+        SmartLogger.getLogger().info("Enter connectDevice");
+        Device.EchoLib();
         if(DEVICE != null)
         {
             return true;
         }
-
+        SmartLogger.getLogger().info("Get PluggedDevices");
         Map<String, PluggedDevice> pluggedDevices = Device.getPluggedDevices();
-
+        SmartLogger.getLogger().info("return from  PluggedDevices" );
         if(pluggedDevices.isEmpty() || pluggedDevices.size() > 1)
         {
             SmartLogger.getLogger().warning("0 or more than 1 device detected.");

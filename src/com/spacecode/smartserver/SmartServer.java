@@ -22,14 +22,24 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.io.File;
-import java.io.IOException;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLException;
+import java.io.*;
 import java.net.SocketAddress;
+import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,6 +67,11 @@ public final class SmartServer
 
     private static Channel _channel;
     private static Channel _wsChannel;
+
+    private static Timer _otgTimer;
+    private static final long DELAY_MS_DETECT_OTG = 15 * 1000;
+    private static double OTGPlugTime = 0.0;
+    private static double OTGUnplugTime = 0.0;
 
     // default is 65536 (2^16), most of the time. Increase this value to 2^22. Max supported is Integer limit: 2^31-1
     public static final int MAX_FRAME_LENGTH = 4194304;
@@ -113,31 +128,216 @@ public final class SmartServer
         // initialize the Server's logger.
         SmartLogger.initialize();
 
+
         initializeShutdownHook();
 
         // Initialize database connection and (if required) model
-        if(!DbManager.initializeDatabase())
-        {
+        if (!DbManager.initializeDatabase()) {
             SmartLogger.getLogger().severe("Database could not be initialized. SmartServer will not start.");
             return;
         }
 
-        if(!DeviceHandler.connectDevice())
-        {
+        if (!DeviceHandler.connectDevice()) {
             SmartLogger.getLogger().severe("Unable to connect a device. SmartServer will not start");
             return;
         }
 
-        if(!init())
-        {
+        if (!init()) {
             SmartLogger.getLogger().severe("Unable to initialize SmartServer [init].");
             return;
         }
 
-        SmartLogger.getLogger().info("SmartServer is Ready");
+       /* SmartLogger.getLogger().info("Detect OTG ");
+        OTGPlugTime  =  detectOtgPlugged();
+        OTGUnplugTime = detectOtgUnPlugged();
+
+        if (OTGPlugTime != 0.0 ) {
+            if (OTGPlugTime > OTGUnplugTime) {
+                SmartLogger.getLogger().log(Level.INFO, "OTG Plugged - redirect ttyUSB0 to ttyGS0");
+                if (DoRedirection())
+                    SmartLogger.getLogger().info("SmartServer is Ready in USB");
+                else {
+                    SmartLogger.getLogger().info("Error in redirection to USB");
+                    SmartLogger.getLogger().info("SmartServer should be  Ready in Ethernet");
+                }
+            }
+            else
+            {
+                SmartLogger.getLogger().info("Unplug OTG detected");
+                SmartLogger.getLogger().info("SmartServer should be  Ready in Ethernet");
+            }
+        }
+        else {
+            SmartLogger.getLogger().info("OTG Not Found : Start SmartServer");
+            SmartLogger.getLogger().info("SmartServer is Ready in Ethernet");
+        }
+        */
+        //startTimer to test OTG
+        _otgTimer = new Timer();
+        _otgTimer.schedule(new RemindTask(), 0, DELAY_MS_DETECT_OTG);
 
         startListening();
     }
+
+
+    /**
+     * Change for OTG detecton issue
+     * Function to read if otg connected a t start and run the socat redirection if nededed
+     *
+     */
+    private static Double detectOtgPlugged()
+    {
+        Double LastPluggedTime = -0.0;
+        Process process =  null;
+        List<String> result  = new ArrayList<>();
+        String pattern = "CDC ACM config";
+        //String pattern = "usb";
+        try
+        {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("sh", "-c", "dmesg | grep \"" + pattern + "\"");
+
+        builder.directory(new File(System.getProperty("user.home")));
+        process = builder.start();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+               result.add(line);
+            }
+            process.waitFor();
+            if (result.stream().count() > 0) {
+                String LastPlugged  = result.get(result.size() - 1);
+                String requiredString = LastPlugged .substring(LastPlugged .indexOf("[") + 1, LastPlugged .indexOf("]"));
+                LastPluggedTime = Double.parseDouble(requiredString.trim());
+                SmartLogger.getLogger().log(Level.INFO, "plug time: " + LastPluggedTime);
+                return  LastPluggedTime;
+            }
+            else {
+                SmartLogger.getLogger().log(Level.INFO, "Last Plug Time: " + LastPluggedTime);
+                return LastPluggedTime;
+            }
+        }
+        catch(Exception e)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Detect OTG error : ", e);
+        }
+        finally
+        {
+            process.destroy();
+        }
+        return   LastPluggedTime;
+    }
+
+    private static Double detectOtgUnPlugged()
+    {
+        Double LastUnPluggedTime = -0.0;
+        Process process =  null;
+        List<String> result  = new ArrayList<>();
+        String pattern = "usb device plug out, stop pcd!!!";
+        //String pattern = "usb";
+        try
+        {
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.command("sh", "-c", "dmesg | grep \"" + pattern + "\"");
+
+            builder.directory(new File(System.getProperty("user.home")));
+            process = builder.start();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                result.add(line);
+            }
+            process.waitFor();
+            if (result.stream().count() > 0) {
+                String LastUnPlugged  = result.get(result.size() - 1);
+                String requiredString = LastUnPlugged .substring(LastUnPlugged .indexOf("[") + 1, LastUnPlugged .indexOf("]"));
+                LastUnPluggedTime = Double.parseDouble(requiredString.trim());
+                SmartLogger.getLogger().log(Level.SEVERE, "Last Unplug Time: " + LastUnPluggedTime);
+                return  LastUnPluggedTime;
+            }
+            else
+            {
+                SmartLogger.getLogger().log(Level.SEVERE, "Last Unplug time: " + LastUnPluggedTime);
+                return  LastUnPluggedTime;
+            }
+        }
+        catch(Exception e)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Detect OTG error : ", e);
+        }
+        finally
+        {
+            process.destroy();
+        }
+        return   LastUnPluggedTime;
+    }
+
+    private static boolean DoRedirection()
+    {
+        try
+        {
+            // tell the device handler that serial port is hooked, then it doesn't try to reconnect device
+            DeviceHandler.setForwardingSerialPort(true);
+
+            // disconnect the device, release the serial port
+            DeviceHandler.disconnectDevice();
+
+            // execute socat and proceed to "serial port forwarding"
+            String devSerialPort = DeviceHandler.getSerialPortName();
+            String socatCmd = "socat /dev/ttyGS0,raw,echo=0,crnl "+ devSerialPort +",raw,echo=0,crnl";
+            new ProcessBuilder("/bin/sh", "-c", socatCmd).start();
+            SmartLogger.getLogger().severe("Running Port Forwarding command.");
+            return true;
+        } catch (IOException ioe)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to run Port Forwarding command.", ioe);
+
+            // reconnect to local Device
+            DeviceHandler.setForwardingSerialPort(false);
+            DeviceHandler.reconnectDevice();
+            return false;
+        }
+    }
+    private static boolean StopRedirection()
+    {
+        try
+        {
+            // stop the process (port forwarding)
+            // NOTE: calling destroy() on Process instance does not stop "socat"...
+            Process killingSocatProcess = new ProcessBuilder("/bin/sh", "-c", "pkill -f socat").start();
+            killingSocatProcess.waitFor();
+
+            SmartLogger.getLogger().severe("Stopped Port Forwarding command. Reconnecting Device...");
+
+            // reconnect to local Device
+            DeviceHandler.setForwardingSerialPort(false);
+            DeviceHandler.reconnectDevice();
+            return true;
+        } catch (IOException | InterruptedException e)
+        {
+            SmartLogger.getLogger().log(Level.SEVERE, "Unable to stop Port Forwarding command.", e);
+            return false;
+        }
+    }
+    private static class StreamGobbler implements Runnable {
+        private InputStream inputStream;
+        private Consumer<String> consumer;
+
+        public StreamGobbler(InputStream inputStream, Consumer<String> consumer) {
+            this.inputStream = inputStream;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void run() {
+            new BufferedReader(new InputStreamReader(inputStream)).lines()
+                    .forEach(consumer);
+        }
+    }
+
+
 
     /**
      * Check if the g_serial module is loaded, otherwise load it.
@@ -269,21 +469,43 @@ public final class SmartServer
             // Bind and start to accept incoming connections.
             _channel = tcpIpBootStrap.bind(portTcp).sync().channel();
 
-            ServerBootstrap wsBootStrap = new ServerBootstrap();
-            wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>()
-                    {
-                        @Override
-                        public void initChannel(SocketChannel ch)
-                        {
-                            ch.pipeline().addLast(new HttpServerCodec());
-                            ch.pipeline().addLast(new HttpObjectAggregator(MAX_FRAME_LENGTH));
-                            ch.pipeline().addLast(WS_HANDLER);
-                        }
-                    });
 
-             _wsChannel = wsBootStrap.bind(portWs).sync().channel();
+
+            /******************************/
+            try
+            {
+                //SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
+                //final SslContext sslCtx =  SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+                // uncomment for SSL
+                //ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
+
+                ServerBootstrap wsBootStrap = new ServerBootstrap();
+                wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new ChannelInitializer<SocketChannel>()
+                        {
+                            @Override
+                            public void initChannel(SocketChannel ch)
+                            {
+                                ch.pipeline().addLast(new HttpServerCodec());
+                                ch.pipeline().addLast(new HttpObjectAggregator(MAX_FRAME_LENGTH));
+                                ch.pipeline().addLast(WS_HANDLER);
+                            }
+                        });
+
+                _wsChannel = wsBootStrap.bind(portWs).sync().channel();
+            }
+            catch(Exception exp)
+            {
+                Logger.getLogger(SmartServer.class.getName()).log(Level.SEVERE, "Exception in WebSocket Init", exp);
+            }
+            /*catch (CertificateException ce){
+                Logger.getLogger(SmartServer.class.getName()).log(Level.SEVERE, "ICertificateException Exception raised.", ce);
+            }
+            catch(SSLException ssle){
+                Logger.getLogger(SmartServer.class.getName()).log(Level.SEVERE, "SSLException Exception raised.", ssle);
+            }*/
+            /******************************/
 
             // Before the main thread got stuck waiting, load the module g_serial, if required
             SmartLogger.getLogger().info("Loading module g_serial (if necessary)...");
@@ -434,5 +656,47 @@ public final class SmartServer
     public static boolean isAdministrator(SocketAddress socketAddress)
     {
         return socketAddress != null && ADMINISTRATORS.contains(socketAddress);
+    }
+
+    public static class RemindTask extends TimerTask {
+        public void run() {
+            SmartLogger.getLogger().info("Detect OTG ");
+            double newOTGplugTime = detectOtgPlugged();
+            double newOTGUnplugTime = detectOtgUnPlugged();
+
+            if (newOTGplugTime != 0.0 ) {   // there is a plug after start
+                SmartLogger.getLogger().info("OTG was plugged ");
+                if (OTGPlugTime > OTGUnplugTime) { // we are in USB , test unplug
+                    SmartLogger.getLogger().info("test for new unplug");
+                    if (newOTGUnplugTime > OTGUnplugTime) // new plug
+                    {
+                        SmartLogger.getLogger().log(Level.INFO, "OTG UnPlugged -stop redirection");
+                        if (StopRedirection()){
+                            SmartLogger.getLogger().info("SmartServer is Ready in Ethernet");
+                            OTGUnplugTime = newOTGUnplugTime;
+                        }
+                        else {
+                            SmartLogger.getLogger().info("Error in Stop redirection ");
+                        }
+                    }
+                }
+                else  // were ar in ethernet test plug
+                {
+                    SmartLogger.getLogger().info("test for new plug");
+                    if (newOTGplugTime > OTGPlugTime) // new plug
+                    {
+                        SmartLogger.getLogger().log(Level.INFO, "OTG Plugged - redirect ttyUSB0 to ttyGS0");
+                        if (DoRedirection()) {
+                            OTGPlugTime = newOTGplugTime;
+                            SmartLogger.getLogger().info("SmartServer is Ready in USB");
+                        }
+                        else {
+                            SmartLogger.getLogger().info("Error in redirection to USB");
+                            SmartLogger.getLogger().info("SmartServer should be  Ready in Ethernet");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

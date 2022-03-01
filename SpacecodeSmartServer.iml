@@ -6,16 +6,17 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
     </content>
-    <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
+    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="spacecode_sdk" level="project" />
     <orderEntry type="library" exported="" name="mysql-connector-java" level="project" />
     <orderEntry type="library" exported="" name="ormlite" level="project" />
     <orderEntry type="library" exported="" name="javax.mail" level="project" />
-    <orderEntry type="library" name="powermock-mockito-1.5.6" level="project" />
+    <orderEntry type="library" exported="" name="powermock-mockito-1.5.6" level="project" />
     <orderEntry type="library" exported="" name="postgresql-connector-java" level="project" />
     <orderEntry type="library" exported="" name="sqlserver-connector-java" level="project" />
-    <orderEntry type="library" name="h2-connector-java" level="project" />
+    <orderEntry type="library" exported="" name="h2-connector-java" level="project" />
+    <orderEntry type="library" exported="" name="junit-4.12" level="application" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
