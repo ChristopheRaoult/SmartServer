@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: com.spacecode.smartserver.SmartServer
+Class-Path: engine.io-client-2.0.0.jar powermock-mockito-1.5.6.jar mysql
+ -connector-java.jar spacecode_sdk.jar sqlserver-connector-java.jar post
+ gresql-connector-java.jar okio-1.15.0.jar socket.io-client-2.0.1.jar ok
+ http-3.12.12.jar h2-connector-java.jar javax.mail.jar jackson-databind-
+ 2.11.3.jar jackson-annotations-2.11.3.jar jackson-core-2.11.3.jar json-
+ 20090211.jar ormlite-core.jar ormlite-jdbc.jar
+

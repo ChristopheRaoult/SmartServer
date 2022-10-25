@@ -1,8 +1,26 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="SmartServer:jar">
+  <artifact name="SmartServer:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SmartServer_jar</output-path>
-    <root id="archive" name="SmartServer.jar">
-      <element id="module-output" name="SpacecodeSmartServer" />
+    <root id="root">
+      <element id="archive" name="SmartServer.jar">
+        <element id="module-output" name="SpacecodeSmartServer" />
+      </element>
+      <element id="library" level="project" name="Maven: io.socket:engine.io-client:2.0.0" />
+      <element id="library" level="project" name="powermock-mockito-1.5.6" />
+      <element id="library" level="project" name="mysql-connector-java" />
+      <element id="library" level="project" name="spacecode_sdk" />
+      <element id="library" level="project" name="sqlserver-connector-java" />
+      <element id="library" level="project" name="postgresql-connector-java" />
+      <element id="library" level="project" name="Maven: com.squareup.okio:okio:1.15.0" />
+      <element id="library" level="project" name="Maven: io.socket:socket.io-client:2.0.1" />
+      <element id="library" level="project" name="Maven: com.squareup.okhttp3:okhttp:3.12.12" />
+      <element id="library" level="project" name="h2-connector-java" />
+      <element id="library" level="project" name="javax.mail" />
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.11.3" />
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.11.3" />
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.11.3" />
+      <element id="library" level="project" name="Maven: org.json:json:20090211" />
+      <element id="library" level="project" name="ormlite" />
     </root>
   </artifact>
 </component>

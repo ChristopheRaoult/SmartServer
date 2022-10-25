@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: com.spacecode.smartserver.SmartServer
-Class-Path: lib/spacecode_sdk.jar lib/javax.mail.jar lib/ormlite-core.jar lib/ormlite-jdbc.jar lib/mysql-connector-java.jar lib/postgresql-connector-java.jar lib/sqlserver-connector-java.jar

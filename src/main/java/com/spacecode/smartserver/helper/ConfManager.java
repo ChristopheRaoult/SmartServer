@@ -71,6 +71,11 @@ public class ConfManager
     /** Contains the delay between each temperature measure. */
     public static final String DEV_TEMPERATURE_DELAY  = "dev_t_delay";
 
+    /** SocketIO port number used by SmartServer for the raw socketIO channel handler */
+    public static final String APP_SOCKET_URL    = "app_socketIO_url";
+    /** SocketIO port number used by SmartServer for the raw socketIO channel handler */
+    public static final String APP_PORT_SOCKETIO    = "app_socketIO_port";
+
     private ConfManager()
     {
         try
@@ -244,6 +249,42 @@ public class ConfManager
             return -1;
         }
     }
+
+    /** @return Application's SocketIO url for the raw SocketIO channel handler. */
+    public static String getAppUrlSocketIO()
+    {
+        return LazyHolder.INSTANCE.getProperty(APP_SOCKET_URL);
+    }
+    /** @return Application's SocketIO port for the raw SocketIO channel handler. */
+    public static String getAppPortSocketIO()
+    {
+        return LazyHolder.INSTANCE.getProperty(APP_PORT_SOCKETIO);
+    }
+
+    /**
+     * Update the property "app_port_socket_url" in the properties file.
+     *
+     * @param url New value for the host of the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setUrlSocketIO(String url)
+    {
+        return LazyHolder.INSTANCE.setProperty(APP_SOCKET_URL, url);
+    }
+
+    /**
+     * Update the property "app_port_socketio" in the properties file.
+     *
+     * @param port New value for the host of the DBMS.
+     *
+     * @return True if the operation succeeded, false otherwise (I/O error).
+     */
+    public static boolean setPortSocketIO(String port)
+    {
+        return LazyHolder.INSTANCE.setProperty(APP_PORT_SOCKETIO, port);
+    }
+
 
     /**
      * Update the property "db_host" in the properties file.
