@@ -463,31 +463,32 @@ public final class SmartServer
         // start the netty communication layer
         try
         {
-            ServerBootstrap tcpIpBootStrap = new ServerBootstrap();
-            tcpIpBootStrap.group(BOSS_GROUP, WORKER_GROUP)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>()
-                    {
-                        @Override
-                        public void initChannel(SocketChannel ch)
-                        {
-                            // Define character EOT (0x04) as an end-of-frame character.
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(MAX_FRAME_LENGTH,
-                                    Unpooled.wrappedBuffer(new byte[] {MessageHandler.END_OF_MESSAGE})));
 
-                            // Allow sending/receiving string instead of byte buffers.
-                            ch.pipeline().addLast(new StringDecoder(), new StringEncoder());
+                ServerBootstrap tcpIpBootStrap = new ServerBootstrap();
+                tcpIpBootStrap.group(BOSS_GROUP, WORKER_GROUP)
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            public void initChannel(SocketChannel ch) {
+                                // Define character EOT (0x04) as an end-of-frame character.
+                                ch.pipeline().addLast(new DelimiterBasedFrameDecoder(MAX_FRAME_LENGTH,
+                                        Unpooled.wrappedBuffer(new byte[]{MessageHandler.END_OF_MESSAGE})));
 
-                            // Add a SmartServerHandler instance to the channel pipeline.
-                            ch.pipeline().addLast(TCP_IP_HANDLER);
-                        }
-                    })
-                    .option(ChannelOption.SO_BACKLOG, 128)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+                                // Allow sending/receiving string instead of byte buffers.
+                                ch.pipeline().addLast(new StringDecoder(), new StringEncoder());
 
-            // Bind and start to accept incoming connections.
-            _channel = tcpIpBootStrap.bind(portTcp).sync().channel();
-
+                                // Add a SmartServerHandler instance to the channel pipeline.
+                                ch.pipeline().addLast(TCP_IP_HANDLER);
+                            }
+                        })
+                        .option(ChannelOption.SO_BACKLOG, 128)
+                        .childOption(ChannelOption.SO_KEEPALIVE, true);
+            if (portTcp != 0) {
+                // Bind and start to accept incoming connections.
+                _channel = tcpIpBootStrap.bind(portTcp).sync().channel();
+            }
+            else
+                SmartLogger.getLogger().info(String.format("TCP Ports - TCP/IP: %d, TCP Server not started", portTcp));
 
 
             /******************************/
@@ -498,21 +499,22 @@ public final class SmartServer
                 // uncomment for SSL
                 //ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
 
-                ServerBootstrap wsBootStrap = new ServerBootstrap();
-                wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
-                        .channel(NioServerSocketChannel.class)
-                        .childHandler(new ChannelInitializer<SocketChannel>()
-                        {
-                            @Override
-                            public void initChannel(SocketChannel ch)
-                            {
-                                ch.pipeline().addLast(new HttpServerCodec());
-                                ch.pipeline().addLast(new HttpObjectAggregator(MAX_FRAME_LENGTH));
-                                ch.pipeline().addLast(WS_HANDLER);
-                            }
-                        });
-
-                _wsChannel = wsBootStrap.bind(portWs).sync().channel();
+                    ServerBootstrap wsBootStrap = new ServerBootstrap();
+                    wsBootStrap.group(BOSS_GROUP, WORKER_GROUP)
+                            .channel(NioServerSocketChannel.class)
+                            .childHandler(new ChannelInitializer<SocketChannel>() {
+                                @Override
+                                public void initChannel(SocketChannel ch) {
+                                    ch.pipeline().addLast(new HttpServerCodec());
+                                    ch.pipeline().addLast(new HttpObjectAggregator(MAX_FRAME_LENGTH));
+                                    ch.pipeline().addLast(WS_HANDLER);
+                                }
+                            });
+                if (portWs != 0) {
+                    _wsChannel = wsBootStrap.bind(portWs).sync().channel();
+                }
+                else
+                    SmartLogger.getLogger().info(String.format("Port WebSocket: %d , websocket server not started", portTcp, portWs));
             }
             catch(Exception exp)
             {
